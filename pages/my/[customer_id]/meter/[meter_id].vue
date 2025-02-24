@@ -19,7 +19,7 @@ export default{
     methods:{
         async getMeterActivity(){
             this.isLoading = true;
-            const result = await $fetch(`https://admin-api.vendease.co.za/api/AdminSystem/MeterStatement/GetMeterActivity`,{
+            const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`,{
                 method: "GET",
                 params: {
                     StartDate: this.startDate,

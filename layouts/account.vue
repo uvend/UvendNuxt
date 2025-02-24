@@ -8,7 +8,7 @@
                 <li class="menu-item" @click="navigateTo('/admin/account/batch')">Bank Batch</li>
             </ul>
             <ul>
-                <li class="menu-item">Logout</li>
+                <li class="menu-item" @click="useLogout()">Logout</li>
             </ul>
         </aside>
         <main class="content hide-scrollbar">

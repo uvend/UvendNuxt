@@ -15,4 +15,10 @@ export default defineNuxtConfig({
     componentDir: './components/ui'
   },
   css: ['@/assets/css/tailwind.css'],
+  vite: {
+    define:{
+      API_URL: JSON.stringify(process.env.API_URL),
+    }
+  },
+  ssr: false,
 })

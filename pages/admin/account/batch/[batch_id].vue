@@ -70,14 +70,11 @@ export default{
     methods:{
         async getBatch(id){
             this.isLoading = true
-            const result = await $fetch("https://admin-api.vendease.co.za/api/AdminSystem/TransactionBatchPayment/GetPaymentBatch",{
+            const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/GetPaymentBatch`,{
                 method: "GET",
                 params: {
                     PaymentBatchID : id
                 },
-                headers: {
-                    'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
-                }
             })
             this.batch = result.listOfPeriodTotalsEntry;
             this.totalBatch = result.listOfPeriodTotalsEntry.length

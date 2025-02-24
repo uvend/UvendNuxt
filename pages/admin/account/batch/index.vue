@@ -90,15 +90,12 @@ export default{
     methods:{
         async getBatch(){
             this.isLoading = true
-            const result = await $fetch(`https://admin-api.vendease.co.za/api/AdminSystem/TransactionBatchPayment/GetCurrentBatchList`,{
+            const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/GetCurrentBatchList`,{
                 method: "GET",
                 params: {
                     "GoBackMonths" : this.monthsBack,
                     "BatchPaymentState" : this.selectedStatus
                 },
-                headers: {
-                    'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
-                }
             });
             this.batches = result.batchList;
             this.totalBatches = this.batches.length

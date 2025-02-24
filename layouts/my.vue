@@ -9,7 +9,7 @@
                 <li class="menu-item" @click="navigateTo(`/my/${customer}/statement`)">Statement</li>
             </ul>
             <ul>
-                <li class="menu-item">Logout</li>
+                <li class="menu-item" @click="useLogout()">Logout</li>
             </ul>
         </aside>
         <main class="content hide-scrollbar">

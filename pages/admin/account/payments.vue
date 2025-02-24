@@ -96,7 +96,7 @@ export default{
             let username = "jaredl@admin"
             let password = "jared1"
             this.isLoading = true
-            const response = await $fetch('https://admin-api.vendease.co.za/api/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals',{
+            const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
                 method: "GET",
                 params: {
                     "GoBackMonths" : this.monthsBack
@@ -105,8 +105,8 @@ export default{
                     'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
                 }
             });
-            console.log(response)
-            this.payments = response.value.listOfPeriodTotalsEntry
+            console.log(result)
+            this.payments = result.value.listOfPeriodTotalsEntry
 
             this.totalRepsonse = this.payments.length;
 
