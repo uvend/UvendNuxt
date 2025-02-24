@@ -56,7 +56,8 @@
     </div>
 </template>
 <script>
-import { debounce } from 'lodash';
+import _ from 'lodash';
+const { debounce } = _;
 definePageMeta({
     layout: 'account'
 })
