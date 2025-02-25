@@ -6,5 +6,5 @@ export default function useAuthFetch<T>(url: string, options: any = {}) {
         ...options.headers, // Merge custom headers
       },
       ...options, // Merge other options
-    });
+    })
   }

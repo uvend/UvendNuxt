@@ -10,6 +10,7 @@
 </div>
 </template>
 <script>
+
 definePageMeta({
     layout: 'noauth'
 })
@@ -40,6 +41,11 @@ export default{
                 }
             }catch(e){
                 console.log(e)
+                this.$toast({
+                    title: 'Uh oh! Something went wrong.',
+                    description: 'There was a problem with your request.',
+                    variant: "destructive"
+                });
             }
         }
     }

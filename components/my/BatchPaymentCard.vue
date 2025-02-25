@@ -38,9 +38,7 @@
                 <p class="text-sm">{{ setteledTime }}</p>
                 <p class="text-sm">{{ settledDate }}</p>
             </div>
-            <Button variant="outline" v-else>
-                <Icon name="lucide:undo-2"/>
-            </Button>
+            <MyRollBackDialog :batch="[payment]" :all="false"/>
         </div>
     </Card>
 
@@ -78,7 +76,7 @@ export default{
             const minutes = String(date.getMinutes()).padStart(2, '0'); // Get minutes and pad with leading zero
             const seconds = String(date.getSeconds()).padStart(2, '0'); // Get seconds and pad with leading zero
             return `${hours}:${minutes}`;
-        }
+        },
     }
 }
 </script>

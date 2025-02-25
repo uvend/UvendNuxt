@@ -19,7 +19,7 @@
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
                 </div>
-                <MyPaymentSortPopover />
+                <!--<MyPaymentSortPopover />-->
             </div>
         </div>
         <MySkeletenCardList v-if="isLoading"/>
@@ -28,21 +28,34 @@
                 <div class="flex flex-col items-start gap-1.5">
                     <div class="flex flex-row justify-center items-center text-center">
                     <div v-if="paymentState != 'Settled'">
-                        <Button variant="outline">
-                            <Icon name="lucide:undo-2"/>
-                        </Button>
+                        <MyRollBackDialog :batch="this.batch" :all="true" @refresh="getBatch()"/>
                     </div>
                 </div>
                 </div>
-                <div>
-                    <p class="text-sm flex justify-end">{{ paymentState }}</p>
-                    <p class="w-full text-center font-bold"><Badge>{{ totalBatch  }}</Badge>
-                        R {{ totalBatchPayment }}</p>
+                <div class="flex flex-row items-center gap-4">
+                    <div class="flex flex-row gap-2">
+                        <div>
+                            {{ paymentState }}
+                        </div>
+                        <Badge>{{ totalBatch  }}</Badge>
+                        <div>
+                            R {{ totalBatchPayment }}
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <Button @click="getBankFile()">
+                            <Icon name="lucide:landmark"/>
+                        </Button>
+                        <Button>
+                            <Icon name="lucide:shield-check"/>
+                        </Button>
+                    </div>
+
                 </div>
             </div>
             <div class="">
                 <div v-for="payment in paginatedBatch">
-                    <MyBatchPaymentCard :payment="payment" />
+                    <MyBatchPaymentCard :payment="payment" @refresh="getBatch()"/>
                 </div>
             </div>
         </div>
@@ -68,14 +81,18 @@ export default{
         }
     },
     methods:{
-        async getBatch(id){
+        async getBatch(){
+            const batch_id = this.$route.params.batch_id
             this.isLoading = true
             const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/GetPaymentBatch`,{
                 method: "GET",
                 params: {
-                    PaymentBatchID : id
+                    PaymentBatchID : batch_id
                 },
             })
+            if(result.numberOfRecords == 0){
+                return navigateTo('/admin/account/payments')
+            }
             this.batch = result.listOfPeriodTotalsEntry;
             this.totalBatch = result.listOfPeriodTotalsEntry.length
             this.paymentState = this.batch[0].periodTotals.batchPaymentState
@@ -88,13 +105,33 @@ export default{
             if (page >= 1 && page <= this.totalPages) {
                 this.currentPage = page;
             }
+        },
+        async getBankFile(){
+            try{
+                const result = await useAuthFetch(`https://9xcqber3p3.execute-api.af-south-1.amazonaws.com/prod/batch/capitec`,{
+                    method: "POST",
+                    body: {
+                        batchId: this.$route.params.batch_id
+                    },
+                    cors: 'no-cors'
+                    })
+                console.log(result)
+                this.$toast({
+                    title: 'Success',
+                    variant: "success"
+                });
+            }catch(e){
+                this.$toast({
+                    title: 'Uh oh! Something went wrong.',
+                    description: 'There was a problem with your request.',
+                    variant: "destructive"
+                });
+            }
+
         }
     },
     async mounted() {
-        const routeId = this.$route.params.batch_id;
-        this.uid = routeId;
-        console.log('Route ID:', routeId);
-        await this.getBatch(this.uid);
+        await this.getBatch();
     },
     computed:{
         totalBatchPayment() {
@@ -110,6 +147,6 @@ export default{
             const endIndex = startIndex + this.pageSize;
             return this.batch.slice(startIndex, endIndex); // Paginate filtered payments
         },
-    }
+    },
 }
 </script>

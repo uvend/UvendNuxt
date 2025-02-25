@@ -22,13 +22,14 @@
                 </div>
             </div>
             <div class="flex flex-row gap-x-1.5 items-center">
+                <p :class="[disableBatch ? 'text-red-500' : 'text-green-500']">{{ selectedDifference }}</p>                
                 <div class="relative w-full max-w-sm items-center">
                     <Input id="search" type="text" placeholder="Max" class="pl-10" v-model="maxBatch"/>
                     <span class="absolute start-0 inset-y-0 flex items-center justify-center px-2">
                     <p>R</p>
                     </span>
                 </div>
-                <Button :disabled="disableBatch">Batch</Button>
+                <Button :disabled="disableBatch" @click="batch()">Batch</Button>
                 <div class="flex flex-row w-fit">
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
@@ -77,7 +78,9 @@ export default{
             disableBatch: true,
             maxBatch: null,
             monthsBack: 1,
-            isLoading: true
+            isLoading: true,
+            disableBatch: true,
+            selectedDifference: "0.00",
         }
     },
     methods:{
@@ -86,23 +89,18 @@ export default{
             this.search = '';
         },
         _search(value) {
-            console.log("Search term:", value);
+            //console.log("Search term:", value);
         },
         debouncedSearch: debounce(function () {
             this.currentPage = 1;
             this._search(this.search);
         }, 500), // Delay of 500ms after the user stops typing
         async getPayments(){
-            let username = "jaredl@admin"
-            let password = "jared1"
             this.isLoading = true
             const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
                 method: "GET",
                 params: {
                     "GoBackMonths" : this.monthsBack
-                },
-                headers: {
-                    'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
                 }
             });
             console.log(result)
@@ -130,12 +128,13 @@ export default{
         toggleSelectedCard(uid) {
             if (this.selectedPayments.includes(uid)) {
                 this.selectedPayments = this.selectedPayments.filter(id => id !== uid);
-                console.log('Payment removed:', uid);
+                //console.log('Payment removed:', uid);
             } else {
                 this.selectedPayments.push(uid);
-                console.log('Payment added:', uid);
+                //console.log('Payment added:', uid);
             }
-            console.log('Selected Payments:', this.selectedPayments);
+            //console.log('Selected Payments:', this.selectedPayments);
+            this.isBatchDisabled()
         },
         changePage(page) {
             // Ensure the page stays within valid range
@@ -146,11 +145,72 @@ export default{
         filterPayments() {
             return this.payments.filter(payment => {
                 if (payment.payeeInfo && payment.payeeInfo.description) {
+                    //console.log(payment)
                     return payment.payeeInfo.description.toLowerCase().startsWith(this.search.toLowerCase());
                 }
                 return false; // If description doesn't exist, skip the payment
             });
         },
+        isBatchDisabled(){
+            let total = 0;
+            this.selectedPayments.forEach((payment)=>{
+                total += payment.periodTotals.payeePayOutAmount
+            })
+
+            if(isNaN(this.maxBatch)){
+                this.disableBatch = true;
+                this.maxBatch = 0;
+                this.selectedDifference = 0;
+                return 
+            }
+
+            this.maxBatch = parseFloat(this.maxBatch);
+            //console.log(parseFloat(this.maxBatch), total)
+            if(this.maxBatch >= total && this.selectedPayments.length > 0){
+                this.disableBatch = false;
+            }else{
+                this.disableBatch = true;
+            }
+
+            this.selectedDifference = (this.maxBatch - total).toFixed(2);
+        },
+        async batch(){
+            let preparedPayments = [];
+            this.selectedPayments.forEach((payment)=>{
+                let p = {
+                    UniqueIdentification : payment.periodTotals.uniqueIdentification,
+                    ActualTotalDeductionExVat: payment.periodTotals.totalDeductionExVat,
+                    ActualTotalVatOnDeduction: payment.periodTotals.totalVatOnDeduction,
+                    ActualPayeePayOutAmount: payment.periodTotals.payeePayOutAmount,
+                    ActualPaymentComment: "",
+                }
+                preparedPayments.push(p);
+            })
+            try{
+                const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/SubmitPaymentBatch`,{
+                    method: "POST",
+                    body : {
+                        batchPaymentDataCollection: preparedPayments
+                    }
+                })
+                this.$toast({
+                    title: 'Success',
+                    description: result.paymentBatchID,
+                    variant: "success"
+                })
+                //console.log(result);
+                this.selectedPayments = []
+                this.maxBatch = '0.00'
+                await this.getPayments()
+            }catch(e){
+                console.log(e)
+                this.$toast({
+                    title: 'Uh oh! Something went wrong.',
+                    description: 'There was a problem with your request.',
+                    variant: "destructive"
+                })
+            }
+        }
     },
     async mounted(){
         await this.getPayments()
@@ -163,6 +223,9 @@ export default{
                 this.getPayments(); // Call getPayments whenever monthsBack changes and is valid
             }
         },
+        maxBatch(newValue){
+            this.isBatchDisabled();
+        }
     },
     computed: {
         totalPages() {
@@ -182,9 +245,6 @@ export default{
         },
         totalSelected() {
             return this.selectedPayments.length; // Count of selected payments
-        },
-        disableBatch() {
-            return parseFloat(this.totalSelectedAmount) >= this.maxBatch; // Disable if total selected amount is greater than or equal to maxBatch
         },
     },
 }
