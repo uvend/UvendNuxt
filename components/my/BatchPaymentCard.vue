@@ -38,7 +38,7 @@
                 <p class="text-sm">{{ setteledTime }}</p>
                 <p class="text-sm">{{ settledDate }}</p>
             </div>
-            <MyRollBackDialog :batch="[payment]" :all="false"/>
+            <MyRollBackDialog :batch="[payment]" :all="false" v-if="payment.periodTotals.batchPaymentState != 'Settled'"/>
         </div>
     </Card>
 
