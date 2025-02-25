@@ -97,8 +97,8 @@ export default{
                     "BatchPaymentState" : this.selectedStatus
                 },
             });
+            console.log(result)
             this.batches = result.batchList;
-            console.log(this.batches)
             this.batches.sort((a, b) => new Date(b.batchSubmissionDate) - new Date(a.batchSubmissionDate));
             this.totalBatches = this.batches.length
             this.rangeStart = this.dateFormatter(result.rangeSelectStartDate)

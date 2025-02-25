@@ -41,8 +41,11 @@
         <div v-else>
             <div class="flex flex-row justify-between w-full items-center bg-gray-50 p-1 my-1 rounded">
                         <div class="flex flex-col items-start gap-1.5">
-                            <p class="text-sm flex justify-end">Selected</p>
-                            <p class="w-full text-center font-bold"><Badge>{{ totalSelected  }}</Badge> R {{ totalSelectedAmount }}</p>
+                            <p class="font-bold">
+                                {{ rangeStart }} - {{ rangeEnd }}
+                            </p>
+                            <!--<p class="text-sm flex justify-end">Selected</p>-->
+                            <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> R {{ totalSelectedAmount }}</p>
                         </div>
                         <div>
                             <p class="text-sm flex justify-end">Due</p>
@@ -81,6 +84,8 @@ export default{
             isLoading: true,
             disableBatch: true,
             selectedDifference: "0.00",
+            rangeStart: '',
+            rangeEnd: ''
         }
     },
     methods:{
@@ -103,10 +108,10 @@ export default{
                     "GoBackMonths" : this.monthsBack
                 }
             });
-            console.log(result)
             this.payments = result.value.listOfPeriodTotalsEntry
-
             this.totalRepsonse = this.payments.length;
+            this.rangeStart = this.dateFormatter(result.value.reportPeriodStartDate)
+            this.rangeEnd = this.dateFormatter(result.value.reportPeriodEndDate)
 
             // Calculate total payments
             this.totalAmount = this.payments.reduce((total, payment) => {
@@ -123,6 +128,7 @@ export default{
                 }
                 return 0; // a and b are equal
             });
+
             this.isLoading = false
         },
         toggleSelectedCard(uid) {
@@ -210,7 +216,15 @@ export default{
                     variant: "destructive"
                 })
             }
-        }
+        },
+        dateFormatter(date){
+            console.log(date)
+            return new Date(date).toLocaleDateString('en-ZA', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        },
     },
     async mounted(){
         await this.getPayments()

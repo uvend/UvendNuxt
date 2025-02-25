@@ -1,54 +1,71 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between bg-sky-900">
             <ul>
-                <div>
+                <div class="logo-container">
+                    <img src="/UVendlogo-Better.png"/>
                 </div>
-                <li class="menu-item" @click="navigateTo('/admin/account/payments')">Payments</li>
-                <li class="menu-item" @click="navigateTo('/admin/account/batch')">Bank Batch</li>
+                <li class="menu-item" @click="navigateTo('/admin/account/payments')"><Icon name="lucide:wallet-cards"/><p class="text-sm">Payments</p></li>
+                <li class="menu-item" @click="navigateTo('/admin/account/batch')"><Icon name="lucide:landmark"/><p class="text-sm">Bank Batch</p></li>
             </ul>
             <ul>
-                <li class="menu-item" @click="useLogout()">Logout</li>
             </ul>
         </aside>
-        <main class="content hide-scrollbar">
+        <main class="">
+            <header class="flex justify-between items-center py-2 px-4">
+                <div></div>
+                <MyUserMenu />
+            </header>
+            <div class="content hide-scrollbar bg-gray-50">
+                <slot class="overflow-y hide-scrollbar bg-gray-100"/>
+            </div>
             <!-- Main content goes here -->
-            <slot />
         </main>
     </div>
 </template>
 
 <style scoped>
+main {
+    display: grid;
+    grid-template-rows: auto 1fr; /* Adjusted to allow content to take remaining space */
+    height: 100vh; /* Full viewport height */
+}
 .grid-container {
     display: grid;
-    grid-template-columns: 250px 1fr; /* Sidebar width and main content */
-    grid-template-rows: auto; /* Adjusts to content height */
+    grid-template-columns: 250px 1fr; /* Sidebar width and main content */ /* Adjusts to content height */
     height: 100vh; /* Full viewport height */
+    overflow: hidden;
 }
 
 .sidebar {
-    background-color: #f4f4f4; /* Light gray background for sidebar */
     padding: 10px; /* Padding for sidebar content */
 }
 
 .content {
     padding: 20px; /* Padding for main content */
-    background-color: #fff; /* White background for content */
-    overflow: scroll;
+    overflow-y: auto; /* Enable vertical scrolling */
+    height: calc(100vh - <header_height>); /* Adjust height based on header height */
 }
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
 .hide-scrollbar {
-scrollbar-width: none; /* Firefox */
+    scrollbar-width: none; /* Firefox */
 }
 .menu-item{
     width: 100%;
     border-radius: 0.25rem;
     padding: 8px 10px;
     cursor: pointer;
+    color: white;
+    display: grid;
+    grid-template-columns: auto 1fr; /* 1 part first column, 3 parts second column */
+    gap:10px;
+    align-items: center;
 }
-.menu-item:hover{
-    background: #d4d4d4;
+
+.logo-container{
+    padding: 10px;
 }
+
 </style>

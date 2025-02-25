@@ -1,4 +1,4 @@
-export default function useAuthFetch<T>(url: string, options: any = {}) {
+export default function fetch<T>(url: string, options: any = {}) {
     const token = localStorage.getItem('token')  
     return $fetch<T>(url, {
       headers: {

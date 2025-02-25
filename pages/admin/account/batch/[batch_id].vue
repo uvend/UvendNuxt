@@ -50,9 +50,7 @@
                             <MyBatchFinaliseDialog :batch="this.$route.params.batch_id"/>
                         </div>
                         <div v-else>
-                            <Button>
-                                <Icon name="lucide:send"/>
-                            </Button>
+                            <MyBatchSendStatement :batch="this.$route.params.batch_id"/>
                         </div>
                     </div>
                 </div>

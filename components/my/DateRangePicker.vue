@@ -8,11 +8,11 @@
         <Icon name="lucide:calendar-days" class="mr-2 h-4 w-4" />
         <template v-if="value.start">
         <template v-if="value.end">
-            {{ df.format(value.start.toDate(getLocalTimeZone())) }} - {{ df.format(value.end.toDate(getLocalTimeZone())) }}
+            {{ formatDate(value.start) }} - {{ formatDate(value.end) }}
         </template>
 
         <template v-else>
-            {{ df.format(value.start.toDate(getLocalTimeZone())) }}
+            {{ formatDate(value.start) }}
         </template>
         </template>
         <template v-else>
@@ -26,15 +26,17 @@
 </Popover>
 </template>
 <script>
-const df = new DateFormatter('en-US', {
-  dateStyle: 'medium',
-})
 
 export default{
     data(){
         return {
             value: {}
         }
-    }
+    },
+    methods: {
+        formatDate(date) {
+            return new Date(date).toLocaleDateString('en-US', { dateStyle: 'medium' });
+        }
+    },
 }
 </script>
