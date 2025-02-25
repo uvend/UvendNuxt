@@ -98,7 +98,7 @@ export default{
                 },
             });
             this.batches = result.batchList;
-            //console.log(this.batches)
+            console.log(this.batches)
             this.batches.sort((a, b) => new Date(b.batchSubmissionDate) - new Date(a.batchSubmissionDate));
             this.totalBatches = this.batches.length
             this.rangeStart = this.dateFormatter(result.rangeSelectStartDate)

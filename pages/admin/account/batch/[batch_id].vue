@@ -28,7 +28,7 @@
                 <div class="flex flex-col items-start gap-1.5">
                     <div class="flex flex-row justify-center items-center text-center">
                     <div v-if="paymentState != 'Settled'">
-                        <MyRollBackDialog :batch="this.batch" :all="true" @refresh="getBatch()"/>
+                        <MyBatchRollBackDialog :batch="this.batch" :all="true" @refresh="getBatch()"/>
                     </div>
                 </div>
                 </div>
@@ -46,11 +46,15 @@
                         <Button @click="getBankFile()">
                             <Icon name="lucide:landmark"/>
                         </Button>
-                        <Button>
-                            <Icon name="lucide:shield-check"/>
-                        </Button>
+                        <div v-if="paymentState != 'Settled'">
+                            <MyBatchFinaliseDialog :batch="this.$route.params.batch_id"/>
+                        </div>
+                        <div v-else>
+                            <Button>
+                                <Icon name="lucide:send"/>
+                            </Button>
+                        </div>
                     </div>
-
                 </div>
             </div>
             <div class="">
@@ -68,7 +72,6 @@ definePageMeta({
 export default{
     data(){
         return{
-            uid: null,
             totalBatch: 0,
             batch: [],
             paymentState: 0,
@@ -93,6 +96,7 @@ export default{
             if(result.numberOfRecords == 0){
                 return navigateTo('/admin/account/payments')
             }
+            console.log(result)
             this.batch = result.listOfPeriodTotalsEntry;
             this.totalBatch = result.listOfPeriodTotalsEntry.length
             this.paymentState = this.batch[0].periodTotals.batchPaymentState
