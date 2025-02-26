@@ -93,12 +93,8 @@ export default{
             this.searchActive = !this.searchActive;
             this.search = '';
         },
-        _search(value) {
-            //console.log("Search term:", value);
-        },
         debouncedSearch: debounce(function () {
             this.currentPage = 1;
-            this._search(this.search);
         }, 500), // Delay of 500ms after the user stops typing
         async getPayments(){
             this.isLoading = true

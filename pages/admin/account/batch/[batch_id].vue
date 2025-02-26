@@ -64,6 +64,8 @@
     </div>
 </template>
 <script>
+import _ from 'lodash';
+const { debounce } = _;
 definePageMeta({
     layout: 'account'
 })
@@ -75,7 +77,7 @@ export default{
             paymentState: 0,
             totalBatchPayment: 0,
             searchActive: false,
-            search: null,
+            search: '',
             pageSize: 10,
             currentPage: 1,
             isLoading: true
@@ -130,7 +132,17 @@ export default{
                 });
             }
 
-        }
+        },
+        filterPayments() {
+            return this.batch.filter(payment => {
+                console.log(payment)
+                if (payment.payeeInfo && payment.payeeInfo.description) {
+                    //console.log(payment)
+                    return payment.payeeInfo.description.toLowerCase().startsWith(this.search.toLowerCase());
+                }
+                return false; // If description doesn't exist, skip the payment
+            });
+        },
     },
     async mounted() {
         await this.getBatch();
@@ -145,9 +157,10 @@ export default{
             return Math.ceil(this.batch.length / this.pageSize);
         },
         paginatedBatch() {
+            const filteted = this.filterPayments()
             const startIndex = (this.currentPage - 1) * this.pageSize;
             const endIndex = startIndex + this.pageSize;
-            return this.batch.slice(startIndex, endIndex); // Paginate filtered payments
+            return filteted.slice(startIndex, endIndex); // Paginate filtered payments
         },
     },
 }
