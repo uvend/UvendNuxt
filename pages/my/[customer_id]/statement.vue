@@ -3,11 +3,24 @@
         <div class="flex justify-between">
             <div class="flex gap-1">
                 <div class="flex gap-1">
+                    
                 <Button @click="toggleSearch()" variant="secondary">
                     <Icon name="lucide:search"/>
-                </Button>
+                </Button>    
+                
                 <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
-            </div>
+            </div> 
+             <!-- Date Range Filters -->
+              <div class="flex gap-2">
+                   <DateRangePicker v-model="dateRange" />
+                   <Input type="date" v-model="dateRange.startDate" class="border p-2" />
+                   <Input type="date" v-model="endDate" class="border p-2" />
+                   <button variant="primary" @click="applyDateRange">Apply</button>
+
+                
+                </div>
+            
+
             <div>
                 <Select  v-model="selectedUtility">
                     <SelectTrigger class="w-[180px]">
@@ -56,6 +69,9 @@ export default{
         return {
             transactions: [],
             isLoading: true,
+            dateRange: { start: "", end: "" }, // Store the selected date range
+            startDate: "",
+            endDate:  "",
             utilityType: [
                 {
                     label: "Any",
@@ -82,6 +98,7 @@ export default{
             this.isLoading = true;
             const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetSummarisedMeterActivity`,{
                 method: "GET",
+                
                 params:{
                     IncludeMetersWithNoActivity : true,
                     StartDate : this.startDate,
@@ -115,6 +132,15 @@ export default{
                 this.currentPage = page;
             }
         },
+        applyDateRange(){
+            if (this.dateRange.start && this.dateRange.end) {
+                this.startDate = this.dateRange.start;
+                this.endDate = this.dateRange.end;
+                this.getTransactions(); //fetch selected transactions for the selected range
+            } else {
+                alert("Please select a valid date range")
+            }
+        }
     },
     async mounted(){
         const today = new Date();
