@@ -22,6 +22,6 @@ export default defineNuxtConfig({
   },
   ssr: false,
   plugins: [
-    '~/plugins/toast.js',  // Add the plugin to the array
+    '~/plugins/toast',  // Add the plugin to the array
   ],
 })
