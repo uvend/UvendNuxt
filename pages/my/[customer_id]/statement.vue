@@ -11,10 +11,11 @@
                 <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
             </div> 
              <!-- Date Range Filters -->
-              <div class="flex gap-2">
-                   <DateRangePicker v-model="dateRange" />
-                   <Input type="date" v-model="dateRange.startDate" class="border p-2" />
-                   <Input type="date" v-model="endDate" class="border p-2" />
+                <div class="flex gap-2">
+                   
+                    <DateRangePicker v-model="dateRange" /> 
+                   <Input type="date" v-model="applyDateRange.startDate" class="border p-2" /> 
+                   <Input type="date" v-model="applyDateRange.endDate" class="border p-2" />
                    <button variant="primary" @click="applyDateRange">Apply</button>
 
                 
@@ -24,10 +25,10 @@
             <div>
                 <Select  v-model="selectedUtility">
                     <SelectTrigger class="w-[180px]">
-                        <SelectValue placeholder="Utility type" />
+                        <SelectValue :placeholder="'Utility type'" :value="selectedUtility?.label || 'Utility type'" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem v-for="utility in utilityType" :value="utility.value">
+                        <SelectItem v-for="utility in utilityType" :key="utility.value" :value="utility">
                             {{ utility.label }}
                         </SelectItem>
                     </SelectContent>
@@ -74,16 +75,16 @@ export default{
             endDate:  "",
             utilityType: [
                 {
-                    label: "Any",
-                    value: -1
+                    label: "Any", value: -1
                 },
                 {
-                    label: "Electricity",
-                    value: 0
+                    label: "Electricity", value: 0
                 },
                 {
-                    label: "Water",
-                    value: 1
+                    label: "Water", value: 1
+                },
+                {
+                    label: "Gas", value: 2
                 }
             ],
             meterComplexes: [],
@@ -133,6 +134,7 @@ export default{
             }
         },
         applyDateRange(){
+            
             if (this.dateRange.start && this.dateRange.end) {
                 this.startDate = this.dateRange.start;
                 this.endDate = this.dateRange.end;
