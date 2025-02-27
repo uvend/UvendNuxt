@@ -20,6 +20,24 @@
 
                 
                 </div>
+
+                <div class="flex gap-2 mt-4">
+                    <button variant="secondary" @click="printStatement">
+                        <Icon name="lucide:printer" class="w-5 h-5"/> Print
+                    </button>
+
+                    <button variant="secondary" @click="downloadPDF">
+                        <icon name="lucide:file" class="w-5 h-5"/> Download PDF
+                    </button>
+
+
+
+
+
+                </div>
+
+
+
             
 
             <div>
@@ -142,7 +160,32 @@ export default{
             } else {
                 alert("Please select a valid date range")
             }
-        }
+        },
+        printStatement(){
+            window.print();
+        },
+        downloadPDF(){
+            const doc = new jsPDF();
+            doc.text("Meter Transaction Statement", 14, 10);
+
+            // Define table columns and rows
+            const tableColumn = ["Date", "Utility Type", "Complex", "Amount"];
+            const tableRows = this.transactions.map(transaction => [
+                transaction.date,
+                transaction.utilityType,
+                transaction.complexName,
+                transaction.amount 
+            ]);
+
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 20
+            });
+
+            doc.save("meter_statement.pdf");
+                 
+        }       
     },
     async mounted(){
         const today = new Date();
