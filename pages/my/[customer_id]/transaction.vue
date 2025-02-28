@@ -3,6 +3,7 @@
         <div class="flex justify-between">
             <div class="flex gap-1">
                 <div class="flex gap-1">
+                <MyDateRangePicker v-model="dateRange" :months="1" v-if="dateRange"/>
                 <Button @click="toggleSearch()" variant="secondary">
                     <Icon name="lucide:search"/>
                 </Button>
@@ -24,7 +25,7 @@
             <div class="flex flex-row w-fit gap-1">
                 <div class="flex gap-1">
                     <Button variant="secondary" v-if="selectedMeterComplex != null" @click="selectedMeterComplex = null">
-                        <Icon name="lucide:circle-x" class="w-5 h-5"/>
+                        <Icon name="lucide:x" class="w-5 h-5"/>
                     </Button>
                     <Select v-model="selectedMeterComplex">
                         <SelectTrigger class="w-[180px]">
@@ -76,7 +77,8 @@ export default{
             search: null,
             searchActive: false,
             meterComplexes: [],
-            selectedMeterComplex: null
+            selectedMeterComplex: null,
+            dateRange: null
         }
     },
     methods:{
@@ -86,18 +88,20 @@ export default{
                 method: "GET",
                 params:{
                     IncludeMetersWithNoActivity : false,
-                    StartDate : this.startDate,
-                    EndDate: this.endDate,
+                    StartDate : this.dateRange.start,
+                    EndDate: this.dateRange.end,
                     ReportParentType: 4,  // customer
                     ResponseFormatType: 0,
-                    ParentUniqueID: this.$route.params.customer_id
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: this.selectedUtility
                 },
                 headers:{
                     'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
                 }
             })
             this.transactions = result.responseData.transactionData
-            console.log(result)
+            await this.getMeterComplex()
+            //console.log(result)
             this.isLoading = false;
         },
         changePage(page){
@@ -119,15 +123,29 @@ export default{
             })
         },
         filteredTransactions(){
-            return this.transactions
+            console.log(this.transactions);
+            let filteredTransactions = this.selectedMeterComplex === null ? this.transactions : this.transactions.filter(transactions => {
+                return transactions.complexName === this.selectedMeterComplex; // Filter by complex name
+            });
+
+            // If search phrase is provided, filter by meter number
+            if (this.search) {
+                filteredTransactions = filteredTransactions.filter(transaction => {
+                    return transaction.meterNumber.includes(this.search); // Adjust 'meterNumber' to the correct property name
+                });
+            }
+            return filteredTransactions
         }
     },
     async mounted(){
         const today = new Date();
-        this.endDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
-        this.startDate = `${today.getFullYear()}-${(today.getMonth()).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
-        await this.getTransactions()
-        await this.getMeterComplex()
+        const lastMonth = new Date();
+        lastMonth.setDate(today.getDate()-30)
+        this.dateRange = {
+            start : lastMonth.toISOString(),
+            end : today.toISOString()
+        }
+        //await this.getTransactions()
     },
     computed:{
         totalPages() {
@@ -138,6 +156,16 @@ export default{
             const startIndex = (this.currentPage - 1) * this.pageSize;
             const endIndex = startIndex + this.pageSize;
             return filtered.slice(startIndex, endIndex); // Paginate filtered payments
+        },
+    },
+    watch:{
+        selectedUtility(newValue){
+            console.log(newValue)
+            this.selectedUtility = newValue;
+            this.getTransactions()
+        },
+        dateRange(newValue){
+            this.getTransactions()
         }
     }
 }
