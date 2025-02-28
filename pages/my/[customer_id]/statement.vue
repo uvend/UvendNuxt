@@ -101,7 +101,8 @@ export default{
                 'January','February','March','April','May','June','July','August','September','October','November','December'
             ],
             yearArr: [],
-            dateRange: null
+            dateRange: null,
+            customerStatementPeriod: 26
 
         }
     },
@@ -126,7 +127,7 @@ export default{
                 }
             })
             this.transactions = result.responseData.transactionData
-            console.log(this.transactions)
+            console.log(result)
             this.isLoading = false;
         },
         filteredTransactions(){
@@ -152,10 +153,33 @@ export default{
             for (let i = 0; i <= 5; i++) { 
                 this.yearArr.push(currentYear - i);
             }
-        }
+        },
+        calculateStatementPeriod(statementDay){
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth(); // getMonth() is zero-indexed
+            const currentDate = today.getDate();
+
+            if (currentDate > statementDay) {
+                // Today is after the statement period day in the current month
+                return {
+                    start : new Date(currentYear, currentMonth, statementDay + 1),
+                    end : new Date(currentYear, currentMonth + 1, statementDay)
+                }
+            } else {
+                // Today is before or on the statement period day in the current month
+                return {
+                    start : new Date(currentYear, currentMonth - 1, statementDay + 1),
+                    end : new Date(currentYear, currentMonth, statementDay)
+                }
+            }
+    }
     },
     async mounted(){
-        const today = new Date();
+        console.log(this.customerStatementPeriod)
+        this.dateRange = this.calculateStatementPeriod(this.calculateStatementPeriod);
+        console.log(this.dateRange)
+        
         //this.endDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
         //this.startDate = `${today.getFullYear()}-${(today.getMonth()).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
         //await this.getTransactions()
@@ -174,6 +198,9 @@ export default{
             const endIndex = startIndex + this.pageSize;
             return filtered.slice(startIndex, endIndex); 
         },
+        periodDateRange(){
+            console.log(this.customerStatementPeriod)
+        }
         
     },
     watch:{
