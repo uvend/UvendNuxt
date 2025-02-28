@@ -23,6 +23,7 @@
 </Dialog>
 </template>
 <script>
+
 export default{
     props:{
         batch: Array,

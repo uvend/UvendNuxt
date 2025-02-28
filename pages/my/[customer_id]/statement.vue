@@ -80,6 +80,7 @@
     <MyMeterTransactionCard v-for="transaction in paginated" :transaction="transaction"/>
 </template>
 <script>
+
 definePageMeta({
     layout: 'my'
 })
