@@ -2,7 +2,7 @@
     <div>
         <div class="flex justify-between">
             <div class="flex gap-1">
-                <div class="flex gap-1">
+                <div class="flex gap-2">
                 <MyDateRangePicker v-model="dateRange" :months="2"/>
                 <Select v-if="selectedMonth" class="hidden">
                     <SelectTrigger v-model="selectedMonth" class="w-[150px]">
@@ -24,6 +24,9 @@
                         </SelectItem>
                     </SelectContent>
                 </Select>
+                <Button @click="getStatementPDF()" variant="secondary">
+                    <Icon name="lucide:arrow-down-to-line" />
+                </Button>
                 <Button @click="toggleSearch()" variant="secondary">
                     <Icon name="lucide:search"/>
                 </Button>
@@ -76,6 +79,7 @@ export default{
     data(){
         return {
             transactions: [],
+            transactionResponseData: null,
             isLoading: false,
             utilityType: [
                 {
@@ -102,7 +106,7 @@ export default{
             ],
             yearArr: [],
             dateRange: null,
-            customerStatementPeriod: 26
+            customerStatementPeriod: 25
 
         }
     },
@@ -126,6 +130,7 @@ export default{
                     'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
                 }
             })
+            this.transactionResponseData = result.responseData
             this.transactions = result.responseData.transactionData
             console.log(result)
             this.isLoading = false;
@@ -160,33 +165,70 @@ export default{
             const currentMonth = today.getMonth(); // getMonth() is zero-indexed
             const currentDate = today.getDate();
 
+            console.log(currentYear, currentMonth, currentDate, statementDay)
+
             if (currentDate > statementDay) {
-                // Today is after the statement period day in the current month
-                return {
-                    start : new Date(currentYear, currentMonth, statementDay + 1),
-                    end : new Date(currentYear, currentMonth + 1, statementDay)
-                }
+                var start = new Date(currentYear, currentMonth, statementDay + 1);
+                var end = new Date(currentYear, currentMonth + 1, statementDay);
+                
             } else {
-                // Today is before or on the statement period day in the current month
-                return {
-                    start : new Date(currentYear, currentMonth - 1, statementDay + 1),
-                    end : new Date(currentYear, currentMonth, statementDay)
-                }
+                var start = new Date(currentYear, currentMonth - 2, statementDay + 1);
+                var end =  new Date(currentYear, currentMonth - 1, statementDay)
             }
-    }
+
+            return {
+                    start : this.returnFormatDate(start),
+                    end : this.returnFormatDate(end)
+                }
+        },
+        returnFormatDate(date){
+            const formattedDate = new Intl.DateTimeFormat('en-US', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }).format(new Date(date));
+
+            // Replace slashes with hyphens
+            return formattedDate.replace(/\//g, '-');
+        },
+        async getStatementPDF(){
+            console.log(`${JSREPORT_URL}`)
+            const username = "admin";
+            const password = "@Ezintsha0!$";
+            const basicAuth = btoa(`${username}:${password}`);
+            const response = await fetch(`${JSREPORT_URL}`,{
+                headers: {
+                    'Authorization': `Basic ${basicAuth}`,
+                    'Content-Type': 'application/json'
+                },                method: "POST",
+                body: JSON.stringify({
+                    "template": {
+                        "name": "vendease-pdf"
+                    },
+                    "data": this.transactionResponseData,
+                    "options": {
+                        "reports": { "save": true },
+                        "Content-Disposition": "attachment; filename=myreport.pdf"
+                    },
+                })
+            })
+            console.log(response)
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            } else {
+                console.error('Failed to generate report');
+            }
+        }
     },
     async mounted(){
         console.log(this.customerStatementPeriod)
-        this.dateRange = this.calculateStatementPeriod(this.calculateStatementPeriod);
-        console.log(this.dateRange)
-        
-        //this.endDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
-        //this.startDate = `${today.getFullYear()}-${(today.getMonth()).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
-        //await this.getTransactions()
-        //await this.generateYears();
-        //this.selectedMonth = today.getMonth() + 1;
-        //this.selectedYear = this.monthArr[this.currentMonth]
-        //await this.getMeterComplex();
+        this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod);
+        console.log('here',this.dateRange)
+        console.log(`${API_URL}`)
+
+        //this.getTransactions()
     },
     computed:{
         totalPages() {
@@ -198,9 +240,6 @@ export default{
             const endIndex = startIndex + this.pageSize;
             return filtered.slice(startIndex, endIndex); 
         },
-        periodDateRange(){
-            console.log(this.customerStatementPeriod)
-        }
         
     },
     watch:{
