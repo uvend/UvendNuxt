@@ -37,7 +37,7 @@ export default{
                 localStorage.setItem('token',credentials)
 
                 if(result.userInfo.userType == "Administration"){
-                    navigateTo('/admin/account/payments');
+                    navigateTo('/');
                 }
             }catch(e){
                 console.log(e)

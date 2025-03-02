@@ -1,6 +1,6 @@
 <template>
     <div class="profile-grid h-full">
-        <div class="flex justify-between p-2">
+        <div class="flex justify-between py-2 px-4">
             <div></div>
             <MyUserMenu />
         </div>
