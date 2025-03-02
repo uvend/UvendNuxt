@@ -78,6 +78,10 @@ export default{
                 {
                     label: "Water",
                     value: 1
+                },
+                {
+                    label: "Gas",
+                    value: 2
                 }
             ],
             search: null,

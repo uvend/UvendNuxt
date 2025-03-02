@@ -21,13 +21,13 @@
                 
                 </div>
 
-                <div class="flex gap-2 mt-4">
+                <div class="flex gap-2">
                     <button variant="secondary" @click="printStatement">
-                        <Icon name="lucide:printer" class="w-5 h-5"/> Print
+                        <Icon name="lucide:printer" class="w-4 h-5"/> Print
                     </button>
 
                     <button variant="secondary" @click="downloadPDF">
-                        <icon name="lucide:file" class="w-5 h-5"/> Download PDF
+                        <Icon name="lucide:file" class="w-3 h-5"/> Download PDF
                     </button>
 
 
@@ -80,6 +80,10 @@
     <MyMeterTransactionCard v-for="transaction in paginated" :transaction="transaction"/>
 </template>
 <script>
+
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 definePageMeta({
     layout: 'my'
@@ -172,21 +176,48 @@ export default{
             // Define table columns and rows
             const tableColumn = ["Date", "Utility Type", "Complex", "Amount"];
             const tableRows = this.transactions.map(transaction => [
-                transaction.date,
+                transaction.transactionDate,
                 transaction.utilityType,
                 transaction.complexName,
-                transaction.amount 
+                transaction.tnederedAmount 
             ]);
+            
 
-            doc.autoTable({
-                head: [tableColumn],
-                body: tableRows,
-                startY: 20
+            autoTable(doc, {  // ✅ Corrected function usage
+            head: [tableColumn],
+            body: tableRows,
+            startY: 20
             });
 
             doc.save("meter_statement.pdf");
                  
-        }       
+        },
+        generatePDF() {
+            const doc = new jsPDF();
+            doc.text("Meter Transaction Statement", 20, 20);
+
+            let yOffset = 40;
+            this.transactions.forEach((transaction, index) => {
+                doc.setFontSize(12);
+                doc.text(`Transaction $(index + 1)`, 20, yOffset);  
+                doc.setFontSize(10);
+                doc.text(`Date: ${transaction.transactionDate}`, 20, yOffset + 20);
+                doc.text(`Meter Number: ${transaction.meter_id}`, 20, yOffset + 20);
+                doc.text(`Customer Name: ${transaction.customerName}`, 20, yOffset + 30);
+                doc.text(`Utility Type: ${transaction.utilityType}`, 20, yOffset + 40);
+                doc.text(`Amount Paid: ${transaction.tenderedAmount}`, 20, yOffset + 50);
+                yOffset += 70;
+
+
+                if (yOffset > 250){
+                    doc.addPage();
+                    yOffset = 40;
+                }
+
+            });
+
+            doc.save("Statement_Report.pdf");
+        },       
     },
     async mounted(){
         const today = new Date();
