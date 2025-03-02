@@ -1,7 +1,7 @@
 
 <template>
     <Card class="p-2 m-2">
-        <p>
+        <p class="font-bold">
             {{ customer.description === '' ? 'None' : customer.description }}
         </p>
         <p>
