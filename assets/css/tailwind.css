@@ -160,3 +160,44 @@ select,
 textarea {
   font-size: 16px;
 }
+
+:root {
+  --header-height: 60px; /* Define the header height */
+}
+
+main {
+  display: grid;
+  grid-template-rows: auto 1fr; /* Adjusted to allow content to take remaining space */
+  height: 100vh; /* Full viewport height */
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: 250px 1fr; /* Sidebar width and main content */ /* Adjusts to content height */
+  height: 100vh; /* Full viewport height */
+  overflow: hidden;
+}
+
+.sidebar {
+  padding: 10px; /* Padding for sidebar content */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+.menu-item{
+  width: 100%;
+  border-radius: 0.25rem;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto 1fr; /* 1 part first column, 3 parts second column */
+  gap:10px;
+  align-items: center;
+}
+
+.logo-container{
+  padding: 10px;
+}

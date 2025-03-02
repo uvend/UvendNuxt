@@ -35,7 +35,7 @@
         <hidden>
             search pages {{ totalPages }} current page {{ currentPage }} page size {{ pageSize }}
         </hidden>
-        <MySkeletenCardList v-if="isLoading"/>
+        <MySkeletenCardList v-if="isLoading" :columns="8"/>
         <div v-else>
             <div class="flex flex-row justify-between w-full items-center bg-gray-50 p-1 my-1 rounded">
                 <p class="font-bold">

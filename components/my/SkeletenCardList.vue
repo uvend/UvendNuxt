@@ -1,13 +1,24 @@
 <template>
-    <Card v-for="row in 8" class="my-2 p-2 flex flex-row skeleton-grid">
-        <div class="flex flex-col gap-2 p-2" v-for="row in 7">
+    <Card v-for="row in rows" class="my-2 p-2 flex flex-row skeleton-grid">
+        <div class="flex flex-col gap-2 p-2" v-for="row in columns">
             <Skeleton class="h-4 w-full" />
             <Skeleton class="h-4 w-20" />
         </div>
     </Card>
 </template>
 <script>
-
+export default{
+    props:{
+        rows: {
+            type: Number,
+            default: 3
+        },
+        columns: {
+            type: Number,
+            default: 3
+        }
+    }
+}
 </script>
 <style>
 .skeleton-grid{
