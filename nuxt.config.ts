@@ -18,6 +18,8 @@ export default defineNuxtConfig({
   vite: {
     define:{
       API_URL: JSON.stringify(process.env.API_URL),
+      JSREPORT_URL: JSON.stringify(process.env.JSREPORT_URL)
+
     }
   },
   ssr: false,
