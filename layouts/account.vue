@@ -16,7 +16,7 @@
                 <div></div>
                 <MyUserMenu />
             </header>
-            <div class="content hide-scrollbar bg-gray-50">
+            <div class="scroll hide-scrollbar bg-gray-50">
                 <slot class="overflow-y hide-scrollbar bg-gray-100"/>
             </div>
             <!-- Main content goes here -->
@@ -25,6 +25,10 @@
 </template>
 
 <style scoped>
+:root {
+    --header-height: 60px; /* Define the header height */
+}
+
 main {
     display: grid;
     grid-template-rows: auto 1fr; /* Adjusted to allow content to take remaining space */
@@ -41,10 +45,10 @@ main {
     padding: 10px; /* Padding for sidebar content */
 }
 
-.content {
+.scroll {
     padding: 20px; /* Padding for main content */
     overflow-y: auto; /* Enable vertical scrolling */
-    height: calc(100vh - <header_height>); /* Adjust height based on header height */
+    height: calc(100vh - var(--header-height)); /* Use the CSS variable */
 }
 .hide-scrollbar::-webkit-scrollbar {
     display: none;

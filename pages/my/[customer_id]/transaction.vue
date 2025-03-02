@@ -46,7 +46,7 @@
         </div>
     </div>
     <MySkeletenCardList v-if="isLoading"/>
-    <MyMeterTransactionCard v-for="transaction in paginated" :transaction="transaction"/>
+    <MyMeterTransactionCard v-else v-for="transaction in paginated" :transaction="transaction"/>
 </template>
 <script>
 definePageMeta({

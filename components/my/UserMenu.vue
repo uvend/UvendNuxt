@@ -6,7 +6,8 @@
         </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent>
-      <DropdownMenuItem>Change Profile</DropdownMenuItem>
+      <DropdownMenuItem @click="navigateTo('/admin/account')">Administration</DropdownMenuItem>
+      <DropdownMenuItem @click="navigateTo('/')">Change Profile</DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem @click="useLogout()">Logout</DropdownMenuItem>
     </DropdownMenuContent>

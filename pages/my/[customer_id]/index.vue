@@ -1,5 +1,4 @@
 <template>
-<MyDateRangePicker />
 </template>
 <script>
 definePageMeta({
