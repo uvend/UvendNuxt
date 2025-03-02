@@ -37,7 +37,7 @@
                 <MyPaymentSortPopover />
             </div>
         </div>
-        <MySkeletenCardList v-if="isLoading"/>
+        <MySkeletenCardList v-if="isLoading" :columns="8"/>
         <div v-else>
             <div class="flex flex-row justify-between w-full items-center bg-gray-50 p-1 my-1 rounded">
                         <div class="flex flex-col items-start gap-1.5">
