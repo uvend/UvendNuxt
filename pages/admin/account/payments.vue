@@ -30,6 +30,19 @@
                     </span>
                 </div>
                 <Button :disabled="disableBatch" @click="batch()">Batch</Button>
+                <div>
+                    <Select  v-model="pageSize">
+                    <SelectTrigger class="w-[80px]">
+                        <SelectValue placeholder="Page Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem v-for="size in pageSizeSelect" :value="size">
+                            {{ size }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+                </div>
+
                 <div class="flex flex-row w-fit">
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
@@ -72,6 +85,9 @@ export default{
             selectedPayments: [],
             currentPage: 1,
             pageSize: 10,
+            pageSizeSelect: [
+                10,50,100,200
+            ],
             searchActive: false,
             search: '',
             totalAmount: 0,

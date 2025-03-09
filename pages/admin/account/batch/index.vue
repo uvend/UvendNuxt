@@ -23,6 +23,16 @@
                         </Select>
                     </div>
                     <div class="flex items-center gap-1.5">
+                        <Select  v-model="pageSize">
+                            <SelectTrigger class="w-[80px]">
+                                <SelectValue placeholder="Page Size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="size in pageSizeSelect" :value="size">
+                                    {{ size }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
                         <div>
                             <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                             <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
@@ -79,6 +89,9 @@ export default{
             ],
             selectedStatus: -1,
             pageSize: 10,
+            pageSizeSelect: [
+                10,50,100,200
+            ],
             currentPage: 1,
             totalBatches: 0,
             totalBatchesAmount: 0,

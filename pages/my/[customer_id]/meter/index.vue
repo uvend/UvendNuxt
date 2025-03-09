@@ -24,7 +24,7 @@
             <div class="flex flex-row w-fit gap-1">
                 <div class="flex gap-1">
                     <Button variant="secondary" v-if="selectedMeterComplex != null" @click="selectedMeterComplex = null">
-                        <Icon name="lucide:x" class="w-5 h-5"/>
+                        <Icon name="lucide:circle-x" class="w-5 h-5"/>
                     </Button>
                     <Select v-model="selectedMeterComplex">
                         <SelectTrigger class="w-[180px]">
@@ -37,6 +37,16 @@
                         </SelectContent>
                     </Select>
                 </div>
+                <Select  v-model="pageSize">
+                    <SelectTrigger class="w-[80px]">
+                        <SelectValue placeholder="Page Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem v-for="size in pageSizeSelect" :value="size">
+                            {{ size }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
                 <div>
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
@@ -65,6 +75,9 @@ export default{
             isLoading: true,
             currentPage: 1,
             pageSize: 10,
+            pageSizeSelect: [
+                10,50,100,200
+            ],
             selectedUtility: -1,
             utilityType: [
                 {
@@ -100,9 +113,6 @@ export default{
                     ParentUniqueID: this.$route.params.customer_id,
                     UtilityType: this.selectedUtility
                 },
-                headers: {
-                    'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
-                }
             })
             this.meters = result.responseData.transactionData
             console.log(result)
@@ -170,6 +180,7 @@ export default{
     },
     watch:{
         selectedUtility(newValue){
+            this.search = null
             this.getMeterActivity()
         },
         selectedMeterComplex(newValue){
