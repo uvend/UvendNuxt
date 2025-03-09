@@ -2,7 +2,7 @@
 </template>
 <script>
 definePageMeta({
-    layout: 'mpesa'
+    layout: 'account'
 })
 export default{
     data(){
