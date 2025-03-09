@@ -3,18 +3,7 @@
         <div class="flex justify-between">
             <div class="flex gap-1">
                 <div class="flex gap-1">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
                 <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
->>>>>>> Stashed changes
-=======
-                <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
->>>>>>> Stashed changes
-=======
-                <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
->>>>>>> Stashed changes
                 <Button @click="toggleSearch()" variant="secondary">
                     <Icon name="lucide:search"/>
                 </Button>
@@ -115,25 +104,8 @@ export default{
                     EndDate: this.endDate,
                     ReportParentType: 4,  // customer
                     ResponseFormatType: 0,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                    ParentUniqueID: this.$route.params.customer_id
-                },
-                headers:{
-                    'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
-=======
                     ParentUniqueID: this.$route.params.customer_id,
                     UtilityType: this.selectedUtility
->>>>>>> Stashed changes
-=======
-                    ParentUniqueID: this.$route.params.customer_id,
-                    UtilityType: this.selectedUtility
->>>>>>> Stashed changes
-=======
-                    ParentUniqueID: this.$route.params.customer_id,
-                    UtilityType: this.selectedUtility
->>>>>>> Stashed changes
                 }
             })
             this.transactions = result.responseData.transactionData
@@ -159,15 +131,6 @@ export default{
             })
         },
         filteredTransactions(){
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-            return this.transactions
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
             //console.log(this.transactions);
             let filteredTransactions = this.selectedMeterComplex === null ? this.transactions : this.transactions.filter(transactions => {
                 return transactions.complexName === this.selectedMeterComplex; // Filter by complex name
@@ -180,7 +143,6 @@ export default{
                 });
             }
             return filteredTransactions
->>>>>>> Stashed changes
         }
     },
     async mounted(){
