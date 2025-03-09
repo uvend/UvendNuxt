@@ -45,6 +45,9 @@
                 </Button>
                 <!--<Button @click="toggleSearch()" variant="secondary">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -159,7 +162,10 @@ export default{
             transactions: [],
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             statement: {
@@ -178,6 +184,9 @@ export default{
             },
             transactionResponseData: null,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -228,6 +237,9 @@ export default{
             customerStatementPeriod: 0,
             searchActive: false
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -250,6 +262,9 @@ export default{
                     EndDate: this.dateRange.end,
                     ReportParentType: this.selectedMeterComplex ? 6 : 4,  // customer
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -257,6 +272,7 @@ export default{
                     ParentUniqueID: this.selectedMeterComplex ? this.selectedMeterComplex : this.$route.params.customer_id,
                     UtilityType: this.selectedUtility
                 },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
             })
             this.transactions = result.responseData.transactionData
@@ -287,6 +303,8 @@ export default{
                 params: {
                     CustomerUnique: this.$route.params.customer_id
                 }
+=======
+>>>>>>> Stashed changes
             })
             this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
             //console.log(this.customerStatementPeriod);
@@ -322,6 +340,16 @@ export default{
             this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
             //console.log(this.customerStatementPeriod);
         },
+        async getCustomerDefinition(){
+            const result = await useAuthFetch(`${API_URL}/AdminSystem/Customer/GetCustomerMeterInstallationList`,{
+                method: "GET",
+                params: {
+                    CustomerUnique: this.$route.params.customer_id
+                }
+            })
+            this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
+            //console.log(this.customerStatementPeriod);
+        },
         filteredTransactions(){
             return this.transactions
         },
@@ -332,6 +360,7 @@ export default{
         },
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     },
     async mounted(){
         const today = new Date();
@@ -340,6 +369,8 @@ export default{
         await this.getTransactions()
         await this.getMeterComplex();
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         calculateStatementPeriod(statementDay, statmentMonth = null, statmentYear = null){
@@ -447,6 +478,9 @@ export default{
         //console.log(this.customerStatementPeriod)
         this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -484,6 +518,9 @@ export default{
             console.log('dateType', newValue)
             this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

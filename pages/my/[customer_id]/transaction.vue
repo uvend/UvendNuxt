@@ -5,6 +5,10 @@
                 <div class="flex gap-1">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+                <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
+>>>>>>> Stashed changes
 =======
                 <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
 >>>>>>> Stashed changes
@@ -113,10 +117,15 @@ export default{
                     ResponseFormatType: 0,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     ParentUniqueID: this.$route.params.customer_id
                 },
                 headers:{
                     'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
+=======
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: this.selectedUtility
+>>>>>>> Stashed changes
 =======
                     ParentUniqueID: this.$route.params.customer_id,
                     UtilityType: this.selectedUtility
@@ -152,8 +161,11 @@ export default{
         filteredTransactions(){
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return this.transactions
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             //console.log(this.transactions);
