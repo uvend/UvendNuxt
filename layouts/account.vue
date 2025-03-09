@@ -10,14 +10,16 @@
                     <li class="menu-item" @click="navigateTo('/admin/account/payments')"><Icon name="lucide:wallet-cards"/><p class="text-sm">Payments</p></li>
                     <li class="menu-item" @click="navigateTo('/admin/account/batch')"><Icon name="lucide:layers"/><p class="text-sm">Payment Batch</p></li>
                 </ul>
-                <li class="menu-item" v-if="mpesaUrl">
-                    <Icon name="lucide:smartphone-charging"/><p class="text-sm">Mpesa</p>
-                </li>
-                <ul class="sub-group">
-                    <li class="menu-item" @click="navigateTo('/admin/mpesa/transactions')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Transactions</p></li>
-                    <li class="menu-item" @click="navigateTo('/admin/mpesa/requests')"><Icon name="lucide:file-stack"/><p class="text-sm">Requests</p></li>
-                    <li class="menu-item" @click="navigateTo('/admin/mpesa/logs')"><Icon name="lucide:file-code"/><p class="text-sm">Logs</p></li>
-                </ul>
+                <div v-if="mpesaUrl">
+                    <li class="menu-item" >
+                        <Icon name="lucide:smartphone-charging"/><p class="text-sm">Mpesa</p>
+                    </li>
+                    <ul class="sub-group">
+                        <li class="menu-item" @click="navigateTo('/admin/mpesa/transactions')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Transactions</p></li>
+                        <li class="menu-item" @click="navigateTo('/admin/mpesa/requests')"><Icon name="lucide:file-stack"/><p class="text-sm">Requests</p></li>
+                        <li class="menu-item" @click="navigateTo('/admin/mpesa/logs')"><Icon name="lucide:file-code"/><p class="text-sm">Logs</p></li>
+                    </ul>
+                </div>
             </ul>
             <ul>
             </ul>
