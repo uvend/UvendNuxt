@@ -1,5 +1,5 @@
 <template>
-    <Card class="payment-card w-full p-2 my-2" :class="[payment.periodTotals.cancellationComment == 'rolledback' ? 'bg-slate-100' : '']">
+    <Card class="payment-card w-full p-2 my-2" :class="[payment.periodTotals.cancellationComment != '' ? 'bg-slate-100' : '']">
         <div class="flex flex-col justify-center p-2">
             <p class="text-base font-bold">{{ payment.payeeInfo.description }}</p>
             <p class="text-sm font-light">{{ payment.payeeInfo.address[0] }} {{ payment.payeeInfo.address[1] }}</p>
@@ -35,7 +35,7 @@
             </div>
         </div>
         <div class="flex flex-col justify-center items-center">
-            <Icon name="lucide:undo-2" v-if="payment.periodTotals.cancellationComment == 'rolledback'" class="w-h h-5"/>
+            <Icon name="lucide:undo-2" v-if="payment.periodTotals.cancellationComment != ''" class="w-h h-5"/>
         </div>
     </Card>
 </template>

@@ -16,7 +16,6 @@
     <div>
         <Icon name="lucide:droplet" class="w-5 h-5" v-if="meter.utilityType == 'Water'"/>
         <Icon name="lucide:zap" class="w-5 h-5" v-if="meter.utilityType == 'Electricity'"/>
-
     </div>
 </Card>
 </template>

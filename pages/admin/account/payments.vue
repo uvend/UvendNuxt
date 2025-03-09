@@ -31,7 +31,7 @@
                 </div>
                 <Button :disabled="disableBatch" @click="batch()">Batch</Button>
                 <div>
-                <Select  v-model="pageSize">
+                    <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
                         <SelectValue placeholder="Page Size" />
                     </SelectTrigger>
@@ -42,6 +42,7 @@
                     </SelectContent>
                 </Select>
                 </div>
+
                 <div class="flex flex-row w-fit">
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>

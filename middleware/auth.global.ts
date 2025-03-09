@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware((to, from) => {    
-    console.log('middleware')
+    //console.log('middleware')
     if (to.meta.layout !== 'noauth') {
         const auth = localStorage.getItem('token')
         if (!auth) {

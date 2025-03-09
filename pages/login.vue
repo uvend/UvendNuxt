@@ -23,6 +23,9 @@ export default{
     },
     methods:{
         async login(){
+            if(this.username.trim() == '' || this.password.trim() == ""){
+                return;
+            }
             try{
                 const credentials = btoa(`${this.username}:${this.password}`);
                 const result = await $fetch(`${API_URL}/AdminSystem/LoginAdminBackOffice`,{
