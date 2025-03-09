@@ -5,8 +5,19 @@
                 <div class="logo-container">
                     <img src="/UVendlogo-Better.png"/>
                 </div>
-                <li class="menu-item" @click="navigateTo('/admin/account/payments')"><Icon name="lucide:wallet-cards"/><p class="text-sm">Payments</p></li>
-                <li class="menu-item" @click="navigateTo('/admin/account/batch')"><Icon name="lucide:landmark"/><p class="text-sm">Bank Batch</p></li>
+                <li class="menu-item"><Icon name="lucide:shield"/><p class="text-sm">Accounts</p></li>
+                <ul class="sub-group">
+                    <li class="menu-item" @click="navigateTo('/admin/account/payments')"><Icon name="lucide:wallet-cards"/><p class="text-sm">Payments</p></li>
+                    <li class="menu-item" @click="navigateTo('/admin/account/batch')"><Icon name="lucide:layers"/><p class="text-sm">Payment Batch</p></li>
+                </ul>
+                <li class="menu-item" v-if="mpesaUrl">
+                    <Icon name="lucide:smartphone-charging"/><p class="text-sm">Mpesa</p>
+                </li>
+                <ul class="sub-group">
+                    <li class="menu-item" @click="navigateTo('/admin/mpesa/transactions')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Transactions</p></li>
+                    <li class="menu-item" @click="navigateTo('/admin/mpesa/requests')"><Icon name="lucide:file-stack"/><p class="text-sm">Requests</p></li>
+                    <li class="menu-item" @click="navigateTo('/admin/mpesa/logs')"><Icon name="lucide:file-code"/><p class="text-sm">Logs</p></li>
+                </ul>
             </ul>
             <ul>
             </ul>
@@ -23,7 +34,21 @@
         </main>
     </div>
 </template>
+<script>
+export default{
+    data(){
+        return{
+            mpesaUrl: false
+        }
+    },
+    mounted(){
+        if(typeof MPESA_URL !== "undefined"){
+            this.mpesaUrl = true;
+        }
+    }
 
+}
+</script>
 <style scoped>
 :root {
     --header-height: 60px; /* Define the header height */
@@ -71,5 +96,7 @@ main {
 .logo-container{
     padding: 10px;
 }
-
+.sub-group{
+    padding-left: 25px;
+}
 </style>
