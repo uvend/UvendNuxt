@@ -15,29 +15,16 @@
             </template>
         </template>
         <template v-else>
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-        Pick a date
-=======
-=======
->>>>>>> feature/jared/mpesa
             <div v-if="modelValue">
                 {{ formatDate(modelValue.start) }} - {{ formatDate(modelValue.end) }}
             </div>
             <div v-else>
-<<<<<<< HEAD
-                
             </div>
->>>>>>> Stashed changes
-=======
-                select date
-            </div>
->>>>>>> feature/jared/mpesa
         </template>
     </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-0">
-    <RangeCalendar v-model="value" initial-focus :number-of-months="months" @update:start-value="(startDate) => value.start = startDate" />
+    <RangeCalendar v-model="value" initial-focus :number-of-months="2" @update:start-value="(startDate) => value.start = startDate" />
     </PopoverContent>
 </Popover>
 </template>
