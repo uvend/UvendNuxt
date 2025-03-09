@@ -24,7 +24,7 @@
             <div class="flex flex-row w-fit gap-1">
                 <div class="flex gap-1">
                     <Button variant="secondary" v-if="selectedMeterComplex != null" @click="selectedMeterComplex = null">
-                        <Icon name="lucide:circle-x" class="w-5 h-5"/>
+                        <Icon name="lucide:x" class="w-5 h-5"/>
                     </Button>
                     <Select v-model="selectedMeterComplex">
                         <SelectTrigger class="w-[180px]">
