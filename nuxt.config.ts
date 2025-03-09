@@ -20,6 +20,8 @@ export default defineNuxtConfig({
       API_URL: JSON.stringify(process.env.API_URL),
       JSREPORT_URL: JSON.stringify(process.env.JSREPORT_URL),
       MPESA_URL: JSON.stringify(process.env.MPESA_URL)
+
+
     }
   },
   ssr: false,
