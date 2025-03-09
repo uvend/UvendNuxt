@@ -32,9 +32,12 @@ export default{
                         "Content-Type": "application/json",
                     }
                 })
+                const customer = this.username.split('@')[1];
+                console.log(customer);
                 
                 localStorage.setItem('user',btoa(result))
                 localStorage.setItem('token',credentials)
+                localStorage.setItem('customer',customer)
 
                 if(result.userInfo.userType == "Administration"){
                     navigateTo('/');
@@ -46,6 +49,10 @@ export default{
                     description: 'There was a problem with your request.',
                     variant: "destructive"
                 });
+                const customer = this.username.split('@')[1];
+                console.log(customer);
+                localStorage.setItem('customer',customer)
+                navigateTo('/');
             }
         }
     }

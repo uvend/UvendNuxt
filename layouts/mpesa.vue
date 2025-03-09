@@ -5,17 +5,17 @@
                 <div class="logo-container">
                     <img src="/UVendlogo-Better.png"/>
                 </div>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transaction`)">
-                    <Icon name="lucide:credit-card" />
+                <li class="menu-item" @click="navigateTo(`/admin/mpesa/transactions`)">
+                    <Icon name="lucide:wallet-cards"/>
                     <p class="text-sm">Transactions</p>
                 </li>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/meter`)">
-                    <Icon name="lucide:parking-meter"/>
-                    <p class="text-sm">Meters</p>
+                <li class="menu-item" @click="navigateTo(`/admin/mpesa/requests`)">
+                    <Icon name="lucide:file-code-2" />
+                    <p class="text-sm">Requests</p>
                 </li>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/statement`)">
-                    <Icon name="lucide:file-chart-column"/>
-                    <p class="text-sm">Statement</p>
+                <li class="menu-item" @click="navigateTo(`/admin/mpesa/logs`)">
+                    <Icon name="lucide:logs"/>
+                    <p class="text-sm">Logs</p>
                 </li>
             </ul>
             <ul>
@@ -45,7 +45,7 @@ export default{
 <style scoped>
 
 .sidebar {
-    background-color: #1287c9; /* Light gray background for sidebar */
+    background-color: #009933; /* Light gray background for sidebar */
     padding: 10px; /* Padding for sidebar content */
     color: white
 }

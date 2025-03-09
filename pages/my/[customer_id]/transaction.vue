@@ -3,6 +3,10 @@
         <div class="flex justify-between">
             <div class="flex gap-1">
                 <div class="flex gap-1">
+<<<<<<< Updated upstream
+=======
+                <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
+>>>>>>> Stashed changes
                 <Button @click="toggleSearch()" variant="secondary">
                     <Icon name="lucide:search"/>
                 </Button>
@@ -37,6 +41,16 @@
                         </SelectContent>
                     </Select>
                 </div>
+                <Select  v-model="pageSize">
+                    <SelectTrigger class="w-[80px]">
+                        <SelectValue placeholder="Page Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem v-for="size in pageSizeSelect" :value="size">
+                            {{ size }}
+                        </SelectItem>
+                    </SelectContent>
+                    </Select>
                 <div>
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
@@ -58,6 +72,9 @@ export default{
             isLoading: true,
             currentPage: 1,
             pageSize: 10,
+            pageSizeSelect: [
+                10,50,100,200
+            ],
             selectedUtility: -1,
             utilityType: [
                 {
@@ -90,10 +107,15 @@ export default{
                     EndDate: this.endDate,
                     ReportParentType: 4,  // customer
                     ResponseFormatType: 0,
+<<<<<<< Updated upstream
                     ParentUniqueID: this.$route.params.customer_id
                 },
                 headers:{
                     'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
+=======
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: this.selectedUtility
+>>>>>>> Stashed changes
                 }
             })
             this.transactions = result.responseData.transactionData
@@ -119,7 +141,22 @@ export default{
             })
         },
         filteredTransactions(){
+<<<<<<< Updated upstream
             return this.transactions
+=======
+            //console.log(this.transactions);
+            let filteredTransactions = this.selectedMeterComplex === null ? this.transactions : this.transactions.filter(transactions => {
+                return transactions.complexName === this.selectedMeterComplex; // Filter by complex name
+            });
+
+            // If search phrase is provided, filter by meter number
+            if (this.search) {
+                filteredTransactions = filteredTransactions.filter(transaction => {
+                    return transaction.meterNumber.includes(this.search) || transaction.installationAdress[0].toLowerCase().includes(this.search.toLowerCase()); // Adjust 'meterNumber' to the correct property name
+                });
+            }
+            return filteredTransactions
+>>>>>>> Stashed changes
         }
     },
     async mounted(){

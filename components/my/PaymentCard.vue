@@ -58,7 +58,7 @@ export default{
                 month: 'short',
                 year: 'numeric'
             });
-        }
+        },
     }
 }
 </script>

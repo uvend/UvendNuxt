@@ -14,7 +14,7 @@
                     <MySkeletenCardList :columns="1"/>
                 </div>
                 <div v-else class="customer-container hide-scrollbar">
-                    <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}`)"/> 
+                    <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}/transaction`)"/> 
                 </div>
             </div>
         </div>
@@ -56,10 +56,17 @@ export default{
                 }
                 return 0; // descriptions are equal
             })
+            this.customers = this.customers.filter(customer => {
+                if(customer.accountStatus != "Active"){
+                    console.log(customer);
+                }
+                return customer.accountStatus === "Active" && !customer.is_deleted;
+            })
             if(this.search == ''){
                 return this.customers;
             }
             return this.customers.filter(customer => {
+                console.log(customer.accountStatus)
                 return customer.description.toLowerCase().includes(this.search.toLowerCase());
             });
 

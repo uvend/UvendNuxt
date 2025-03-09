@@ -16,7 +16,16 @@
         </template>
         </template>
         <template v-else>
+<<<<<<< Updated upstream
         Pick a date
+=======
+            <div v-if="modelValue">
+                {{ formatDate(modelValue.start) }} - {{ formatDate(modelValue.end) }}
+            </div>
+            <div v-else>
+                
+            </div>
+>>>>>>> Stashed changes
         </template>
     </Button>
     </PopoverTrigger>
