@@ -120,17 +120,38 @@ export default{
         },
         async getVendMeterActivity(){
             this.isLoading = true;
-            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
+            const result = await useAuthFetch(`${VEND_URL}/user/VendUserFunctions/GetMeterList`,{
                 method: "GET",
                 params:{
                     StartDate : this.startDate,
                     EndDate: this.endDate,
                     UtilityType: this.selectedUtility,
-                    VendTransactionReportType: 1
+                    VendTransactionReportType: 0
                 },
             })
             console.log(result)
-            this.meters = result.responseData.transactionData
+            const customerList = result.customerList
+            customerList.forEach( c => {
+                const meterComplexGroup = c.meterComplexGroupList
+                meterComplexGroup.forEach( mcg => {
+                    const meterComplexList = mcg.meterComplexList
+                    meterComplexList.forEach( complex => {
+                        this.meterComplexes.push(complex.descriptor)
+                        const meterList = complex.meterInstallationList
+                        meterList.forEach( meter => {
+                            const mymeter = {
+                                installationAdress : meter.address,
+                                meterNumber : meter.meterNumber,
+                                installationUniqueId : meter.uniqueIdentification,
+                                utilityType: meter.vendMeterParameters.utilityType,
+                                complexName: complex.descriptor
+                            }
+                            this.meters.push(mymeter)
+                        })
+                    })
+                })
+            })
+            //this.meters = result.responseData.transactionData
             this.isLoading = false;
 
         },
