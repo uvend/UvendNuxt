@@ -19,11 +19,15 @@ export default defineNuxtConfig({
     define:{
       API_URL: JSON.stringify(process.env.API_URL),
       JSREPORT_URL: JSON.stringify(process.env.JSREPORT_URL),
-      MPESA_URL: JSON.stringify(process.env.MPESA_URL)
+      MPESA_URL: JSON.stringify(process.env.MPESA_URL),
+      NODE_TLS_REJECT_UNAUTHORIZED: "0",
     }
   },
   ssr: false,
   plugins: [
     '~/plugins/toast',  // Add the plugin to the array
   ],
+  runtimeConfig: {
+    NODE_TLS_REJECT_UNAUTHORIZED: "0",
+  },
 })
