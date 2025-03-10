@@ -28,7 +28,7 @@ export default{
             }
             try{
                 const credentials = btoa(`${this.username}:${this.password}`);
-                const result = await $fetch(`${API_URL}/AdminSystem/LoginAdminBackOffice`,{
+                const result = await $fetch(`https://vendlive11.api.vendease.co.za/api/user/VendUserFunctions/ValidateUser`,{
                     method: "GET",
                     headers: {
                         "Authorization" : `Basic ${credentials}`,
@@ -42,7 +42,7 @@ export default{
                 localStorage.setItem('token',credentials)
                 localStorage.setItem('customer',customer)
 
-                if(result.userInfo.userType == "Administration"){
+                if(result.userInfo.userType){
                     navigateTo('/');
                 }
             }catch(e){
@@ -52,10 +52,6 @@ export default{
                     description: 'There was a problem with your request.',
                     variant: "destructive"
                 });
-                const customer = this.username.split('@')[1];
-                console.log(customer);
-                localStorage.setItem('customer',customer)
-                navigateTo('/');
             }
         }
     }
