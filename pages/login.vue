@@ -28,7 +28,7 @@ export default{
             }
             try{
                 const credentials = btoa(`${this.username}:${this.password}`);
-                const result = await $fetch(`${HOSTNAME}/my/api/user/VendUserFunctions/ValidateUser`,{
+                const result = await $fetch(`${API_URL}/AdminSystem/LoginAdminBackOffice`,{
                     method: "GET",
                     headers: {
                         "Authorization" : `Basic ${credentials}`,
@@ -42,7 +42,7 @@ export default{
                 localStorage.setItem('token',credentials)
                 localStorage.setItem('customer',customer)
 
-                if(result.userInfo.userType){
+                if(result.userInfo.userType == "Administration"){
                     navigateTo('/');
                 }
             }catch(e){
