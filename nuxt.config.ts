@@ -18,22 +18,14 @@ export default defineNuxtConfig({
   vite: {
     define:{
       API_URL: JSON.stringify(process.env.API_URL),
+      VEND_URL: JSON.stringify(process.env.VEND_URL),
       JSREPORT_URL: JSON.stringify(process.env.JSREPORT_URL),
       MPESA_URL: JSON.stringify(process.env.MPESA_URL),
-      HOSTNAME: JSON.stringify(process.env.HOSTNAME) ?? 'http://localhost:3000'
+      ADMIN_AUTH: JSON.stringify(process.env.ADMIN_AUTH)
     }
   },
   ssr: false,
   plugins: [
     '~/plugins/toast',  // Add the plugin to the array
   ],
-  nitro: {
-    devProxy: {
-      "/my": {
-        target: "https://vendlive11.api.vendease.co.za",
-        changeOrigin: true,
-        secure: false, // Ignore SSL errors
-      },
-    },
-  },
 })

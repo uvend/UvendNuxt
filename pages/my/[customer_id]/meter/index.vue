@@ -100,7 +100,7 @@ export default{
         }
     },
     methods:{
-        async getMeterActivity(){
+        async getAdminMeterActivity(){
             this.isLoading = true;
             const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetSummarisedMeterActivity`,{
                 method: "GET",
@@ -117,6 +117,29 @@ export default{
             this.meters = result.responseData.transactionData
             console.log(result)
             this.isLoading = false
+        },
+        async getVendMeterActivity(){
+            this.isLoading = true;
+            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
+                method: "GET",
+                params:{
+                    StartDate : this.startDate,
+                    EndDate: this.endDate,
+                    UtilityType: this.selectedUtility,
+                    VendTransactionReportType: 1
+                },
+            })
+            console.log(result)
+            this.meters = result.responseData.transactionData
+            this.isLoading = false;
+
+        },
+        async getMeterActivity(){
+            if(localStorage.getItem('customer') === 'admin'){
+                await this.getAdminMeterActivity()
+            }else{
+                await this.getVendMeterActivity()
+            }
         },
         changePage(page){
             if (page >= 1 && page <= this.totalPages) {

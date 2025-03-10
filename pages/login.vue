@@ -28,23 +28,31 @@ export default{
             }
             try{
                 const credentials = btoa(`${this.username}:${this.password}`);
-                const result = await $fetch(`${API_URL}/AdminSystem/LoginAdminBackOffice`,{
+                const result = await $fetch(`${VEND_URL}/user/VendUserFunctions/ValidateUser`,{
                     method: "GET",
                     headers: {
                         "Authorization" : `Basic ${credentials}`,
                         "Content-Type": "application/json",
                     }
                 })
-                const customer = this.username.split('@')[1];
-                console.log(customer);
-                
+
+                console.log(result)
+
                 localStorage.setItem('user',btoa(result))
                 localStorage.setItem('token',credentials)
-                localStorage.setItem('customer',customer)
 
-                if(result.userInfo.userType == "Administration"){
-                    navigateTo('/');
+                const userType = result.userInfo.userType;
+
+                if(userType === 'Customer'){
+                    localStorage.setItem('customer',result.userInfo.userParent.uniqueIdentification);
+                    return navigateTo(`/my/${result.userInfo.userParent.uniqueIdentification}/transaction`)
                 }
+                
+                if(userType == "Administration"){
+                    localStorage.setItem('customer','admin');
+                    return navigateTo('/');
+                }
+
             }catch(e){
                 console.log(e)
                 this.$toast({

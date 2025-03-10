@@ -211,7 +211,7 @@ export default{
         }
     },
     methods:{
-        async getTransactions(){
+        async getAdminTransactions(){
             this.isLoading = true;
             const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetSummarisedMeterActivity`,{
                 method: "GET",
@@ -227,7 +227,6 @@ export default{
             })
             this.transactionResponseData = result.responseData
             this.transactions = result.responseData.transactionData
-            console.log(result)
             this.statement.name = this.transactionResponseData.reportParentName
             this.statement.startDate = this.transactionResponseData.startDate,
             this.statement.endDate = this.transactionResponseData.endDate
@@ -244,11 +243,55 @@ export default{
             this.getMeterComplex();
             this.isLoading = false;
         },
+        async getVendTransactions(){
+            this.isLoading = true;
+            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`, {
+                params : {
+                    StartDate : this.dateRange.start,
+                    EndDate: this.dateRange.end,
+                    VendTransactionReportType: 1
+                }
+            });
+            //console.log(result)
+            await this.hydrateStatementData(result)
+            this.isLoading = false;
+        },
+        async getTransactions(){
+            if(localStorage.getItem('customer') === 'admin'){
+                await this.getAdminTransactions()
+            }else{
+                await this.getVendTransactions()
+            }
+
+        },
+        async hydrateStatementData(result){
+            console.log('hydrate')
+            this.transactionResponseData = result.responseData
+            this.transactions = result.responseData.transactionData
+            this.statement.name = this.transactionResponseData.reportParentName
+            this.statement.startDate = this.transactionResponseData.startDate,
+            this.statement.endDate = this.transactionResponseData.endDate
+            this.statement.totalValue = this.transactionResponseData.totalAmountTendered
+            this.statement.managedAmount = this.transactionResponseData.managedTenderAmount
+            this.statement.nonManagedAmount = this.transactionResponseData.nonManagedTenderAmount
+            this.statement.commissionPerc = this.transactionResponseData.commissionPercentage
+            this.statement.commissionAmount = this.transactionResponseData.commissionAmount
+            this.statement.surchargePerc = this.transactionResponseData.surchargeToCustomer
+            this.statement.surchargeAmount = this.transactionResponseData.surchargeToServiceProvider
+            this.statement.refund = this.transactionResponseData.amountPayableToCustomer
+            this.statement.stats = this.transactionResponseData.tokenStatistics
+
+            this.getMeterComplex();
+
+        },
         async getCustomerDefinition(){
             const result = await useAuthFetch(`${API_URL}/AdminSystem/Customer/GetCustomerMeterInstallationList`,{
                 method: "GET",
                 params: {
                     CustomerUnique: this.$route.params.customer_id
+                },
+                headers:{
+                    Authorization : `Basic ${ADMIN_AUTH}`
                 }
             })
             this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
