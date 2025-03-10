@@ -20,14 +20,20 @@ export default defineNuxtConfig({
       API_URL: JSON.stringify(process.env.API_URL),
       JSREPORT_URL: JSON.stringify(process.env.JSREPORT_URL),
       MPESA_URL: JSON.stringify(process.env.MPESA_URL),
-      NODE_TLS_REJECT_UNAUTHORIZED: "0",
+      HOSTNAME: JSON.stringify(process.env.HOSTNAME) ?? 'http://localhost:3000'
     }
   },
   ssr: false,
   plugins: [
     '~/plugins/toast',  // Add the plugin to the array
   ],
-  runtimeConfig: {
-    NODE_TLS_REJECT_UNAUTHORIZED: "0",
+  nitro: {
+    devProxy: {
+      "/my": {
+        target: "https://vendlive11.api.vendease.co.za",
+        changeOrigin: true,
+        secure: false, // Ignore SSL errors
+      },
+    },
   },
 })

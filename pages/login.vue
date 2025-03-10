@@ -28,7 +28,7 @@ export default{
             }
             try{
                 const credentials = btoa(`${this.username}:${this.password}`);
-                const result = await $fetch(`https://vendlive11.api.vendease.co.za/api/user/VendUserFunctions/ValidateUser`,{
+                const result = await $fetch(`${HOSTNAME}/my/api/user/VendUserFunctions/ValidateUser`,{
                     method: "GET",
                     headers: {
                         "Authorization" : `Basic ${credentials}`,
