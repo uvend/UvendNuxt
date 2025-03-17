@@ -49,7 +49,7 @@
                         </div>
                         <Badge>{{ totalBatch  }}</Badge>
                         <div>
-                            R {{ totalBatchPayment }}
+                            {{ totalBatchPayment }}
                         </div>
                     </div>
                     <div class="flex gap-2">

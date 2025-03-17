@@ -26,7 +26,7 @@
                 <div class="relative w-full max-w-sm items-center">
                     <Input id="search" type="text" placeholder="Max" class="pl-10" v-model="maxBatch"/>
                     <span class="absolute start-0 inset-y-0 flex items-center justify-center px-2">
-                    <p>R</p>
+                    <p></p>
                     </span>
                 </div>
                 <Button :disabled="disableBatch" @click="batch()">Batch</Button>
@@ -58,12 +58,12 @@
                                 {{ rangeStart }} - {{ rangeEnd }}
                             </p>
                             <!--<p class="text-sm flex justify-end">Selected</p>-->
-                            <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> R {{ totalSelectedAmount }}</p>
+                            <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ totalSelectedAmount }}</p>
                         </div>
                         <div>
                             <p class="text-sm flex justify-end">Due</p>
                             <p class="w-full text-center font-bold"><Badge>{{ totalRepsonse  }}</Badge>
-                                R {{ totalAmount }}</p>
+                                {{ totalAmount }}</p>
                         </div>
                     </div>
             <div class="">

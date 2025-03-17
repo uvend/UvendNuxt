@@ -18,19 +18,19 @@
         <div class="flex flex-col justify-center items-center">
             <div>
                 <p class="text-sm flex justify-end">Total</p>
-                <p class="text-base font-bold">R {{ payment.periodTotals.totalIncomeFromVending.toFixed(2) }}</p>
+                <p class="text-base font-bold">{{ payment.periodTotals.totalIncomeFromVending.toFixed(2) }}</p>
             </div>
         </div>
         <div class="flex flex-col justify-center items-center">
             <div>
                 <p class="text-sm flex justify-end">{{ payment.periodTotals.vendCommissionPercentage }}%</p>
-                <p class="font-bold">R {{ payment.periodTotals.totalDeductionInclVat.toFixed(2) }}</p>
+                <p class="font-bold">{{ payment.periodTotals.totalDeductionInclVat.toFixed(2) }}</p>
             </div>
         </div>
         <div class="flex flex-col justify-center items-center">
             <div>
                 <Badge :class="[payment.periodTotals.batchPaymentState == 'Settled' ? 'bg-green-500' : '' ]">{{ payment.periodTotals.batchPaymentState }}</Badge>
-                <p class="w-full text-center font-bold">R {{ payment.periodTotals.payeePayOutAmount.toFixed(2) }}</p>
+                <p class="w-full text-center font-bold">{{ payment.periodTotals.payeePayOutAmount.toFixed(2) }}</p>
             </div>
         </div>
         <div class="flex flex-row justify-center items-center text-center">
