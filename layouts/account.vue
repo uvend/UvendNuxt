@@ -15,9 +15,8 @@
                         <Icon name="lucide:smartphone-charging"/><p class="text-sm">Mpesa</p>
                     </li>
                     <ul class="sub-group">
-                        <li class="menu-item" @click="navigateTo('/admin/mpesa/transactions')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Transactions</p></li>
-                        <li class="menu-item" @click="navigateTo('/admin/mpesa/requests')"><Icon name="lucide:file-stack"/><p class="text-sm">Requests</p></li>
-                        <li class="menu-item" @click="navigateTo('/admin/mpesa/logs')"><Icon name="lucide:file-code"/><p class="text-sm">Logs</p></li>
+                        <!--<li class="menu-item" @click="navigateTo('/admin/mpesa/transactions')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Transactions</p></li>-->
+                        <li class="menu-item" @click="navigateTo('/admin/mpesa/requests')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Requests</p></li>
                     </ul>
                 </div>
             </ul>

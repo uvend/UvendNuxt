@@ -34,25 +34,25 @@
         </div>
         <div>
             <p class="font-bold">
-                R{{ transaction.managedTenderAmount }}
+                {{ transaction.managedTenderAmount }}
             </p>
             <p class="text-sm font-light">Amount</p>
         </div>
         <div>
             <p class="font-bold">
-                R{{ transaction.commissionAmountEx }}
+                {{ transaction.commissionAmountEx }}
             </p>
             <p class="text-sm font-light">Service Fee<br>(ex VAT)</p>
         </div>
         <div>
             <p class="font-bold">
-                R{{ transaction.commissionAmount }}
+                {{ transaction.commissionAmount }}
             </p>
             <p class="text-sm font-light">Service Fee<br>(inc VAT)</p>
         </div>
         <div>
             <p class="font-bold">
-                R{{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2)}}
+                {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2)}}
             </p>
             <p class="text-sm font-light">Refund</p>
         </div>

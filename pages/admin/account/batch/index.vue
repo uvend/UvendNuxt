@@ -53,7 +53,7 @@
                 </p>
                 <p class="w-fit text-center font-bold">
                     <Badge>{{ totalBatches  }}</Badge>
-                    R {{ totalBatchesAmount }}
+                    {{ totalBatchesAmount }}
                 </p>
             </div>
             <MyBatchCard v-for="batch in paginatedBatch" :batch="batch"/>

@@ -11,6 +11,9 @@
         </p>
     </div>
     <div>
+        {{ meter.installationName }}
+    </div>
+    <div>
         {{ meter.complexName}}
     </div>
     <div>
@@ -29,7 +32,7 @@ export default{
 <style>
 .meter-card{
     display: grid;
-    grid-template-columns: 2fr 2fr 0.5fr;
+    grid-template-columns: 2fr 2fr 2fr 0.5fr;
     cursor: pointer;
 }
 </style>

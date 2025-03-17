@@ -14,7 +14,7 @@
         <div class="flex flex-col justify-end items-end">
             <Badge :class="[batch.batchPaymentState == 'Settled' ? 'bg-green-500' : '' ]">{{ batch.batchPaymentState }}</Badge>
             <p class="font-bold flex flex-col">
-                R {{ batch.actualPayeePayOutAmount.toFixed(2) }}
+                {{ batch.actualPayeePayOutAmount.toFixed(2) }}
             </p>
         </div>
         <div class="flex flex-col items-center" v-if="batch.batchPaymentState == 'Settled'">

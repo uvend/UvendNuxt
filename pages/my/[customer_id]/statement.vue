@@ -103,21 +103,21 @@
             </div>
             <div class="flex justify-between">
                 <p>Managed Tendered Amount</p>
-                <p>R{{ statement.managedAmount }}</p>
+                <p>{{ statement.managedAmount }}</p>
             </div>
             <div class="flex justify-between">
                 <p>Non Managed Tendered Amount</p>
-                <p>R{{ statement.nonManagedAmount }}</p>
+                <p>{{ statement.nonManagedAmount }}</p>
             </div>
             <hr>
             <div v-for="stat in statement.stats" :key="stat.utilityType" class="flex justify-between">
                 <p>{{ stat.utilityType }}</p>
-                <p>R{{ stat.totalPaidValue }}</p>
+                <p>{{ stat.totalPaidValue }}</p>
             </div>
             <hr>
             <div class="flex justify-between">
                 <p>Total Tendered Amount</p>
-                <p>R{{ statement.totalValue }}</p>
+                <p>{{ statement.totalValue }}</p>
             </div>
             <hr>
             <div class="flex justify-between">
@@ -126,16 +126,16 @@
             </div>
             <div class="flex justify-between">
                 <p>Service Fee</p>
-                <p>R{{ statement.commissionAmount }}</p>
+                <p>{{ statement.commissionAmount }}</p>
             </div>
             <div class="flex justify-between">
                 <p>Tenant Fee</p>
-                <p>R{{ statement.surchargeAmount }}</p>
+                <p>{{ statement.surchargeAmount }}</p>
             </div>
             <hr>
             <div class="flex justify-between">
                 <p>Refund</p>
-                <p>R{{ statement.refund }}</p>
+                <p>{{ statement.refund }}</p>
             </div>
         </div>
         <MyMeterTransactionCard v-for="transaction in paginated" :transaction="transaction" :statement="true"/>
