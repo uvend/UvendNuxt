@@ -18,14 +18,24 @@
                     </SelectContent>
                     </Select>
                 <div>
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                    <Button variant="secondary" @click="changePage(page-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
+                    <Button variant="secondary" @click="changePage(page+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
                 </div>
             </div>
         </div>
     </div>
-    <MySkeletonCardList v-if=isLoading />
+    <MySkeletenCardList v-if=isLoading />
     <div v-else>
+        <div class="flex justify-between pt-2">
+            <div>
+            </div>
+            <div>
+                <div v-if="smsBalance" class="flex flex-col justify-end">
+                    <p class="text-sm">SMS Balance</p>
+                    <p class="text-base font-bold text-right">{{ smsBalance }}</p>
+                </div>
+            </div>
+        </div>
         <Dialog v-for="request in requests">
             <DialogTrigger as-child>
                 <Card  class="p-2 my-2 mpesa-request-card items-center">
@@ -96,10 +106,12 @@ export default{
             requests: [],
             totalPages: 0,
             dateRange: null,
+            smsBalance: null
         }
     },
     methods:{
         async getRequests(){
+            await this.getSMSBalance()
             this.isLoading = true
             const response = await $fetch(`${MPESA_URL}/getallrequest`,{
                 method: "GET",
@@ -119,6 +131,14 @@ export default{
             this.totalPages = response.totalPages
             this.isLoading = false
         },
+        async getSMSBalance(){
+            this.smsBalance = null;
+            const response = await $fetch(`${MPESA_URL}/checkbalance`,{
+                method: "GET"
+            })
+            console.log(response)
+            this.smsBalance = response.balance;
+        },
         formatedDate(dateString){
             return new Date(dateString).toLocaleDateString('en-ZA', {
                 day: '2-digit',
@@ -132,6 +152,12 @@ export default{
             const minutes = String(date.getMinutes()).padStart(2, '0'); // Get minutes and pad with leading zero
             const seconds = String(date.getSeconds()).padStart(2, '0'); // Get seconds and pad with leading zero
             return `${hours}:${minutes}`;
+        },
+        changePage(page){
+            if(page > this.totalPages || page < 1){
+                return;
+            }
+            this.page = page
         }
     },
     mounted(){
@@ -146,6 +172,9 @@ export default{
     },
     watch:{
         dateRange(){
+            this.getRequests()
+        },
+        page(){
             this.getRequests()
         }
     }
