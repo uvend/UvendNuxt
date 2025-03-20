@@ -1,5 +1,6 @@
 <template>
     <div>
+        <AccountMenu />
         <h1>Rolled-back Payments</h1>
         <ul>
             <li v-for="payment in rolledBackPayments" :key="payment.id">
@@ -10,7 +11,12 @@
 </template>
 
 <script>
+import AccountMenu from '@/layouts/account.vue';
+
 export default {
+    components: {
+        AccountMenu
+    },
     data() {
         return {
             rolledBackPayments: [] // Array to store rolled-back payments
@@ -21,7 +27,8 @@ export default {
             try {
                 const response = await fetch(`${API_URL}/path/to/rollback/payments`);
                 const data = await response.json();
-                this.rolledBackPayments = data.payments; // Assuming the API returns an object with a 'payments' array
+                // Sort payments by date or timestamp
+                this.rolledBackPayments = data.payments.sort((a, b) => new Date(b.date) - new Date(a.date));
             } catch (error) {
                 console.error('Error fetching rolled-back payments:', error);
             }

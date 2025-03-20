@@ -33,14 +33,7 @@
                 </Button>
                 <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
             </div>
-            <div class="flex gap-1">
-                <Button variant="secondary">
-                    <Icon name="lucide:printer" />
-                </Button>
-                <Button variant="secondary">
-                    <Icon name="lucide:download" />
-                </Button>
-                </div>        
+                  
                 <div>
                     <Select v-model="selectedUtility">
                         <SelectTrigger class="w-[180px]">
@@ -79,12 +72,25 @@
     </div>
     <MySkeletenCardList v-if="isLoading"/>
     <MyMeterTransactionCard v-for="transaction in paginated" :transaction="transaction"/>
+    <div>
+        <h1>Transactions</h1>
+        <ul>
+            <li v-for="transaction in transactions" :key="transaction.id">
+                <TransactionSlip :transaction="transaction" />
+            </li>
+        </ul>
+    </div>
 </template>
 <script>
+//import TransactionSlip from '@/components/my/Transactionslip.vue';
+
 definePageMeta({
     layout: 'my'
 })
 export default{
+    components: {
+        TransactionSlip
+    },
     data(){
         return {
             transactions: [],
@@ -115,8 +121,9 @@ export default{
             ],
             yearArr: [],
             dateRange: null,
-            customerStatementPeriod: 25
-
+            customerStatementPeriod: 25,
+            searchActive: false,
+            search: ''
         }
     },
     methods:{
@@ -229,6 +236,12 @@ export default{
             } else {
                 console.error('Failed to generate report');
             }
+        },
+        toggleSearch() {
+            this.searchActive = !this.searchActive;
+        },
+        debouncedSearch() {
+            // Implement debounce logic here
         }
     },
     async mounted(){

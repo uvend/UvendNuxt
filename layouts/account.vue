@@ -7,6 +7,7 @@
                 </div>
                 <li class="menu-item" @click="navigateTo('/admin/account/payments')"><Icon name="lucide:wallet-cards"/><p class="text-sm">Payments</p></li>
                 <li class="menu-item" @click="navigateTo('/admin/account/batch')"><Icon name="lucide:landmark"/><p class="text-sm">Bank Batch</p></li>
+                <li class="menu-item" @click="navigateTo('/admin/account/rollback')"><Icon name="lucide:rotate-ccw"/><p class="text-sm">Rollback</p></li>
             </ul>
             <ul>
             </ul>
