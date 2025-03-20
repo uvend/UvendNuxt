@@ -1,4 +1,5 @@
 <template>
+    <h1 class="text-2xl font-bold">Statement</h1>
     <div>
         <div class="flex justify-between">
             <div class="flex gap-1">
