@@ -10,6 +10,13 @@
                 </Button>
                 <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
             </div>
+            <div class="flex gap-1">
+                <MySearchByAddress/>
+                <Button @click="toggleSearch()" variant="secondary">
+                    <Input type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
+                    <Icon name="lucide:search" />
+                </Button>
+            </div>
             <div>
                 <Select  v-model="selectedUtility">
                     <SelectTrigger class="w-[180px]">

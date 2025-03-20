@@ -1,6 +1,10 @@
 <template>
     <MySkeletenCardList v-if="isLoading"/>
     <MyMeterTransactionCard v-else v-for="transaction in meterTransactions" :transaction="transaction" />
+
+    <button v-if="!isLoading" @click="blockMeter()">Block Meter</button>
+
+
 </template>
 <script>
 definePageMeta({
@@ -30,6 +34,10 @@ export default{
                 },
                 headers: {
                     'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
+                },
+
+                blockMeter(){
+                    console.log('Meter Blocked')
                 }
 
             })

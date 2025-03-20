@@ -33,9 +33,17 @@
                 </Button>
                 <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
             </div>
-            <div>
-                <Select v-model="selectedUtility">
-                    <SelectTrigger class="w-[180px]">
+            <div class="flex gap-1">
+                <Button variant="secondary">
+                    <Icon name="lucide:printer" />
+                </Button>
+                <Button variant="secondary">
+                    <Icon name="lucide:download" />
+                </Button>
+                </div>        
+                <div>
+                    <Select v-model="selectedUtility">
+                        <SelectTrigger class="w-[180px]">
                         <SelectValue placeholder="Utility type" />
                     </SelectTrigger>
                     <SelectContent>
