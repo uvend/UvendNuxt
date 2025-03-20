@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt', '@nuxt/icon','@pinia/nuxt'],
+  pinia: {
+    autoImports: ['defineStore', 'acceptHMRUpdate', 'storeToRefs'],
+  },
   shadcn: {
     /**
      * Prefix for all the imported component
@@ -26,6 +29,7 @@ export default defineNuxtConfig({
   },
   ssr: false,
   plugins: [
-    '~/plugins/toast',  // Add the plugin to the array
+    '~/plugins/toast',
+    '~/plugins/pinia',
   ],
 })
