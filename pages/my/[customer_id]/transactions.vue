@@ -1,5 +1,4 @@
 <template>
-    <h1 class="text-2xl font-bold">Transactions</h1>
      <div>
         <div class="flex justify-between">
             <div class="flex gap-1">
@@ -9,13 +8,6 @@
                     <Icon name="lucide:search"/>
                 </Button>
                 <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
-            </div>
-            <div class="flex gap-1">
-                <MySearchByAddress/>
-                <Button @click="toggleSearch()" variant="secondary">
-                    <Input type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
-                    <Icon name="lucide:search" />
-                </Button>
             </div>
             <div>
                 <Select  v-model="selectedUtility">

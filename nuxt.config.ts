@@ -24,7 +24,9 @@ export default defineNuxtConfig({
       VEND_URL: JSON.stringify(process.env.VEND_URL),
       JSREPORT_URL: JSON.stringify(process.env.JSREPORT_URL),
       MPESA_URL: JSON.stringify(process.env.MPESA_URL),
-      ADMIN_AUTH: JSON.stringify(process.env.ADMIN_AUTH)
+      ADMIN_AUTH: JSON.stringify(process.env.ADMIN_AUTH),
+      VEND_TerminalID: JSON.stringify(process.env.VEND_TerminalID),
+      VEND_OperatorID: JSON.stringify(process.env.VEND_OperatorID)
     }
   },
   ssr: false,

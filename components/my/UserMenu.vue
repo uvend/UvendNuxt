@@ -5,7 +5,7 @@
             <Icon name="lucide:user" class="w-5 h-5"/>
         </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent>
+    <DropdownMenuContent align="end">
       <div v-if="isAdmin">
         <DropdownMenuItem @click="navigateTo('/admin/account')">Administration</DropdownMenuItem>
         <DropdownMenuItem @click="navigateTo('/')">Change Profile</DropdownMenuItem>

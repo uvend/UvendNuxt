@@ -1,5 +1,5 @@
 <template>
-    <Card class="w-full p-2 my-2" :class="statement ? 'statement-card' : 'transaction-card'">
+    <Card class="w-full p-2 my-2" :class="statement ? 'statement-card' : 'transaction-card'" @click="getTransaction()">
         <div class="flex flex-col justify-center">
             <p class="font-bold">
                 {{ transaction.meterNumber }}
@@ -61,16 +61,34 @@
             {{ formatedDate(transaction.transactionDate) }}
         </div>
     </Card>
+    <Dialog v-model:open="ticketOpen">
+        <DialogContent>
+        <DialogHeader>
+            <DialogTitle></DialogTitle>
+            <DialogDescription>
+            </DialogDescription>
+        </DialogHeader>
+        <div class="formatted-text">
+            {{ ticket.listOfTokenTransactions[0].printJob }}
+        </div>
+        <DialogFooter>
+        </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
 <script>
-import Statement from '~/pages/my/[customer_id]/statement.vue';
-
 export default{
     props:{
         transaction: Object,
         statement: {
             type: Boolean,
             value: false
+        }
+    },
+    data(){
+        return {
+            ticket: null,
+            ticketOpen: false
         }
     },
     methods:{
@@ -87,6 +105,21 @@ export default{
             const minutes = String(date.getMinutes()).padStart(2, '0'); // Get minutes and pad with leading zero
             const seconds = String(date.getSeconds()).padStart(2, '0'); // Get seconds and pad with leading zero
             return `${hours}:${minutes}`;
+        },
+        async getTransaction(){
+            if(this.statement) return;
+            const response = await useAuthFetch(`${VEND_URL}/MeterVend/GetTransactionInfo`,{
+                method: "GET",
+                params: {
+                    "MeterNumber" : this.transaction.meterNumber,
+                    "ApiUserParams.TerminalID" : this.transaction.merchantPosTerminalID,
+                    "ApiUserParams.OperatorID" : this.transaction.merchantOperatorID,
+                    "ApiUserParams.RequestID" : this.transaction.transactionUniqueId
+                }
+            })
+            console.log(response)
+            this.ticket = response
+            this.ticketOpen = true;
         }
     }
 }
@@ -100,5 +133,11 @@ export default{
     display: grid;
     grid-template-columns: 1fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr;
     cursor: pointer;
+}
+.formatted-text {
+  white-space: pre; /* Preserves formatting exactly as in the string */
+  font-family: monospace; /* Ensures consistent spacing */
+  text-align: center;
+  font-size: 12px;
 }
 </style>

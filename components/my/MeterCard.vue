@@ -1,5 +1,5 @@
 <template>
-<Card class="meter-card w-full p-2 my-2 items-center" @click="navigateTo(`/my/${$route.params.customer_id}/meter/${meter.installationUniqueId}`)">
+<Card class="meter-card w-full p-2 my-2 items-center" @click="navigateTo(`/my/${$route.params.customer_id}/meters/${meter.installationUniqueId}`)">
     <div class="flex flex-col items center">
         <p class="font-bold">
             {{ meter.meterNumber }}

@@ -1,5 +1,4 @@
 <template>
-    <h1 class="text-2xl font-bold">Meters</h1>
     <div>
         <div class="flex justify-between">
             <div class="flex gap-1">
@@ -177,7 +176,7 @@ export default{
             // If search phrase is provided, filter by meter number
             if (this.search) {
                 filteredMeters = filteredMeters.filter(meter => {
-                    return meter.meterNumber.includes(this.search); // Adjust 'meterNumber' to the correct property name
+                    if(meter.meterNumber.includes(this.search) || meter.installationAdress[0].toLowerCase().includes(this.search.toLowerCase()) || meter.installationAdress[1].toLowerCase().includes(this.search.toLowerCase()) || meter.installationAdress[2].toLowerCase().includes(this.search.toLowerCase()) || meter.installationAdress[3].toLowerCase().includes(this.search.toLowerCase()) || meter.installationAdress[4].toLowerCase().includes(this.search.toLowerCase())) return true
                 });
             }
 

@@ -5,11 +5,11 @@
                 <div class="logo-container">
                     <img src="/UVendlogo-Better.png"/>
                 </div>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transaction`)">
+                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)">
                     <Icon name="lucide:credit-card" />
                     <p class="text-sm">Transactions</p>
                 </li>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/meter`)">
+                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/meters`)">
                     <Icon name="lucide:parking-meter"/>
                     <p class="text-sm">Meters</p>
                 </li>
@@ -26,7 +26,7 @@
                 <div>
                     <div>
                         <p class="title font-bold">
-                            {{ $store.title ?? title }}
+                            {{ title }}
                         </p>
                     </div>
                 </div>
@@ -47,6 +47,9 @@ export default{
     computed:{
         title(){
             const route = this.$route.path.split('/')
+            if(route.at(-2) === 'meters'){
+                return this.$store.pageTitle;
+            }
             return route.at(-1)
         }
     }

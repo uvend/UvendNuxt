@@ -14,4 +14,5 @@ export default defineNuxtRouteMiddleware((to, from) => {
         customer = customer?.slice(1);
         return navigateTo(`/my/${customer}/transaction`)
     }
+
 })

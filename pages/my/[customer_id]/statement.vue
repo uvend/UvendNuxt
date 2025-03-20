@@ -1,5 +1,4 @@
 <template>
-    <h1 class="text-2xl font-bold">Statement</h1>
     <div>
         <div class="flex justify-between">
             <div class="flex gap-1">
@@ -143,15 +142,11 @@
     </div>
 </template>
 <script>
-//import TransactionSlip from '@/components/my/Transactionslip.vue';
 
 definePageMeta({
     layout: 'my'
 })
 export default{
-    components: {
-        TransactionSlip
-    },
     data(){
         return {
             transactions: [],

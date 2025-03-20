@@ -7,6 +7,10 @@
             </div>
         </div>
             <div class="flex flex-row w-fit gap-1">
+                <div>
+                    <Button v-if="meterStatus === 'Ok'" variant="secondary" class="mx-1" @click="blockMeter(true)"><Icon name="lucide:lock-open" class="w-5 h-5"/></Button>
+                    <Button v-else class="mx-1" @click="blockMeter(false)"><Icon name="lucide:lock" class="w-5 h-5"/></Button>
+                </div>
                 <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
                         <SelectValue placeholder="Page Size" />
@@ -22,6 +26,20 @@
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div v-if="meterInfo" class="pt-2">
+        <div class="flex justify-between">
+            <p>Utility Type</p>
+            <p>{{ meterInfo.vendMeterParameters.utilityType }}</p>
+        </div>
+        <div class="flex justify-between">
+            <p>Tariff Name</p>
+            <p>{{ meterInfo.vendAccountParameters.tariffName }}</p>
+        </div>
+        <div class="flex justify-between">
+            <p>Meter State</p>
+            <p>{{ this.meterStatus }}</p>
         </div>
     </div>
     <MySkeletenCardList v-if="isLoading"/>
@@ -42,6 +60,9 @@ export default{
                 10,50,100,200
             ],
             currentPage: 1,
+            meterNumber: null,
+            meterInfo: null,
+            meterStatus: null
         }
     },
     methods:{
@@ -59,6 +80,8 @@ export default{
             })
             this.meterTransactions = result.responseData.transactionData
             console.log(result)
+            this.meterNumber = result.responseData.transactionData[0]?.meterNumber ?? ''
+            this.$store.pageTitle = this.meterNumber;
             this.isLoading = false;
         },
         changePage(page){
@@ -79,7 +102,7 @@ export default{
                     SpecificMeterIdentifier: this.$route.params.meter_id
                 }
             })
-            console.log(result)
+            //console.log(result)
             this.meterTransactions = result.responseData.transactionData
             this.isLoading = false
         },
@@ -90,6 +113,34 @@ export default{
                 await this.getVendMeterActivity()
             }
         },
+        async getMeterInfo(){
+            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterInfo`,{
+                method: "GET",
+                params: {
+                    "MeterNumber": this.meterNumber,
+                    "ApiUserParams.TerminalID" : VEND_TerminalID,
+                    "ApiUserParams.OperatorID" : VEND_OperatorID,
+                    "ApiUserParams.RequestID" : new Date()
+                }
+            })
+            console.log(result)
+            this.meterInfo = result
+            this.meterStatus = result.requestedMeterState
+        },
+        async blockMeter(state = true){
+            const response = await useAuthFetch(`${VEND_URL}/MeterVend/SetMeterBlockState`,{
+                method: "GET",
+                params: {
+                    "Block" : state,
+                    "MeterNumber": this.meterNumber,
+                    "ApiUserParams.TerminalID" : VEND_TerminalID,
+                    "ApiUserParams.OperatorID" : VEND_OperatorID,
+                    "ApiUserParams.RequestID" : new Date()
+                }
+            })
+            this.meterStatus = response.requestedMeterState
+            //console.log(response)
+        }
     },
     async mounted(){
         const today = new Date();
@@ -109,11 +160,14 @@ export default{
             const startIndex = (this.currentPage - 1) * this.pageSize;
             const endIndex = startIndex + this.pageSize;
             return filtered.slice(startIndex, endIndex); // Paginate filtered payments
-        },
+        }
     },
     watch:{
         dateRange(){
             this.getMeterActivity();
+        },
+        meterNumber(){
+            this.getMeterInfo();
         }
     }
 }

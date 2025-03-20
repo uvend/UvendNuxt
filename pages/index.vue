@@ -18,7 +18,7 @@
                 <div class="">
                     <MySkeletenCardList v-if="isLoading" :columns="1"/>
                     <div v-else class="customer-container hide-scrollbar">
-                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}/transaction`)"/> 
+                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}/transactions`)"/> 
                     </div>
                 </div>
             </div>
