@@ -5,13 +5,13 @@
                 <div class="logo-container">
                     <img src="/UVendlogo-Better.png"/>
                 </div>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/meter`)">
-                    <Icon name="lucide:parking-meter"/>
-                    <p class="text-sm">Meters</p>
-                </li>
                 <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transaction`)">
                     <Icon name="lucide:credit-card" />
                     <p class="text-sm">Transactions</p>
+                </li>
+                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/meter`)">
+                    <Icon name="lucide:parking-meter"/>
+                    <p class="text-sm">Meters</p>
                 </li>
                 <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/statement`)">
                     <Icon name="lucide:file-chart-column"/>
@@ -23,7 +23,13 @@
         </aside>
         <main class="hide-scrollbar">
             <header class="flex justify-between items-center py-2 px-4">
-                <div></div>
+                <div>
+                    <div>
+                        <p class="title font-bold">
+                            {{ $store.title ?? title }}
+                        </p>
+                    </div>
+                </div>
                 <MyUserMenu />
             </header>
             <div class="scroll hide-scrollbar bg-gray-50">
@@ -38,12 +44,20 @@ export default{
         return {
         }
     },
+    computed:{
+        title(){
+            const route = this.$route.path.split('/')
+            return route.at(-1)
+        }
+    }
 
 }
 </script>
 
 <style scoped>
-
+.title{
+    text-transform: capitalize;
+}
 .sidebar {
     background-color: #1287c9; /* Light gray background for sidebar */
     padding: 10px; /* Padding for sidebar content */

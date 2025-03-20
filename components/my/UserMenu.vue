@@ -6,10 +6,23 @@
         </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent>
-      <DropdownMenuItem @click="navigateTo('/admin/account')">Administration</DropdownMenuItem>
-      <DropdownMenuItem @click="navigateTo('/')">Change Profile</DropdownMenuItem>
-      <DropdownMenuSeparator />
+      <div v-if="isAdmin">
+        <DropdownMenuItem @click="navigateTo('/admin/account')">Administration</DropdownMenuItem>
+        <DropdownMenuItem @click="navigateTo('/')">Change Profile</DropdownMenuItem>
+        <DropdownMenuSeparator />
+      </div>
       <DropdownMenuItem @click="useLogout()">Logout</DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
+<script>
+export default{
+  computed:{
+    isAdmin(){
+      const customer = localStorage.getItem('customer')
+      if(customer === 'admin') return true;
+      return false
+    }
+  }
+}
+</script>

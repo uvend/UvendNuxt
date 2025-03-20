@@ -26,10 +26,23 @@
                 <div class="relative w-full max-w-sm items-center">
                     <Input id="search" type="text" placeholder="Max" class="pl-10" v-model="maxBatch"/>
                     <span class="absolute start-0 inset-y-0 flex items-center justify-center px-2">
-                    <p>R</p>
+                    <p></p>
                     </span>
                 </div>
                 <Button :disabled="disableBatch" @click="batch()">Batch</Button>
+                <div>
+                    <Select  v-model="pageSize">
+                    <SelectTrigger class="w-[80px]">
+                        <SelectValue placeholder="Page Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem v-for="size in pageSizeSelect" :value="size">
+                            {{ size }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+                </div>
+
                 <div class="flex flex-row w-fit">
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
@@ -45,12 +58,12 @@
                                 {{ rangeStart }} - {{ rangeEnd }}
                             </p>
                             <!--<p class="text-sm flex justify-end">Selected</p>-->
-                            <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> R {{ totalSelectedAmount }}</p>
+                            <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ totalSelectedAmount }}</p>
                         </div>
                         <div>
                             <p class="text-sm flex justify-end">Due</p>
                             <p class="w-full text-center font-bold"><Badge>{{ totalRepsonse  }}</Badge>
-                                R {{ totalAmount }}</p>
+                                {{ totalAmount }}</p>
                         </div>
                     </div>
             <div class="">
@@ -72,6 +85,9 @@ export default{
             selectedPayments: [],
             currentPage: 1,
             pageSize: 10,
+            pageSizeSelect: [
+                10,50,100,200
+            ],
             searchActive: false,
             search: '',
             totalAmount: 0,

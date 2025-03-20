@@ -11,10 +11,14 @@
         </p>
     </div>
     <div>
+        {{ meter.installationName }}
+    </div>
+    <div>
         {{ meter.complexName}}
     </div>
     <div>
-        <Icon name="lucide:droplet" class="w-5 h-5" v-if="[meter.utilityType == 'Water']"/>
+        <Icon name="lucide:droplet" class="w-5 h-5" v-if="meter.utilityType == 'Water'"/>
+        <Icon name="lucide:zap" class="w-5 h-5" v-if="meter.utilityType == 'Electricity'"/>
     </div>
 </Card>
 </template>
@@ -28,7 +32,7 @@ export default{
 <style>
 .meter-card{
     display: grid;
-    grid-template-columns: 2fr 2fr 0.5fr;
+    grid-template-columns: 2fr 2fr 2fr 0.5fr;
     cursor: pointer;
 }
 </style>

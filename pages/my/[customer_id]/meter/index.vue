@@ -38,6 +38,16 @@
                         </SelectContent>
                     </Select>
                 </div>
+                <Select  v-model="pageSize">
+                    <SelectTrigger class="w-[80px]">
+                        <SelectValue placeholder="Page Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem v-for="size in pageSizeSelect" :value="size">
+                            {{ size }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
                 <div>
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
@@ -66,6 +76,9 @@ export default{
             isLoading: true,
             currentPage: 1,
             pageSize: 10,
+            pageSizeSelect: [
+                10,50,100,200
+            ],
             selectedUtility: -1,
             utilityType: [
                 {
@@ -88,7 +101,7 @@ export default{
         }
     },
     methods:{
-        async getMeterActivity(){
+        async getAdminMeterActivity(){
             this.isLoading = true;
             const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetSummarisedMeterActivity`,{
                 method: "GET",
@@ -101,13 +114,54 @@ export default{
                     ParentUniqueID: this.$route.params.customer_id,
                     UtilityType: this.selectedUtility
                 },
-                headers: {
-                    'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
-                }
             })
             this.meters = result.responseData.transactionData
             console.log(result)
             this.isLoading = false
+        },
+        async getVendMeterActivity(){
+            this.isLoading = true;
+            const result = await useAuthFetch(`${VEND_URL}/user/VendUserFunctions/GetMeterList`,{
+                method: "GET",
+                params:{
+                    StartDate : this.startDate,
+                    EndDate: this.endDate,
+                    UtilityType: this.selectedUtility,
+                    VendTransactionReportType: 0
+                },
+            })
+            console.log(result)
+            const customerList = result.customerList
+            customerList.forEach( c => {
+                const meterComplexGroup = c.meterComplexGroupList
+                meterComplexGroup.forEach( mcg => {
+                    const meterComplexList = mcg.meterComplexList
+                    meterComplexList.forEach( complex => {
+                        this.meterComplexes.push(complex.descriptor)
+                        const meterList = complex.meterInstallationList
+                        meterList.forEach( meter => {
+                            const mymeter = {
+                                installationAdress : meter.address,
+                                meterNumber : meter.meterNumber,
+                                installationUniqueId : meter.uniqueIdentification,
+                                utilityType: meter.vendMeterParameters.utilityType,
+                                complexName: complex.descriptor
+                            }
+                            this.meters.push(mymeter)
+                        })
+                    })
+                })
+            })
+            //this.meters = result.responseData.transactionData
+            this.isLoading = false;
+
+        },
+        async getMeterActivity(){
+            if(localStorage.getItem('customer') === 'admin'){
+                await this.getAdminMeterActivity()
+            }else{
+                await this.getVendMeterActivity()
+            }
         },
         changePage(page){
             if (page >= 1 && page <= this.totalPages) {
@@ -171,6 +225,7 @@ export default{
     },
     watch:{
         selectedUtility(newValue){
+            this.search = null
             this.getMeterActivity()
         },
         selectedMeterComplex(newValue){

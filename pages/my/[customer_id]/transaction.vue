@@ -4,7 +4,7 @@
         <div class="flex justify-between">
             <div class="flex gap-1">
                 <div class="flex gap-1">
-                <MyDateRangePicker v-model="dateRange" :months="1" v-if="dateRange"/>
+                <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
                 <Button @click="toggleSearch()" variant="secondary">
                     <Icon name="lucide:search"/>
                 </Button>
@@ -46,6 +46,16 @@
                         </SelectContent>
                     </Select>
                 </div>
+                <Select  v-model="pageSize">
+                    <SelectTrigger class="w-[80px]">
+                        <SelectValue placeholder="Page Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem v-for="size in pageSizeSelect" :value="size">
+                            {{ size }}
+                        </SelectItem>
+                    </SelectContent>
+                    </Select>
                 <div>
                     <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                     <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
@@ -67,6 +77,9 @@ export default{
             isLoading: true,
             currentPage: 1,
             pageSize: 10,
+            pageSizeSelect: [
+                10,50,100,200
+            ],
             selectedUtility: -1,
             utilityType: [
                 {
@@ -90,7 +103,7 @@ export default{
         }
     },
     methods:{
-        async getTransactions(){
+        async getAdminTransactions(){
             this.isLoading = true;
             const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`,{
                 method: "GET",
@@ -102,15 +115,39 @@ export default{
                     ResponseFormatType: 0,
                     ParentUniqueID: this.$route.params.customer_id,
                     UtilityType: this.selectedUtility
-                },
-                headers:{
-                    'authorization' : 'Basic amFyZWRsZWVAYWRtaW46amFyZWQx'
                 }
             })
             this.transactions = result.responseData.transactionData
             await this.getMeterComplex()
             //console.log(result)
             this.isLoading = false;
+        },
+        async getVendTransactions(){
+            this.isLoading = true;
+            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
+                method: "GET",
+                params:{
+                    //IncludeMetersWithNoActivity : false,
+                    StartDate : this.dateRange.start,
+                    EndDate: this.dateRange.end,
+                    VendTransactionReportType: 0,  // customer
+                    //ResponseFormatType: 0,
+                    //ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: this.selectedUtility
+                }
+            })
+            this.transactions = result.responseData.transactionData
+            await this.getMeterComplex()
+            //console.log(result)
+            this.isLoading = false;
+        },
+        getTransactions(){
+            if(localStorage.getItem('customer') === 'admin'){
+                this.getAdminTransactions()
+            }
+            else{
+                this.getVendTransactions()
+            }
         },
         changePage(page){
             if (page >= 1 && page <= this.totalPages) {
@@ -131,7 +168,7 @@ export default{
             })
         },
         filteredTransactions(){
-            console.log(this.transactions);
+            //console.log(this.transactions);
             let filteredTransactions = this.selectedMeterComplex === null ? this.transactions : this.transactions.filter(transactions => {
                 return transactions.complexName === this.selectedMeterComplex; // Filter by complex name
             });
@@ -139,7 +176,7 @@ export default{
             // If search phrase is provided, filter by meter number
             if (this.search) {
                 filteredTransactions = filteredTransactions.filter(transaction => {
-                    return transaction.meterNumber.includes(this.search); // Adjust 'meterNumber' to the correct property name
+                    return transaction.meterNumber.includes(this.search) || transaction.installationAdress[0].toLowerCase().includes(this.search.toLowerCase()); // Adjust 'meterNumber' to the correct property name
                 });
             }
             return filteredTransactions

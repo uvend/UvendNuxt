@@ -19,13 +19,12 @@
                 {{ formatDate(modelValue.start) }} - {{ formatDate(modelValue.end) }}
             </div>
             <div v-else>
-                select date
             </div>
         </template>
     </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-0">
-    <RangeCalendar v-model="value" initial-focus :number-of-months="months" @update:start-value="(startDate) => value.start = startDate" />
+    <RangeCalendar v-model="value" initial-focus :number-of-months="2" @update:start-value="(startDate) => value.start = startDate" />
     </PopoverContent>
 </Popover>
 </template>
