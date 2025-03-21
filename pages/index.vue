@@ -1,20 +1,25 @@
 <template>
-    <div class="profile-grid h-full">
-        <div class="flex justify-between py-2 px-4">
-            <div></div>
-            <MyUserMenu />
-        </div>
-        <div class="p-4 h-full w-[450px]">
-            <div class="flex items-center gap-2 mb-8">
-                <Icon name="lucide:search" />
-                <Input type="text" v-model="search" class="focus-visible:ring-0 border-0" placeholder="Search"/>
+    <div class="main-grid">
+        <div class="ad-space bg-slate-800">
+            <div class="logo-container">
+                <img src="/UVendlogo-Better.png"/>
             </div>
-            <div class="">
-                <div v-if="isLoading">
-                    <MySkeletenCardList :columns="1"/>
+        </div>
+        <div class="profile-grid flex h-full">
+            <div class="flex justify-between py-2 px-4">
+                <div></div>
+                <MyUserMenu />
+            </div>
+            <div class="p-20 h-full w-[500px]">
+                <div class="flex items-center gap-2 mt-20 mb-8">
+                    <Icon name="lucide:search" />
+                    <Input type="text" v-model="search" class="focus-visible:ring-0 border-0" placeholder="Search"/>
                 </div>
-                <div v-else class="customer-container hide-scrollbar">
-                    <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}/transaction`)"/> 
+                <div class="">
+                    <MySkeletenCardList v-if="isLoading" :columns="1"/>
+                    <div v-else class="customer-container hide-scrollbar">
+                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}/transactions`)"/> 
+                    </div>
                 </div>
             </div>
         </div>
@@ -95,5 +100,14 @@ export default{
 .customer-container{
     overflow-y: scroll;
     height: calc(100vh - 50px);
+}
+
+.logo-container img{
+    padding: 10px;
+    width: 230px;
+}
+.main-grid{
+    display: grid;
+    grid-template-columns: auto min-content;
 }
 </style>
