@@ -1,9 +1,9 @@
 <template>
     <div class="main-grid">
         <div class="ad-space bg-slate-800">
-        <div class="logo-container">
-            <img src="/UVendlogo-Better.png"/>
-        </div>
+            <div class="logo-container">
+                <img src="/UVendlogo-Better.png"/>
+            </div>
         </div>
         <div class="profile-grid flex h-full">
             <div class="flex justify-between py-2 px-4">
@@ -106,11 +106,12 @@ export default{
     height: calc(100vh - 50px);
 }
 
-.ad-space{
-}
-
 .logo-container img{
     padding: 10px;
     width: 230px;
+}
+.main-grid{
+    display: grid;
+    grid-template-columns: auto min-content;
 }
 </style>
