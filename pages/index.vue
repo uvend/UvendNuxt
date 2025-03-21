@@ -1,6 +1,6 @@
 <template>
     <div class="main-grid">
-        <div class="ad-space bg-slate-800">
+        <div class="bg-slate-800">
             <div class="logo-container">
                 <img src="/UVendlogo-Better.png"/>
             </div>
@@ -109,9 +109,5 @@ export default{
 .logo-container img{
     padding: 10px;
     width: 230px;
-}
-
-.ad-space{
-    width: 100%;
 }
 </style>
