@@ -82,7 +82,7 @@ export default{
 <style scoped>
 .main-grid{
     display: grid;
-    grid-template-columns: auto min-content;
+    grid-template-columns: 2fr 1fr;
 }
 .customer-container{
     height: 300px;
@@ -110,8 +110,8 @@ export default{
     padding: 10px;
     width: 230px;
 }
-.main-grid{
-    display: grid;
-    grid-template-columns: auto min-content;
+
+.ad-space{
+    width: 100%;
 }
 </style>
