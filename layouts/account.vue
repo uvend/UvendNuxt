@@ -1,10 +1,8 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between bg-sky-900">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor }">
             <ul>
-                <div class="logo-container">
-                    <img src="/UVendlogo-Better.png"/>
-                </div>
+                <MyLogo />
                 <li class="menu-item"><Icon name="lucide:shield"/><p class="text-sm">Accounts</p></li>
                 <ul class="sub-group">
                     <li class="menu-item" @click="navigateTo('/admin/account/payments')"><Icon name="lucide:wallet-cards"/><p class="text-sm">Payments</p></li>
@@ -45,6 +43,11 @@ export default{
     mounted(){
         if(typeof MPESA_URL !== "undefined"){
             this.mpesaUrl = true;
+        }
+    },
+    computed:{
+        bgColor(){
+            return `#${APP_BG_3?.replace('#', '') || '0c4a6e'}`
         }
     }
 

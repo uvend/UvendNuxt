@@ -1,10 +1,8 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor }">
             <ul>
-                <div class="logo-container">
-                    <img src="/UVendlogo-Better.png"/>
-                </div>
+                <MyLogo />
                 <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)">
                     <Icon name="lucide:credit-card" />
                     <p class="text-sm">Transactions</p>
@@ -51,6 +49,9 @@ export default{
                 return this.$store.pageTitle;
             }
             return route.at(-1)
+        },
+        bgColor(){
+            return `#${APP_BG_2?.replace('#', '') || '1287c9'}`
         }
     }
 
@@ -62,7 +63,6 @@ export default{
     text-transform: capitalize;
 }
 .sidebar {
-    background-color: #1287c9; /* Light gray background for sidebar */
     padding: 10px; /* Padding for sidebar content */
     color: white
 }
