@@ -1,4 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const pagesDir = process.env.APP_ENV != '' 
+  ? `pages/${process.env.APP_ENV}` 
+  : 'pages'
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
@@ -27,7 +31,8 @@ export default defineNuxtConfig({
       APP_LOGO: JSON.stringify(process.env.APP_LOGO || ''),
       APP_BG_1: JSON.stringify(process.env.APP_BG_1 || ''),
       APP_BG_2: JSON.stringify(process.env.APP_BG_2 || ''),
-      APP_BG_3: JSON.stringify(process.env.APP_BG_3 || '')
+      APP_BG_3: JSON.stringify(process.env.APP_BG_3 || ''),
+      APP_ENV: JSON.stringify(process.env.APP_ENV || ''),
     }
   },
   ssr: false,// Not required in Tailwind 3+, but useful for older versions
@@ -35,4 +40,7 @@ export default defineNuxtConfig({
     '~/plugins/toast',
     '~/plugins/pinia',
   ],
+  dir: {
+    pages: pagesDir
+  },
 })
