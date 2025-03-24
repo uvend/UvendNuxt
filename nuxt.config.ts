@@ -27,7 +27,11 @@ export default defineNuxtConfig({
       APP_LOGO: JSON.stringify(process.env.APP_LOGO || ''),
       APP_BG_1: JSON.stringify(process.env.APP_BG_1 || ''),
       APP_BG_2: JSON.stringify(process.env.APP_BG_2 || ''),
-      APP_BG_3: JSON.stringify(process.env.APP_BG_3 || '')
+      APP_BG_3: JSON.stringify(process.env.APP_BG_3 || ''),
+      APP_FONT_COLOR_1: JSON.stringify(process.env.APP_FONT_COLOR_1 || ''),
+      APP_FONT_COLOR_2: JSON.stringify(process.env.APP_FONT_COLOR_2 || ''),
+      APP_FONT_COLOR_3: JSON.stringify(process.env.APP_FONT_COLOR_3 || ''),
+      APP_ENV: JSON.stringify(process.env.APP_ENV || ''),
     }
   },
   ssr: false,// Not required in Tailwind 3+, but useful for older versions

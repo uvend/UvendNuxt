@@ -75,7 +75,7 @@ export default{
 
         },
         bgColor(){
-            return `#${APP_BG_1?.replace('#', '') || '020617'}`
+            return `#${APP_BG_1?.replace('#', '') || '172554'}`
         }
     }
 }
