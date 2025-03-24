@@ -1,6 +1,6 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor }">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
             <ul>
                 <MyLogo />
                 <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)">
@@ -52,6 +52,9 @@ export default{
         },
         bgColor(){
             return `#${APP_BG_2?.replace('#', '') || '1287c9'}`
+        },
+        fontColor(){
+            return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`
         }
     }
 
@@ -64,7 +67,6 @@ export default{
 }
 .sidebar {
     padding: 10px; /* Padding for sidebar content */
-    color: white
 }
 
 .scroll {
@@ -82,7 +84,6 @@ export default{
     border-radius: 0.25rem;
     padding: 8px 10px;
     cursor: pointer;
-    color: white;
     display: grid;
     grid-template-columns: auto 1fr; /* 1 part first column, 3 parts second column */
     gap:10px;

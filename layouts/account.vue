@@ -1,6 +1,6 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor }">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
             <ul>
                 <MyLogo />
                 <li class="menu-item"><Icon name="lucide:shield"/><p class="text-sm">Accounts</p></li>
@@ -48,6 +48,9 @@ export default{
     computed:{
         bgColor(){
             return `#${APP_BG_3?.replace('#', '') || '0c4a6e'}`
+        },
+        fontColor(){
+            return `#${APP_FONT_COLOR_1?.replace('#', '') || 'ffffff'}`
         }
     }
 
@@ -90,7 +93,6 @@ main {
     border-radius: 0.25rem;
     padding: 8px 10px;
     cursor: pointer;
-    color: white;
     display: grid;
     grid-template-columns: auto 1fr; /* 1 part first column, 3 parts second column */
     gap:10px;
