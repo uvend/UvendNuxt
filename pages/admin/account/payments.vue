@@ -20,33 +20,6 @@
                         search pages {{ totalPages }} current page {{ currentPage }} page size {{ pageSize }}
                     </hidden>    
                 </div>
-                <!-- Add filter toggle buttons -->
-                <div class="flex flex-row gap-2 mt-2">
-                    <Button 
-                        :variant="filters.onRollback ? 'default' : 'outline'" 
-                        @click="toggleFilter('onRollback')"
-                        size="sm"
-                    >
-                        <Icon v-if="filters.onRollback" name="lucide:check" class="mr-1 h-4 w-4" />
-                        On Rollback
-                    </Button>
-                    <Button 
-                        :variant="filters.hasValidBank ? 'default' : 'outline'" 
-                        @click="toggleFilter('hasValidBank')"
-                        size="sm"
-                    >
-                        <Icon v-if="filters.hasValidBank" name="lucide:check" class="mr-1 h-4 w-4" />
-                        Has Valid Bank
-                    </Button>
-                    <Button 
-                        :variant="filters.hasEmail ? 'default' : 'outline'" 
-                        @click="toggleFilter('hasEmail')"
-                        size="sm"
-                    >
-                        <Icon v-if="filters.hasEmail" name="lucide:check" class="mr-1 h-4 w-4" />
-                        Has Email
-                    </Button>
-                </div>
             </div>
             <div class="flex flex-row gap-x-1.5 items-center">
                 <p :class="[disableBatch ? 'text-red-500' : 'text-green-500']">{{ selectedDifference }}</p>                
@@ -57,6 +30,28 @@
                     </span>
                 </div>
                 <Button :disabled="disableBatch" @click="batch()">Batch</Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <Button variant="ghost" class="rounded-full px-2 py-3">
+                            <Icon name="lucide:sliders-horizontal" class="w-5 h-5"/>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem  @click="toggleFilter('onRollback')" class="flex justify-between" >
+                            <p>Rollback</p>
+                            <Icon v-if="filters.onRollback" name="lucide:check" class="mr-1 h-4 w-4" />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem @click="toggleFilter('hasValidBank')" class="flex justify-between">
+                            <p>Valid Bank</p>
+                            <Icon v-if="filters.hasValidBank" name="lucide:check" class="mr-1 h-4 w-4" />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem  @click="toggleFilter('hasEmail')" class="flex justify-between">
+                            <p>Email</p>
+                            <Icon v-if="filters.hasEmail" name="lucide:check" class="mr-1 h-4 w-4" />
+                        </DropdownMenuItem>
+
+                    </DropdownMenuContent>
+                </DropdownMenu>
                 <div>
                     <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
