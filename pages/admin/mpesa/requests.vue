@@ -87,34 +87,34 @@
                 <div class="formatted-text">
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Business Code</p>
-                        <p>{{ request.businessShortCode }}</p>
+                        <p class="ml-4">{{ request.businessShortCode }}</p>
                     </div>
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Bill Reference</p>
-                        <p>{{ request.billRefNumber }}</p>
+                        <p class="ml-4">{{ request.billRefNumber }}</p>
                     </div>
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Phone Number</p>
-                        <p>{{ request.msisdn }}</p>
+                        <p class="ml-4">{{ request.msisdn }}</p>
                     </div>
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Amount</p>
-                        <p>{{ request.transAmount.toFixed(2) }}</p>
+                        <p class="ml-4">{{ request.transAmount.toFixed(2) }}</p>
                     </div>
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Status Code</p>
-                        <p>{{ request.statusCode }}</p>
+                        <p class="ml-4">{{ request.statusCode }}</p>
                     </div>
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Endpoint</p>
-                        <p>{{ request.endpoint === 'v' ? 'Validation' : 'Confirmation' }}</p>
+                        <p class="ml-4">{{ request.endpoint === 'v' ? 'Validation' : 'Confirmation' }}</p>
                     </div>
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Message</p>
-                        <p>{{ request.message || 'No message available' }}</p>
+                        <p class="ml-4">{{ request.message || 'No message available' }}</p>
                     </div>
                 </div>
-                <DialogFooter class="flex flex-start">
+                <DialogFooter>
                     <Button @click="ressend(request.id)" v-if="request.message">
                         Resend SMS
                     </Button>
