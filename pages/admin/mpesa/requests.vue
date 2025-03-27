@@ -81,14 +81,38 @@
                 <DialogHeader>
                     <p></p>
                 </DialogHeader>
-                <div>
-                    
-                </div>
-                <div>
-                    {{ request.message }}
+                <div class="formatted-text">
+                    <div class="flex justify-between">
+                        <p class="font-bold">Business Code</p>
+                        <p>{{ request.businessShortCode }}</p>
+                    </div>
+                    <div class="flex justify-between">
+                        <p class="font-bold">Bill Reference</p>
+                        <p>{{ request.billRefNumber }}</p>
+                    </div>
+                    <div class="flex justify-between">
+                        <p class="font-bold">Phone Number</p>
+                        <p>{{ request.msisdn }}</p>
+                    </div>
+                    <div class="flex justify-between">
+                        <p class="font-bold">Amount</p>
+                        <p>{{ request.transAmount.toFixed(2) }}</p>
+                    </div>
+                    <!--<div class="flex justify-between">
+                        <p class="font-bold">Status Code</p>
+                        <p>{{ request.statusCode }}</p>
+                    </div>-->
+                    <div class="flex justify-between">
+                        <p class="font-bold">Endpoint</p>
+                        <p>{{ request.endpoint === 'v' ? 'Validation' : 'Confirmation' }}</p>
+                    </div>
+                    <div class="flex justify-between">
+                        <p class="font-bold">Message</p>
+                        <p>{{ request.message || 'No message available' }}</p>
+                    </div>
                 </div>
                 <DialogFooter>
-                    <Button v-if="request.message" @click="ressend(request.id)">
+                    <Button @click="ressend(request.id)" v-if="request.message">
                         Resend SMS
                     </Button>
                 </DialogFooter>
