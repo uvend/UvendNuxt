@@ -82,15 +82,9 @@
                     <p></p>
                 </DialogHeader>
                 <div>
-                    
-                </div>
-                <div>
                     {{ request.message }}
                 </div>
                 <DialogFooter>
-                    <Button v-if="request.message" @click="ressend(request.id)">
-                        Resend SMS
-                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -144,9 +138,6 @@ export default{
             })
             console.log(response)
             this.smsBalance = response.balance;
-        },
-        async ressend(id){
-            console.log(id);
         },
         formatedDate(dateString){
             return new Date(dateString).toLocaleDateString('en-ZA', {
