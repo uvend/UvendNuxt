@@ -205,13 +205,13 @@ export default{
                 
                 // Apply toggle filters
                 const matchesRollbackFilter = !this.filters.onRollback || 
-                    (payment.periodTotals && payment.periodTotals.cancellationComment !== '');
+                    (payment.periodTotals && payment.periodTotals.isOnRollback);
                 
                 const matchesBankFilter = !this.filters.hasValidBank || 
-                    (payment.payeeBankingInfo && payment.payeeBankingInfo.hasValidBankDetails);
+                    (payment.payeeInfo && payment.payeeInfo.hasValidBankDetails);
                 
                 const matchesEmailFilter = !this.filters.hasEmail || 
-                    (payment.payeeInfo && payment.payeeInfo.isValidEmailAddress);
+                    (payment.payeeInfo && payment.payeeInfo.email && payment.payeeInfo.email.trim() !== '');
                 
                 return matchesSearch && matchesRollbackFilter && matchesBankFilter && matchesEmailFilter;
             });
