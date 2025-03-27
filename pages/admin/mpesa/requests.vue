@@ -124,6 +124,8 @@
     </div>
 </template>
 <script>
+import _ from 'lodash';
+const { debounce } = _;
 definePageMeta({
     layout: 'account'
 })
@@ -172,6 +174,28 @@ export default{
             console.log(response)
             this.smsBalance = response.balance;
         },
+        ressend: debounce(async function (id){
+            try{
+                const response = await $fetch(`${MPESA_URL}/resend`,{
+                    params : {
+                        id : id
+                    }
+                })
+                this.$toast({
+                    title: 'Success',
+                    variant: "success"
+                });
+                this.getSMSBalance();
+
+            }catch(e){
+                console.log(e);
+                this.$toast({
+                    title: 'Uh oh! Something went wrong.',
+                    description: 'There was a problem with your request.',
+                    variant: "destructive"
+                });
+            }
+        }, 500),
         formatedDate(dateString){
             return new Date(dateString).toLocaleDateString('en-ZA', {
                 day: '2-digit',
