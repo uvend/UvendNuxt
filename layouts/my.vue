@@ -1,15 +1,13 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
             <ul>
-                <div class="logo-container">
-                    <img src="/UVendlogo-Better.png"/>
-                </div>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transaction`)">
+                <MyLogo />
+                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)">
                     <Icon name="lucide:credit-card" />
                     <p class="text-sm">Transactions</p>
                 </li>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/meter`)">
+                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/meters`)">
                     <Icon name="lucide:parking-meter"/>
                     <p class="text-sm">Meters</p>
                 </li>
@@ -26,7 +24,7 @@
                 <div>
                     <div>
                         <p class="title font-bold">
-                            {{ $store.title ?? title }}
+                            {{ title }}
                         </p>
                     </div>
                 </div>
@@ -47,7 +45,16 @@ export default{
     computed:{
         title(){
             const route = this.$route.path.split('/')
+            if(route.at(-2) === 'meters'){
+                return this.$store.pageTitle;
+            }
             return route.at(-1)
+        },
+        bgColor(){
+            return `#${APP_BG_2?.replace('#', '') || '1287c9'}`
+        },
+        fontColor(){
+            return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`
         }
     }
 
@@ -59,9 +66,7 @@ export default{
     text-transform: capitalize;
 }
 .sidebar {
-    background-color: #1287c9; /* Light gray background for sidebar */
     padding: 10px; /* Padding for sidebar content */
-    color: white
 }
 
 .scroll {
@@ -79,7 +84,6 @@ export default{
     border-radius: 0.25rem;
     padding: 8px 10px;
     cursor: pointer;
-    color: white;
     display: grid;
     grid-template-columns: auto 1fr; /* 1 part first column, 3 parts second column */
     gap:10px;

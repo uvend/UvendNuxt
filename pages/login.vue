@@ -50,7 +50,7 @@ export default{
                 
                 if(userType == "Administration"){
                     localStorage.setItem('customer','admin');
-                    return navigateTo('/');
+                    return navigateTo('/my');
                 }
 
             }catch(e){

@@ -1,9 +1,7 @@
 <template>
     <div class="main-grid">
-        <div class="ad-space bg-slate-800">
-        <div class="logo-container">
-            <img src="/UVendlogo-Better.png"/>
-        </div>
+        <div :style="{ backgroundColor: bgColor }" class="bg-dynamic">
+            <MyLogo />
         </div>
         <div class="profile-grid flex h-full">
             <div class="flex justify-between py-2 px-4">
@@ -18,7 +16,7 @@
                 <div class="">
                     <MySkeletenCardList v-if="isLoading" :columns="1"/>
                     <div v-else class="customer-container hide-scrollbar">
-                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}/transaction`)"/> 
+                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}/transactions`)"/> 
                     </div>
                 </div>
             </div>
@@ -75,14 +73,20 @@ export default{
                 return customer.description.toLowerCase().includes(this.search.toLowerCase());
             });
 
+        },
+        bgColor(){
+            return `#${APP_BG_1?.replace('#', '') || '172554'}`
         }
     }
 }
 </script>
 <style scoped>
+.bg-dynamic {
+  transition: background-color 0.3s;
+}
 .main-grid{
     display: grid;
-    grid-template-columns: auto min-content;
+    grid-template-columns: 2fr 1fr;
 }
 .customer-container{
     height: 300px;
@@ -104,9 +108,6 @@ export default{
 .customer-container{
     overflow-y: scroll;
     height: calc(100vh - 50px);
-}
-
-.ad-space{
 }
 
 .logo-container img{

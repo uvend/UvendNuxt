@@ -20,6 +20,33 @@
                         search pages {{ totalPages }} current page {{ currentPage }} page size {{ pageSize }}
                     </hidden>    
                 </div>
+                <!-- Add filter toggle buttons -->
+                <div class="flex flex-row gap-2 mt-2">
+                    <Button 
+                        :variant="filters.onRollback ? 'default' : 'outline'" 
+                        @click="toggleFilter('onRollback')"
+                        size="sm"
+                    >
+                        <Icon v-if="filters.onRollback" name="lucide:check" class="mr-1 h-4 w-4" />
+                        On Rollback
+                    </Button>
+                    <Button 
+                        :variant="filters.hasValidBank ? 'default' : 'outline'" 
+                        @click="toggleFilter('hasValidBank')"
+                        size="sm"
+                    >
+                        <Icon v-if="filters.hasValidBank" name="lucide:check" class="mr-1 h-4 w-4" />
+                        Has Valid Bank
+                    </Button>
+                    <Button 
+                        :variant="filters.hasEmail ? 'default' : 'outline'" 
+                        @click="toggleFilter('hasEmail')"
+                        size="sm"
+                    >
+                        <Icon v-if="filters.hasEmail" name="lucide:check" class="mr-1 h-4 w-4" />
+                        Has Email
+                    </Button>
+                </div>
             </div>
             <div class="flex flex-row gap-x-1.5 items-center">
                 <p :class="[disableBatch ? 'text-red-500' : 'text-green-500']">{{ selectedDifference }}</p>                
@@ -101,7 +128,12 @@ export default{
             disableBatch: true,
             selectedDifference: "0.00",
             rangeStart: '',
-            rangeEnd: ''
+            rangeEnd: '',
+            filters: {
+                onRollback: false,
+                hasValidBank: false,
+                hasEmail: false
+            },
         }
     },
     methods:{
@@ -160,13 +192,28 @@ export default{
                 this.currentPage = page;
             }
         },
+        toggleFilter(filterName) {
+            this.filters[filterName] = !this.filters[filterName];
+            this.currentPage = 1; // Reset to first page when filter changes
+        },
         filterPayments() {
             return this.payments.filter(payment => {
-                if (payment.payeeInfo && payment.payeeInfo.description) {
-                    //console.log(payment)
-                    return payment.payeeInfo.description.toLowerCase().startsWith(this.search.toLowerCase());
-                }
-                return false; // If description doesn't exist, skip the payment
+                // Text search filter
+                const matchesSearch = !this.search || 
+                    (payment.payeeInfo && payment.payeeInfo.description && 
+                    payment.payeeInfo.description.toLowerCase().includes(this.search.toLowerCase()));
+                
+                // Apply toggle filters
+                const matchesRollbackFilter = !this.filters.onRollback || 
+                    (payment.periodTotals && payment.periodTotals.cancellationComment !== '');
+                
+                const matchesBankFilter = !this.filters.hasValidBank || 
+                    (payment.payeeBankingInfo && payment.payeeBankingInfo.hasValidBankDetails);
+                
+                const matchesEmailFilter = !this.filters.hasEmail || 
+                    (payment.payeeInfo && payment.payeeInfo.isValidEmailAddress);
+                
+                return matchesSearch && matchesRollbackFilter && matchesBankFilter && matchesEmailFilter;
             });
         },
         isBatchDisabled(){

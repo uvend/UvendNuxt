@@ -1,10 +1,8 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between bg-sky-900">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
             <ul>
-                <div class="logo-container">
-                    <img src="/UVendlogo-Better.png"/>
-                </div>
+                <MyLogo />
                 <li class="menu-item"><Icon name="lucide:shield"/><p class="text-sm">Accounts</p></li>
                 <ul class="sub-group">
                     <li class="menu-item" @click="navigateTo('/admin/account/payments')"><Icon name="lucide:wallet-cards"/><p class="text-sm">Payments</p></li>
@@ -45,6 +43,14 @@ export default{
     mounted(){
         if(typeof MPESA_URL !== "undefined"){
             this.mpesaUrl = true;
+        }
+    },
+    computed:{
+        bgColor(){
+            return `#${APP_BG_3?.replace('#', '') || '0c4a6e'}`
+        },
+        fontColor(){
+            return `#${APP_FONT_COLOR_1?.replace('#', '') || 'ffffff'}`
         }
     }
 
@@ -87,7 +93,6 @@ main {
     border-radius: 0.25rem;
     padding: 8px 10px;
     cursor: pointer;
-    color: white;
     display: grid;
     grid-template-columns: auto 1fr; /* 1 part first column, 3 parts second column */
     gap:10px;
