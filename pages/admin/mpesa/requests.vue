@@ -97,27 +97,27 @@
                         <p class="font-bold">Phone Number</p>
                         <p>{{ request.msisdn }}</p>
                     </div>
-                    <hr>
                     <div class="flex justify-between">
                         <p class="font-bold">Amount</p>
                         <p>{{ request.transAmount.toFixed(2) }}</p>
                     </div>
-                    <hr>
-                    <div class="flex justify-between">
+                    <!--<div class="flex justify-between">
                         <p class="font-bold">Status Code</p>
                         <p>{{ request.statusCode }}</p>
-                    </div>
+                    </div>-->
                     <div class="flex justify-between">
                         <p class="font-bold">Endpoint</p>
                         <p>{{ request.endpoint === 'v' ? 'Validation' : 'Confirmation' }}</p>
                     </div>
-                    <hr>
                     <div class="flex justify-between">
                         <p class="font-bold">Message</p>
                         <p>{{ request.message || 'No message available' }}</p>
                     </div>
                 </div>
                 <DialogFooter>
+                    <Button @click="ressend(request.id)" v-if="request.message">
+                        Resend SMS
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
