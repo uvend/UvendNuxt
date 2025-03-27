@@ -41,7 +41,7 @@ export default{
         }
     },
     mounted(){
-        if(typeof MPESA_URL !== "undefined"){
+        if(typeof MPESA_URL != ""){
             this.mpesaUrl = true;
         }
     },
