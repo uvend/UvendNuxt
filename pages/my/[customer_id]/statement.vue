@@ -306,37 +306,45 @@ export default{
                 this.currentPage = page;
             }
         },
-        calculateStatementPeriod(statementDay, statmentMonth = null, statmentYear = null){
+        calculateStatementPeriod(statementDay, statmentMonth = null, statmentYear = null) {
             const today = new Date();
             var currentYear, currentMonth;
-            if(!statmentYear){
+            
+            if(!statmentYear) {
                 currentYear = today.getFullYear();
-            }else{
+            } else {
                 currentYear = statmentYear;
             }
-            if(!statmentMonth){
+            
+            if(!statmentMonth && statmentMonth !== 0) { // Important: check for 0 as well
                 currentMonth = today.getMonth(); // getMonth() zero-indexed
-            }else{
-                currentMonth = statmentMonth;
-            }
-
-            const currentDate = today.getDate();
-
-            //console.log(currentYear, currentMonth, currentDate)
-
-            if (currentDate > statementDay) {
-                var start = new Date(currentYear, currentMonth, statementDay + 1);
-                var end = new Date(currentYear, currentMonth + 1, statementDay);
-                
             } else {
-                var start = new Date(currentYear, currentMonth - 2, statementDay + 1);
-                var end =  new Date(currentYear, currentMonth - 1, statementDay)
+                currentMonth = statmentMonth; // Use the exact month selected
+            }
+            
+            // When a specific month is selected, we want to show that exact month
+            // regardless of the current date
+            if(statmentMonth !== null) {
+                // For a selected month, show the full month range
+                var start = new Date(currentYear, currentMonth, 1); // First day of selected month
+                var end = new Date(currentYear, currentMonth + 1, 0); // Last day of selected month
+            } else {
+                // For auto calculation based on statement day
+                const currentDate = today.getDate();
+                
+                if (currentDate > statementDay) {
+                    var start = new Date(currentYear, currentMonth, statementDay + 1);
+                    var end = new Date(currentYear, currentMonth + 1, statementDay);
+                } else {
+                    var start = new Date(currentYear, currentMonth - 1, statementDay + 1);
+                    var end = new Date(currentYear, currentMonth, statementDay);
+                }
             }
 
             return {
-                    start : this.returnFormatDate(start),
-                    end : this.returnFormatDate(end)
-                }
+                start: this.returnFormatDate(start),
+                end: this.returnFormatDate(end)
+            };
         },
         returnFormatDate(date){
             const formattedDate = new Intl.DateTimeFormat('en-US', {
@@ -398,11 +406,12 @@ export default{
                 this.yearArr.push(i)
             }
         },
-        monthUpdated(value){
-            this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod, value + 1, this.selectedYear);
+        monthUpdated(value) {
+            // When a month is selected from dropdown, show the full month
+            this.dateRange = this.calculateStatementPeriod(null, value, this.selectedYear);
         },
-        yearUpdated(value){
-            this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod, this.selectedMonth + 1, value);
+        yearUpdated(value) {
+            this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod, this.selectedMonth, value);
         }
     },
     async mounted(){
@@ -423,11 +432,13 @@ export default{
         },
     },
     watch:{
-        dateRange(newValue){
-            const dateParts = this.dateRange.end.split('-')
-            this.selectedMonth = dateParts[0] - 1
+        dateRange(newValue) {
+            // Fix: Parse the date properly to get the correct month
+            const dateParts = this.dateRange.start.split('-');
+            // Month in dateParts is 1-indexed, convert to 0-indexed for JavaScript
+            this.selectedMonth = parseInt(dateParts[0]) - 1;
             this.selectedYear = parseInt(dateParts[2]);
-            this.getTransactions()
+            this.getTransactions();
         },
         selectedMeterComplex(newValue){
             console.log('selected complex',newValue)
