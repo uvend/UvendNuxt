@@ -45,12 +45,12 @@ export default{
 
                 if(userType === 'Customer'){
                     localStorage.setItem('customer',result.userInfo.userParent.uniqueIdentification);
-                    return navigateTo(`/my/${result.userInfo.userParent.uniqueIdentification}/transaction`)
+                    return navigateTo(`/my/${result.userInfo.userParent.uniqueIdentification}/transactions`)
                 }
                 
                 if(userType == "Administration"){
                     localStorage.setItem('customer','admin');
-                    return navigateTo('/my');
+                    return navigateTo('');
                 }
 
             }catch(e){
