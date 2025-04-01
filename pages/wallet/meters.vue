@@ -1,7 +1,7 @@
 <template>
     <div class="flex">
       <!-- Sidebar navigation - blue with white text (consistent with other wallet pages) -->
-      <aside class="hidden md:block w-64 p-4 bg-blue-700 min-h-screen">
+      <aside class="hidden md:block w-64 p-4 bg-blue-500 min-h-screen">
         <div class="mb-8">
           <h2 class="text-xl font-bold mb-4 text-white">Wallet</h2>
           <nav class="space-y-1">
@@ -13,7 +13,7 @@
               <Icon name="lucide:credit-card" class="mr-2 h-5 w-5" />
               Transactions
             </NuxtLink>
-            <NuxtLink to="/wallet/meters" class="flex items-center px-3 py-2 rounded-md bg-blue-800 text-white font-medium">
+            <NuxtLink to="/wallet/meters" class="flex items-center px-3 py-2 rounded-md bg-yellow-500 text-white font-medium">
               <Icon name="lucide:gauge" class="mr-2 h-5 w-5" />
               Meters
             </NuxtLink>
