@@ -1,5 +1,5 @@
 <template>
-    <div class="flex">
+    <div class="flex flex-col md:flex-row">
       <!-- Sidebar navigation - blue with white text (consistent with other wallet pages) -->
       <aside class="hidden md:block w-64 p-4 bg-blue-700 min-h-screen">
         <div class="mb-8">
@@ -49,7 +49,7 @@
       </aside>
   
       <!-- Mobile navigation - only visible on small screens -->
-      <div class="md:hidden w-full fixed top-0 left-0 z-40 bg-blue-700 border-b shadow-sm">
+      <div class="md:hidden fixed top-0 left-0 right-0 z-40 bg-blue-700 border-b shadow-sm">
         <ScrollArea class="w-full whitespace-nowrap py-2">
           <div class="flex px-4 gap-2">
             <Button variant="outline" size="sm" as-child class="text-white border-blue-500">
@@ -72,24 +72,27 @@
       </div>
       
       <!-- Main content -->
-      <div class="flex-1 p-4 md:p-6 md:pt-4 mt-12 md:mt-0">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+      <div class="flex-1 p-4 md:p-6 md:pt-4 mt-14 md:mt-0">
+        <!-- Header section -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 class="text-2xl font-bold mb-2">My Meters</h1>
-            <p class="text-gray-600">Manage your utility meters and purchase utilities</p>
+            <h1 class="text-xl md:text-2xl font-bold mb-2">My Meters</h1>
+            <p class="text-sm md:text-base text-gray-600">Manage your utility meters and purchase utilities</p>
           </div>
-          <Button @click="openAddMeterDialog" class="mt-4 sm:mt-0">
+          <Button @click="openAddMeterDialog" class="w-full sm:w-auto">
             <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
             Add New Meter
           </Button>
         </div>
         
         <!-- Filter and Search -->
-        <div class="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-          <div class="flex flex-wrap gap-2">
+        <div class="flex flex-col gap-4 mb-6">
+          <!-- Filter buttons -->
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
             <Button 
               :variant="activeFilter === 'all' ? 'secondary' : 'outline'" 
               size="sm" 
+              class="w-full sm:w-auto"
               @click="filterMeters('all')"
             >
               All Meters
@@ -97,6 +100,7 @@
             <Button 
               :variant="activeFilter === 'electricity' ? 'secondary' : 'outline'" 
               size="sm" 
+              class="w-full sm:w-auto"
               @click="filterMeters('electricity')"
             >
               <Icon name="lucide:zap" class="mr-2 h-4 w-4" />
@@ -105,6 +109,7 @@
             <Button 
               :variant="activeFilter === 'water' ? 'secondary' : 'outline'" 
               size="sm" 
+              class="w-full sm:w-auto"
               @click="filterMeters('water')"
             >
               <Icon name="lucide:droplets" class="mr-2 h-4 w-4" />
@@ -113,6 +118,7 @@
             <Button 
               :variant="activeFilter === 'favorite' ? 'secondary' : 'outline'" 
               size="sm" 
+              class="w-full sm:w-auto"
               @click="filterMeters('favorite')"
             >
               <Icon name="lucide:star" class="mr-2 h-4 w-4" />
@@ -120,12 +126,13 @@
             </Button>
           </div>
           
-          <div class="relative w-full sm:w-64">
+          <!-- Search input -->
+          <div class="relative w-full">
             <Input 
               type="search" 
               placeholder="Search meters" 
               v-model="searchQuery"
-              class="pr-8"
+              class="w-full pr-8"
             />
             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <Icon name="lucide:search" class="h-4 w-4 text-gray-400" />
@@ -138,17 +145,19 @@
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
         
-        <div v-else-if="filteredMeters.length === 0" class="bg-white rounded-lg border p-8 text-center">
+        <div v-else-if="filteredMeters.length === 0" class="bg-white rounded-lg border p-6 text-center">
           <div class="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 mb-4">
             <Icon name="lucide:gauge" class="h-6 w-6 text-gray-500" />
           </div>
           <h3 class="text-lg font-medium mb-2">No Meters Found</h3>
-          <p class="text-gray-500 mb-4">You haven't added any meters yet or no meters match your current filters.</p>
-          <Button @click="openAddMeterDialog">Add Your First Meter</Button>
+          <p class="text-sm text-gray-500 mb-4">You haven't added any meters yet or no meters match your current filters.</p>
+          <Button @click="openAddMeterDialog" class="w-full sm:w-auto">Add Your First Meter</Button>
         </div>
         
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <Card v-for="meter in filteredMeters" :key="meter.id" :class="`p-4 bg-white border shadow-sm hover:shadow-md transition-shadow ${meter.isFavorite ? 'border-yellow-400' : ''}`">
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card v-for="meter in filteredMeters" :key="meter.id" 
+                :class="`p-4 bg-white border shadow-sm hover:shadow-md transition-shadow ${meter.isFavorite ? 'border-yellow-400' : ''}`">
+            <!-- Meter card header -->
             <div class="flex justify-between items-start">
               <div class="flex items-center">
                 <div :class="`w-10 h-10 rounded-full mr-3 flex items-center justify-center ${getUtilityClass(meter.type)}`">
@@ -156,42 +165,43 @@
                 </div>
                 <div>
                   <h3 class="font-medium">{{ meter.name }}</h3>
-                  <p class="text-gray-500 text-sm">{{ meter.location }}</p>
+                  <p class="text-sm text-gray-500">{{ meter.location }}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" @click="toggleFavorite(meter)" :class="meter.isFavorite ? 'text-yellow-500' : 'text-gray-400'">
+              <Button variant="ghost" size="sm" @click="toggleFavorite(meter)" 
+                      :class="meter.isFavorite ? 'text-yellow-500' : 'text-gray-400'">
                 <Icon :name="meter.isFavorite ? 'lucide:star' : 'lucide:star'" class="h-5 w-5" />
               </Button>
             </div>
             
-            <div class="mt-4 pt-4 border-t">
+            <!-- Meter details -->
+            <div class="mt-4 pt-4 border-t space-y-4">
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <p class="text-sm text-gray-500">Meter Number</p>
-                  <p class="font-mono">{{ meter.number }}</p>
+                  <p class="font-mono text-sm">{{ meter.number }}</p>
                 </div>
                 <div>
                   <p class="text-sm text-gray-500">Property ID</p>
-                  <p>{{ meter.propertyId }}</p>
+                  <p class="text-sm">{{ meter.propertyId }}</p>
                 </div>
               </div>
-            </div>
-            
-            <div class="mt-4 pt-4 border-t">
+              
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <p class="text-sm text-gray-500">Last Purchase</p>
-                  <p>{{ meter.lastPurchase ? formatDate(meter.lastPurchase) : 'Never' }}</p>
+                  <p class="text-sm">{{ meter.lastPurchase ? formatDate(meter.lastPurchase) : 'Never' }}</p>
                 </div>
                 <div>
                   <p class="text-sm text-gray-500">Amount</p>
-                  <p>{{ meter.lastAmount ? `R${meter.lastAmount.toFixed(2)}` : '-' }}</p>
+                  <p class="text-sm">{{ meter.lastAmount ? `R${meter.lastAmount.toFixed(2)}` : '-' }}</p>
                 </div>
               </div>
             </div>
             
+            <!-- Action buttons -->
             <div class="mt-4 flex gap-2">
-              <Button variant="outline" class="w-full" @click="buyForMeter(meter)">
+              <Button variant="outline" class="flex-1" @click="buyForMeter(meter)">
                 Buy {{ meter.type }}
               </Button>
               <DropdownMenu>
@@ -224,7 +234,7 @@
     
     <!-- Add/Edit Meter Dialog -->
     <Dialog :open="showMeterDialog" @update:open="showMeterDialog = $event">
-      <DialogContent class="sm:max-w-md">
+      <DialogContent class="w-[90vw] sm:max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle>{{ editingMeter ? 'Edit Meter' : 'Add New Meter' }}</DialogTitle>
           <DialogDescription>
@@ -286,7 +296,7 @@
     
     <!-- Confirm Remove Dialog -->
     <Dialog :open="showConfirmRemove" @update:open="showConfirmRemove = $event">
-      <DialogContent class="sm:max-w-md">
+      <DialogContent class="w-[90vw] sm:max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle>Remove Meter</DialogTitle>
           <DialogDescription>
@@ -313,7 +323,7 @@
     
     <!-- Buy Utility Dialog -->
     <Dialog :open="showBuyDialog" @update:open="showBuyDialog = $event">
-      <DialogContent class="sm:max-w-md">
+      <DialogContent class="w-[90vw] sm:max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle>Buy {{ selectedMeter?.type || 'Utility' }}</DialogTitle>
           <DialogDescription>

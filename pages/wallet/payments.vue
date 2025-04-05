@@ -1,6 +1,6 @@
 <template>
-  <div class="flex">
-    <!-- Sidebar navigation - blue with white text (consistent with dash.vue) -->
+  <div class="flex flex-col md:flex-row">
+    <!-- Sidebar navigation - hide on mobile, show on md and up -->
     <aside class="hidden md:block w-64 p-4 bg-blue-500 min-h-screen">
       <div class="mb-8">
         <h2 class="text-xl font-bold mb-4 text-white">Wallet</h2>
@@ -48,8 +48,8 @@
       </div>
     </aside>
 
-    <!-- Mobile navigation - only visible on small screens -->
-    <div class="md:hidden w-full fixed top-0 left-0 z-40 bg-blue-700 border-b shadow-sm">
+    <!-- Mobile top navigation bar -->
+    <div class="md:hidden fixed top-0 left-0 right-0 z-40 bg-blue-700 border-b shadow-sm">
       <ScrollArea class="w-full whitespace-nowrap py-2">
         <div class="flex px-4 gap-2">
           <Button variant="outline" size="sm" as-child class="text-white border-blue-500">
@@ -72,17 +72,18 @@
     </div>
     
     <!-- Main content -->
-    <div class="flex-1 p-4 md:p-6 md:pt-4 mt-12 md:mt-0">
+    <div class="flex-1 p-4 md:p-6 md:pt-4 mt-14 md:mt-0">
+      <!-- Header section -->
       <div class="mb-6">
-        <h1 class="text-2xl font-bold mb-2">Payment Methods</h1>
-        <p class="text-gray-600">Manage your cards and view fund transfer history</p>
+        <h1 class="text-xl md:text-2xl font-bold mb-2">Payment Methods</h1>
+        <p class="text-sm md:text-base text-gray-600">Manage your cards and view fund transfer history</p>
       </div>
       
       <!-- Card Management Section -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center mb-4">
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
           <h2 class="text-lg font-semibold">Your Cards</h2>
-          <Button size="sm" @click="showAddCardDialog">
+          <Button size="sm" class="w-full sm:w-auto" @click="showAddCardDialog">
             <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
             Add New Card
           </Button>
@@ -136,10 +137,10 @@
       </div>
       
       <!-- Load Funds Section -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center mb-4">
+      <div class="mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
           <h2 class="text-lg font-semibold">Load Funds</h2>
-          <Button size="sm" variant="secondary" @click="showLoadFundsDialog">
+          <Button size="sm" variant="secondary" class="w-full sm:w-auto" @click="showLoadFundsDialog">
             <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
             Add Money
           </Button>
@@ -149,17 +150,17 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="p-4 bg-gray-50 rounded-lg">
               <p class="text-sm text-gray-500 mb-1">Current Balance</p>
-              <p class="text-2xl font-bold">R{{ currentBalance || '0.00' }}</p>
+              <p class="text-xl md:text-2xl font-bold">R{{ currentBalance || '0.00' }}</p>
             </div>
             
             <div class="p-4 bg-gray-50 rounded-lg">
               <p class="text-sm text-gray-500 mb-1">Total Loaded</p>
-              <p class="text-2xl font-bold">R{{ totalLoaded || '0.00' }}</p>
+              <p class="text-xl md:text-2xl font-bold">R{{ totalLoaded || '0.00' }}</p>
             </div>
             
             <div class="p-4 bg-gray-50 rounded-lg">
               <p class="text-sm text-gray-500 mb-1">Total Spent</p>
-              <p class="text-2xl font-bold">R{{ totalSpent || '0.00' }}</p>
+              <p class="text-xl md:text-2xl font-bold">R{{ totalSpent || '0.00' }}</p>
             </div>
           </div>
         </Card>
@@ -167,11 +168,11 @@
       
       <!-- Fund Loading History Section -->
       <div>
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
           <h2 class="text-lg font-semibold">Funding History</h2>
-          <div class="flex gap-2">
-            <Select v-model="historyFilter">
-              <SelectTrigger class="w-[150px]">
+          <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Select v-model="historyFilter" class="w-full sm:w-[150px]">
+              <SelectTrigger>
                 <SelectValue placeholder="All Time" />
               </SelectTrigger>
               <SelectContent>
@@ -181,14 +182,14 @@
                 <SelectItem value="all">All Time</SelectItem>
               </SelectContent>
             </Select>
-            <Button size="sm" variant="outline" @click="exportHistoryData">
+            <Button size="sm" variant="outline" class="w-full sm:w-auto" @click="exportHistoryData">
               <Icon name="lucide:download" class="mr-2 h-4 w-4" />
               Export
             </Button>
           </div>
         </div>
         
-        <Card class="mb-6 bg-white border shadow-sm">
+        <Card class="mb-6 bg-white border shadow-sm overflow-x-auto">
           <CardContent class="p-0">
             <div v-if="isLoadingHistory" class="py-8 flex justify-center">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -196,33 +197,33 @@
             <div v-else-if="fundingHistory.length === 0" class="py-8 text-center text-gray-500">
               No transaction history found
             </div>
-            <Table v-else>
+            <Table>
               <TableHeader>
                 <TableRow class="bg-gray-50">
-                  <TableHead>Date</TableHead>
-                  <TableHead>Card</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Reference</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead class="whitespace-nowrap">Date</TableHead>
+                  <TableHead class="whitespace-nowrap">Card</TableHead>
+                  <TableHead class="whitespace-nowrap">Amount</TableHead>
+                  <TableHead class="whitespace-nowrap">Reference</TableHead>
+                  <TableHead class="whitespace-nowrap">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow v-for="transaction in fundingHistory" :key="transaction.id">
-                  <TableCell>
+                  <TableCell class="whitespace-nowrap">
                     <div>
                       <p class="font-medium">{{ formatDate(transaction.date) }}</p>
-                      <p class="text-sm text-gray-500">{{ formatTime(transaction.date) }}</p>
+                      <p class="text-xs text-gray-500">{{ formatTime(transaction.date) }}</p>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell class="whitespace-nowrap">
                     <div class="flex items-center">
                       <Icon :name="getCardIcon(transaction.cardType)" class="mr-2 h-4 w-4" />
                       <span>**** {{ transaction.cardLast4 }}</span>
                     </div>
                   </TableCell>
-                  <TableCell class="font-medium">R{{ transaction.amount.toFixed(2) }}</TableCell>
-                  <TableCell>{{ transaction.reference }}</TableCell>
-                  <TableCell>
+                  <TableCell class="whitespace-nowrap font-medium">R{{ transaction.amount.toFixed(2) }}</TableCell>
+                  <TableCell class="whitespace-nowrap">{{ transaction.reference }}</TableCell>
+                  <TableCell class="whitespace-nowrap">
                     <Badge :variant="transaction.status === 'Completed' ? 'success' : 'destructive'" 
                           :class="transaction.status === 'Completed' ? 'bg-green-100 text-green-800' : ''">
                       {{ transaction.status }}
@@ -237,9 +238,10 @@
     </div>
   </div>
   
+  <!-- Dialogs -->
   <!-- Add Card Dialog -->
   <Dialog :open="showAddCard" @update:open="showAddCard = $event">
-    <DialogContent class="sm:max-w-md">
+    <DialogContent class="w-[90vw] sm:max-w-md mx-auto">
       <DialogHeader>
         <DialogTitle>Add Payment Card</DialogTitle>
         <DialogDescription>
@@ -281,7 +283,7 @@
   
   <!-- Load Funds Dialog -->
   <Dialog :open="showLoadFunds" @update:open="showLoadFunds = $event">
-    <DialogContent class="sm:max-w-md">
+    <DialogContent class="w-[90vw] sm:max-w-md mx-auto">
       <DialogHeader>
         <DialogTitle>Load Wallet Funds</DialogTitle>
         <DialogDescription>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex flex-col md:flex-row">
     <!-- Sidebar navigation - blue with white text (consistent with dash.vue) -->
     <aside class="hidden md:block w-64 p-4 bg-blue-500 min-h-screen">
       <div class="mb-8">
@@ -72,15 +72,58 @@
     </div>
     
     <!-- Main content -->
-    <div class="flex-1 p-4 md:p-6 md:pt-4 mt-12 md:mt-0">
+    <div class="flex-1 p-4 md:p-6 md:pt-4 mt-14 md:mt-0">
+      <!-- Header section - Optimized for mobile -->
       <div class="mb-6">
-        <h1 class="text-2xl font-bold mb-2">Transaction History</h1>
-        <p class="text-gray-600">View your utility purchases and wallet transactions</p>
+        <h1 class="text-xl md:text-2xl font-bold mb-2">Transaction History</h1>
+        <p class="text-sm md:text-base text-gray-600">View your utility purchases and wallet transactions</p>
       </div>
       
-      <!-- Filters and Period Selector -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-between mb-6">
-        <div class="flex gap-2 flex-wrap">
+      <!-- Filters and Period Selector - Reorganized for mobile -->
+      <div class="flex flex-col gap-4 mb-6">
+        <!-- Filter buttons in a scrollable container on mobile -->
+        <ScrollArea class="w-full md:hidden">
+          <div class="flex gap-2 pb-2">
+            <Button 
+              :variant="activeFilter === 'all' ? 'secondary' : 'outline'" 
+              size="sm" 
+              class="whitespace-nowrap"
+              @click="filterTransactions('all')"
+            >
+              All Transactions
+            </Button>
+            <Button 
+              :variant="activeFilter === 'electricity' ? 'secondary' : 'outline'" 
+              size="sm" 
+              class="whitespace-nowrap"
+              @click="filterTransactions('electricity')"
+            >
+              <Icon name="lucide:zap" class="mr-2 h-4 w-4" />
+              Electricity
+            </Button>
+            <Button 
+              :variant="activeFilter === 'water' ? 'secondary' : 'outline'" 
+              size="sm" 
+              class="whitespace-nowrap"
+              @click="filterTransactions('water')"
+            >
+              <Icon name="lucide:droplets" class="mr-2 h-4 w-4" />
+              Water
+            </Button>
+            <Button 
+              :variant="activeFilter === 'funding' ? 'secondary' : 'outline'" 
+              size="sm" 
+              class="whitespace-nowrap"
+              @click="filterTransactions('funding')"
+            >
+              <Icon name="lucide:credit-card" class="mr-2 h-4 w-4" />
+              Funding
+            </Button>
+          </div>
+        </ScrollArea>
+
+        <!-- Desktop filters - hidden on mobile -->
+        <div class="hidden md:flex gap-2 flex-wrap">
           <Button 
             :variant="activeFilter === 'all' ? 'secondary' : 'outline'" 
             size="sm" 
@@ -114,9 +157,10 @@
           </Button>
         </div>
         
-        <div class="flex gap-2">
-          <Select v-model="period">
-            <SelectTrigger class="w-[150px]">
+        <!-- Period selector and export - Full width on mobile -->
+        <div class="flex flex-col sm:flex-row gap-2 w-full">
+          <Select v-model="period" class="w-full sm:w-[150px]">
+            <SelectTrigger>
               <SelectValue placeholder="Period" />
             </SelectTrigger>
             <SelectContent>
@@ -127,19 +171,19 @@
             </SelectContent>
           </Select>
           
-          <Button variant="outline" size="sm" @click="exportTransactions">
+          <Button variant="outline" size="sm" class="w-full sm:w-auto" @click="exportTransactions">
             <Icon name="lucide:download" class="mr-2 h-4 w-4" />
             Export
           </Button>
         </div>
       </div>
       
-      <!-- Consumption Bar Chart -->
+      <!-- Consumption Bar Chart - Adjusted for mobile -->
       <Card class="p-4 mb-6 bg-white border shadow-sm">
         <CardHeader class="px-0 pt-0 pb-2">
-          <div class="flex justify-between">
+          <div class="flex flex-col sm:flex-row gap-2 justify-between">
             <CardTitle>Utility Consumption</CardTitle>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center gap-4">
               <div class="flex items-center">
                 <div class="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
                 <span class="text-sm">Electricity</span>
@@ -152,10 +196,10 @@
           </div>
         </CardHeader>
         
-        <div v-if="isLoading" class="h-[300px] flex justify-center items-center">
+        <div v-if="isLoading" class="h-[250px] md:h-[300px] flex justify-center items-center">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-        <div v-else class="h-[300px] w-full">
+        <div v-else class="h-[250px] md:h-[300px] w-full">
           <!-- Bar Chart -->
           <div class="flex h-full">
             <div class="w-14 flex flex-col justify-between text-xs text-gray-500 pb-6">
@@ -199,8 +243,8 @@
         </div>
       </Card>
       
-      <!-- Transactions Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <!-- Transactions Summary Cards - Stack on mobile -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card class="p-4 bg-white border shadow-sm">
           <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Total Spent</p>
@@ -240,18 +284,18 @@
         </Card>
       </div>
       
-      <!-- Transaction List -->
+      <!-- Transaction List - Optimized for mobile -->
       <Card class="mb-6 bg-white border shadow-sm">
-        <CardHeader class="flex flex-col sm:flex-row justify-between pb-2">
+        <CardHeader class="flex flex-col gap-4">
           <CardTitle>Transactions</CardTitle>
           
-          <!-- Search -->
-          <div class="relative w-full sm:w-64">
+          <!-- Search - Full width on mobile -->
+          <div class="relative w-full">
             <Input 
               type="search" 
               placeholder="Search transactions" 
               v-model="searchQuery"
-              class="pr-8"
+              class="w-full pr-8"
             />
             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <Icon name="lucide:search" class="h-4 w-4 text-gray-400" />
@@ -260,68 +304,106 @@
         </CardHeader>
         
         <CardContent class="p-0">
-          <div v-if="isLoadingTransactions" class="py-8 flex justify-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-          <div v-else-if="filteredTransactions.length === 0" class="py-8 text-center text-gray-500">
-            No transactions found
-          </div>
-          <Table v-else>
-            <TableHeader>
-              <TableRow class="bg-gray-50">
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Meter/Reference</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow v-for="transaction in paginatedTransactions" :key="transaction.id">
-                <TableCell>
-                  <div>
-                    <p class="font-medium">{{ formatDate(transaction.date) }}</p>
-                    <p class="text-sm text-gray-500">{{ formatTime(transaction.date) }}</p>
-                  </div>
-                </TableCell>
-                <TableCell>
+          <!-- Mobile Transaction List -->
+          <div class="block md:hidden">
+            <div v-if="isLoadingTransactions" class="py-8 flex justify-center">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+            <div v-else-if="filteredTransactions.length === 0" class="py-8 text-center text-gray-500">
+              No transactions found
+            </div>
+            <div v-else class="divide-y">
+              <div v-for="transaction in paginatedTransactions" :key="transaction.id" 
+                   class="p-4 hover:bg-gray-50" @click="viewReceipt(transaction)">
+                <div class="flex justify-between items-start mb-2">
                   <div class="flex items-center">
                     <div :class="`w-8 h-8 rounded-full mr-2 flex items-center justify-center ${getUtilityClass(transaction.type)}`">
                       <Icon :name="getUtilityIcon(transaction.type)" class="h-4 w-4 text-white" />
                     </div>
-                    <span>{{ transaction.type }}</span>
+                    <div>
+                      <p class="font-medium">{{ transaction.type }}</p>
+                      <p class="text-sm text-gray-500">{{ transaction.reference }}</p>
+                    </div>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <p>{{ transaction.reference }}</p>
-                    <p class="text-sm text-gray-500">{{ transaction.description }}</p>
+                  <div class="text-right">
+                    <p class="font-medium" :class="transaction.isCredit ? 'text-green-600' : ''">
+                      {{ transaction.isCredit ? '+' : '' }}R{{ transaction.amount.toFixed(2) }}
+                    </p>
+                    <p class="text-xs text-gray-500">{{ formatDate(transaction.date) }}</p>
                   </div>
-                </TableCell>
-                <TableCell class="font-medium">
-                  <span :class="transaction.isCredit ? 'text-green-600' : ''">
-                    {{ transaction.isCredit ? '+' : '' }}R{{ transaction.amount.toFixed(2) }}
-                  </span>
-                </TableCell>
-                <TableCell>
+                </div>
+                <div class="flex justify-between items-center">
                   <Badge :variant="transaction.status === 'Completed' ? 'success' : transaction.status === 'Pending' ? 'outline' : 'destructive'" 
                          :class="transaction.status === 'Completed' ? 'bg-green-100 text-green-800' : ''">
                     {{ transaction.status }}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm" @click="viewReceipt(transaction)">
-                    <Icon name="lucide:receipt" class="h-4 w-4" />
+                  <Button variant="ghost" size="sm">
+                    <Icon name="lucide:chevron-right" class="h-4 w-4" />
                   </Button>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop Transaction Table - Hidden on mobile -->
+          <div class="hidden md:block">
+            <Table v-if="filteredTransactions.length > 0">
+              <TableHeader>
+                <TableRow class="bg-gray-50">
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Meter/Reference</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-for="transaction in paginatedTransactions" :key="transaction.id">
+                  <TableCell>
+                    <div>
+                      <p class="font-medium">{{ formatDate(transaction.date) }}</p>
+                      <p class="text-sm text-gray-500">{{ formatTime(transaction.date) }}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div class="flex items-center">
+                      <div :class="`w-8 h-8 rounded-full mr-2 flex items-center justify-center ${getUtilityClass(transaction.type)}`">
+                        <Icon :name="getUtilityIcon(transaction.type)" class="h-4 w-4 text-white" />
+                      </div>
+                      <span>{{ transaction.type }}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <p>{{ transaction.reference }}</p>
+                      <p class="text-sm text-gray-500">{{ transaction.description }}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell class="font-medium">
+                    <span :class="transaction.isCredit ? 'text-green-600' : ''">
+                      {{ transaction.isCredit ? '+' : '' }}R{{ transaction.amount.toFixed(2) }}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge :variant="transaction.status === 'Completed' ? 'success' : transaction.status === 'Pending' ? 'outline' : 'destructive'" 
+                           :class="transaction.status === 'Completed' ? 'bg-green-100 text-green-800' : ''">
+                      {{ transaction.status }}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="sm" @click="viewReceipt(transaction)">
+                      <Icon name="lucide:receipt" class="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
           
-          <!-- Pagination -->
+          <!-- Pagination - Simplified for mobile -->
           <div class="flex items-center justify-between px-4 py-3 border-t">
-            <div class="flex-1 flex justify-between sm:hidden">
+            <div class="flex justify-between w-full md:hidden">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -330,6 +412,9 @@
               >
                 Previous
               </Button>
+              <span class="text-sm text-gray-700">
+                Page {{ currentPage }} of {{ totalPages }}
+              </span>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -339,7 +424,9 @@
                 Next
               </Button>
             </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            
+            <!-- Desktop pagination - Hidden on mobile -->
+            <div class="hidden md:flex md:flex-1 md:items-center md:justify-between">
               <div>
                 <p class="text-sm text-gray-700">
                   Showing
@@ -394,9 +481,9 @@
     </div>
   </div>
   
-  <!-- Receipt Dialog -->
+  <!-- Receipt Dialog - Optimized for mobile -->
   <Dialog :open="showReceipt" @update:open="showReceipt = $event">
-    <DialogContent class="sm:max-w-md">
+    <DialogContent class="w-[90vw] sm:max-w-md mx-auto">
       <DialogHeader>
         <DialogTitle>Transaction Receipt</DialogTitle>
         <DialogDescription>

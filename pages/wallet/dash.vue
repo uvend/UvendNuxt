@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex flex-col md:flex-row">
     <!-- Sidebar navigation - blue with white text -->
     <aside class="hidden md:block w-64 p-4 bg-blue-500 min-h-screen">
       <div class="mb-8">
@@ -49,7 +49,7 @@
     </aside>
 
     <!-- Mobile navigation - only visible on small screens -->
-    <div class="md:hidden w-full fixed top-0 left-0 z-40 bg-blue-700 border-b shadow-sm">
+    <div class="md:hidden fixed top-0 left-0 right-0 z-40 bg-blue-700 border-b shadow-sm">
       <ScrollArea class="w-full whitespace-nowrap py-2">
         <div class="flex px-4 gap-2">
           <Button variant="secondary" size="sm" as-child class="bg-blue-800 text-white">
@@ -72,59 +72,70 @@
     </div>
     
     <!-- Main content -->
-    <div class="flex-1 p-4 md:p-6 md:pt-4 mt-12 md:mt-0">
+    <div class="flex-1 p-4 md:p-6 md:pt-4 mt-14 md:mt-0">
       <!-- Header with wallet balance and filters -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div class="bg-white rounded-lg shadow-sm p-4 w-full md:w-auto">
+      <div class="flex flex-col gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-4 w-full">
           <p class="text-gray-600 text-sm">Wallet Funds</p>
           <p class="text-2xl font-bold">{{ walletBalance || 'R0.00' }}</p>
         </div>
         
         <div class="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" class="bg-white" @click="setDateRange('12months')">12 Months</Button>
-          <Button size="sm" variant="outline" class="bg-white" @click="setDateRange('6months')">6 Months</Button>
-          <Button size="sm" variant="outline" class="bg-white" @click="setDateRange('30days')">30 Days</Button>
+          <Button size="sm" variant="outline" class="flex-1 sm:flex-none bg-white" @click="setDateRange('12months')">12 Months</Button>
+          <Button size="sm" variant="outline" class="flex-1 sm:flex-none bg-white" @click="setDateRange('6months')">6 Months</Button>
+          <Button size="sm" variant="outline" class="flex-1 sm:flex-none bg-white" @click="setDateRange('30days')">30 Days</Button>
           <Button size="sm" :variant="dateRange === '7days' ? 'secondary' : 'outline'" 
-                  class="bg-white" @click="setDateRange('7days')">7 Days</Button>
+                  class="flex-1 sm:flex-none bg-white" @click="setDateRange('7days')">7 Days</Button>
         </div>
       </div>
       
-      <!-- Stats and chart section -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <!-- Stats boxes -->
+      <!-- Stats grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card class="p-4 bg-white border shadow-sm">
           <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Dashboard</p>
-            <p class="text-2xl font-bold">{{ statsData.dashboard || '0' }}</p>
+            <p class="text-lg md:text-2xl font-bold">{{ statsData.dashboard || '0' }}</p>
           </div>
         </Card>
         
         <Card class="p-4 bg-white border shadow-sm">
           <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Outbox</p>
-            <p class="text-2xl font-bold">{{ statsData.outbox || '0' }}</p>
+            <p class="text-lg md:text-2xl font-bold">{{ statsData.outbox || '0' }}</p>
           </div>
         </Card>
         
         <Card class="p-4 bg-white border shadow-sm">
           <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Favorites</p>
-            <p class="text-2xl font-bold">{{ statsData.favorites || '0' }}</p>
+            <p class="text-lg md:text-2xl font-bold">{{ statsData.favorites || '0' }}</p>
           </div>
         </Card>
         
         <Card class="p-4 bg-white border shadow-sm">
           <div class="flex flex-col">
             <p class="text-gray-600 text-sm">{{ currentMonthYear }}</p>
-            <p class="text-2xl font-bold">{{ statsData.monthlyTotal || 'R0.00' }}</p>
+            <p class="text-lg md:text-2xl font-bold">{{ statsData.monthlyTotal || 'R0.00' }}</p>
           </div>
         </Card>
       </div>
       
       <!-- Chart section -->
       <Card class="p-4 mb-6 bg-white border shadow-sm">
-        <CardHeader class="px-0 pt-0 pb-2">
-          <CardTitle>Monthly Transactions</CardTitle>
+        <CardHeader class="px-0 pt-0">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <CardTitle>Monthly Transactions</CardTitle>
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+              <Button size="sm" variant="outline" class="flex-1 sm:flex-none" @click="addNewMeter">
+                <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
+                Add meter
+              </Button>
+              <Button size="sm" variant="outline" class="flex-1 sm:flex-none" @click="exportData">
+                <Icon name="lucide:download" class="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <div v-if="isLoading" class="h-[200px] flex justify-center items-center">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -143,60 +154,63 @@
       </Card>
       
       <!-- Labels section -->
-      <div class="flex flex-wrap gap-4 mb-6">
-        <Card v-for="(label, index) in labels" :key="index" class="p-4 w-full md:w-auto flex-1 bg-white border shadow-sm">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <Card v-for="(label, index) in labels" :key="index" 
+              class="p-4 bg-white border shadow-sm">
           <div class="flex flex-col">
             <p class="text-gray-600 text-sm">{{ label.name || 'Label' }}</p>
-            <p class="text-2xl font-bold">{{ label.value || '0' }}</p>
+            <p class="text-lg md:text-2xl font-bold">{{ label.value || '0' }}</p>
           </div>
         </Card>
       </div>
       
       <!-- Transactions table -->
       <Card class="mb-6 bg-white border shadow-sm">
-        <CardHeader class="flex flex-col sm:flex-row justify-between pb-2">
-          <CardTitle>Recent Transactions</CardTitle>
-          <div class="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" @click="addNewMeter">
-              <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
-              Add new meter
-            </Button>
-            <Button size="sm" variant="outline" @click="exportData">
-              <Icon name="lucide:download" class="mr-2 h-4 w-4" />
-              Export
-            </Button>
-            <Button size="sm" variant="secondary" @click="createPayment">
-              <Icon name="lucide:credit-card" class="mr-2 h-4 w-4" />
-              Create payment
-            </Button>
+        <CardHeader class="flex flex-col gap-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <CardTitle>Recent Transactions</CardTitle>
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+              <Button size="sm" variant="outline" class="flex-1 sm:flex-none" @click="addNewMeter">
+                <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
+                Add meter
+              </Button>
+              <Button size="sm" variant="outline" class="flex-1 sm:flex-none" @click="exportData">
+                <Icon name="lucide:download" class="mr-2 h-4 w-4" />
+                Export
+              </Button>
+              <Button size="sm" variant="secondary" class="flex-1 sm:flex-none" @click="createPayment">
+                <Icon name="lucide:credit-card" class="mr-2 h-4 w-4" />
+                Payment
+              </Button>
+            </div>
           </div>
         </CardHeader>
-        <CardContent class="p-0">
+        <CardContent class="p-0 overflow-x-auto">
           <div v-if="isLoadingTransactions" class="py-8 flex justify-center">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
           <div v-else-if="transactions.length === 0" class="py-8 text-center text-gray-500">
             No transactions found
           </div>
-          <Table v-else>
+          <Table>
             <TableHeader>
               <TableRow class="bg-gray-50">
-                <TableHead>Amount</TableHead>
-                <TableHead>Meter Number</TableHead>
-                <TableHead>Username/Email</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead class="whitespace-nowrap">Amount</TableHead>
+                <TableHead class="whitespace-nowrap">Meter Number</TableHead>
+                <TableHead class="whitespace-nowrap">Username/Email</TableHead>
+                <TableHead class="whitespace-nowrap">Date</TableHead>
+                <TableHead class="whitespace-nowrap">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow v-for="transaction in transactions" :key="transaction.id">
-                <TableCell class="font-medium">{{ transaction.amount }}</TableCell>
-                <TableCell>{{ transaction.invoice }}</TableCell>
-                <TableCell>{{ transaction.email }}</TableCell>
-                <TableCell>{{ transaction.date }}</TableCell>
-                <TableCell>
+                <TableCell class="whitespace-nowrap font-medium">{{ transaction.amount }}</TableCell>
+                <TableCell class="whitespace-nowrap">{{ transaction.invoice }}</TableCell>
+                <TableCell class="whitespace-nowrap">{{ transaction.email }}</TableCell>
+                <TableCell class="whitespace-nowrap">{{ transaction.date }}</TableCell>
+                <TableCell class="whitespace-nowrap">
                   <Badge :variant="transaction.status === 'Succeeded' ? 'success' : 'destructive'" 
-                        :class="transaction.status === 'Succeeded' ? 'bg-green-100 text-green-800' : ''">
+                         :class="transaction.status === 'Succeeded' ? 'bg-green-100 text-green-800' : ''">
                     {{ transaction.status }}
                   </Badge>
                 </TableCell>

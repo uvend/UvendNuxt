@@ -1,144 +1,150 @@
 <template>
     <div>
-        <div class="flex justify-between">
-            <div class="flex gap-1">
-                <div class="flex gap-2">
-                <Select v-model="selectedStatementType">
-                    <SelectTrigger class="w-[150px]">
-                        <SelectValue placeholder="Month" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="type in statementType" :value="type.value">
-                            {{ type.label }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-                <MyDateRangePicker  v-if="selectedStatementType" v-model="dateRange" :months="2"/>
-                <div v-else class="flex gap-1">
-                    <Select v-model="selectedMonth" @update:model-value="monthUpdated">
-                        <SelectTrigger class="w-[150px]">
-                            <SelectValue placeholder="Month" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="month in monthArr" :value="monthArr.indexOf(month)">
-                                {{ month }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select v-model="selectedYear" @update:model-value="yearUpdated">
-                        <SelectTrigger class="w-[100px]">
-                            <SelectValue placeholder="Year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="year in yearArr" :value="parseInt(year)">
-                                {{ year }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row justify-between gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <Select v-model="selectedStatementType" class="w-full sm:w-[150px]">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Month" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="type in statementType" :value="type.value">
+                                    {{ type.label }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <MyDateRangePicker v-if="selectedStatementType" v-model="dateRange" :months="2" class="w-full sm:w-auto"/>
+                        <div v-else class="flex flex-col sm:flex-row gap-1">
+                            <Select v-model="selectedMonth" @update:model-value="monthUpdated" class="w-full sm:w-[150px]">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Month" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem v-for="month in monthArr" :value="monthArr.indexOf(month)">
+                                        {{ month }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select v-model="selectedYear" @update:model-value="yearUpdated" class="w-full sm:w-[100px]">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Year" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem v-for="year in yearArr" :value="parseInt(year)">
+                                        {{ year }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button @click="getStatementPDF()" variant="secondary" class="w-full sm:w-auto">
+                            <Icon name="lucide:printer" />
+                        </Button>
+                    </div>
                 </div>
-                <Button @click="getStatementPDF()" variant="secondary">
-                    <Icon name="lucide:printer" />
-                </Button>
-                <!--<Button @click="toggleSearch()" variant="secondary">
-                    <Icon name="lucide:search"/>
-                </Button>
-                <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>-->
-            </div>
-            <div>
-                <Select  v-model="selectedUtility">
-                    <SelectTrigger class="w-[180px]">
-                        <SelectValue placeholder="Utility type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="utility in utilityType" :value="utility.value">
-                            {{ utility.label }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-        </div>
-            <div class="flex flex-row w-fit gap-1">
-                <div class="flex gap-1">
-                    <Button variant="secondary" v-if="selectedMeterComplex != null" @click="selectedMeterComplex = null">
-                        <Icon name="lucide:x" class="w-5 h-5"/>
-                    </Button>
-                    <Select v-model="selectedMeterComplex">
-                        <SelectTrigger class="w-[180px]">
-                            <SelectValue placeholder="Select complex" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="complex in meterComplexes" :value="complex.complexUniqueId">
-                                {{ complex.complexName }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <Select  v-model="pageSize">
-                    <SelectTrigger class="w-[80px]">
-                        <SelectValue placeholder="Page Size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="size in pageSizeSelect" :value="size">
-                            {{ size }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
                 <div>
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                    <Select v-model="selectedUtility" class="w-full sm:w-[180px]">
+                        <SelectTrigger>
+                            <SelectValue placeholder="Utility type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="utility in utilityType" :value="utility.value">
+                                {{ utility.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row w-full gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="flex gap-1">
+                        <Button variant="secondary" v-if="selectedMeterComplex != null" @click="selectedMeterComplex = null" class="w-full sm:w-auto">
+                            <Icon name="lucide:x" class="w-5 h-5"/>
+                        </Button>
+                        <Select v-model="selectedMeterComplex" class="w-full sm:w-[180px]">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select complex" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="complex in meterComplexes" :value="complex.complexUniqueId">
+                                    {{ complex.complexName }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Select v-model="pageSize" class="w-full sm:w-[80px]">
+                        <SelectTrigger>
+                            <SelectValue placeholder="Page Size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="size in pageSizeSelect" :value="size">
+                                {{ size }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div class="flex">
+                        <Button variant="secondary" @click="changePage(currentPage-1)" class="w-full sm:w-auto"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
+                        <Button variant="secondary" @click="changePage(currentPage+1)" class="w-full sm:w-auto"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <MySkeletenCardList v-if="isLoading"/>
     <div v-else>
-        <div class="my-2" v-if="transactions.length > 0">
-            <div class="flex justify-between">
-                <p>Statement</p>
-                <p>{{ statement.name }}</p>
+        <div class="my-4 p-4 bg-white rounded-lg shadow-sm" v-if="transactions.length > 0">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex justify-between">
+                    <p class="font-medium">Statement</p>
+                    <p>{{ statement.name }}</p>
+                </div>
+                <div class="flex justify-between">
+                    <p class="font-medium">Statement Period</p>
+                    <p>{{ statement.startDate }} - {{ statement.endDate }}</p>
+                </div>
+                <div class="flex justify-between">
+                    <p class="font-medium">Managed Tendered Amount</p>
+                    <p>{{ statement.managedAmount }}</p>
+                </div>
+                <div class="flex justify-between">
+                    <p class="font-medium">Non Managed Tendered Amount</p>
+                    <p>{{ statement.nonManagedAmount }}</p>
+                </div>
             </div>
-            <div class="flex justify-between">
-                <p>Statement Period</p>
-                <p>{{ statement.startDate }} - {{ statement.endDate }}</p>
+            <hr class="my-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div v-for="stat in statement.stats" :key="stat.utilityType" class="flex justify-between">
+                    <p class="font-medium">{{ stat.utilityType }}</p>
+                    <p>{{ stat.totalPaidValue }}</p>
+                </div>
             </div>
-            <div class="flex justify-between">
-                <p>Managed Tendered Amount</p>
-                <p>{{ statement.managedAmount }}</p>
-            </div>
-            <div class="flex justify-between">
-                <p>Non Managed Tendered Amount</p>
-                <p>{{ statement.nonManagedAmount }}</p>
-            </div>
-            <hr>
-            <div v-for="stat in statement.stats" :key="stat.utilityType" class="flex justify-between">
-                <p>{{ stat.utilityType }}</p>
-                <p>{{ stat.totalPaidValue }}</p>
-            </div>
-            <hr>
-            <div class="flex justify-between">
-                <p>Total Tendered Amount</p>
-                <p>{{ statement.totalValue }}</p>
-            </div>
-            <hr>
-            <div class="flex justify-between">
-                <p>Service Percentage</p>
-                <p>{{ statement.commissionPerc }}%</p>
-            </div>
-            <div class="flex justify-between">
-                <p>Service Fee</p>
-                <p>{{ statement.commissionAmount }}</p>
-            </div>
-            <div class="flex justify-between">
-                <p>Tenant Fee</p>
-                <p>{{ statement.surchargeAmount }}</p>
-            </div>
-            <hr>
-            <div class="flex justify-between">
-                <p>Refund</p>
-                <p>{{ statement.refund }}</p>
+            <hr class="my-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex justify-between">
+                    <p class="font-medium">Total Tendered Amount</p>
+                    <p>{{ statement.totalValue }}</p>
+                </div>
+                <div class="flex justify-between">
+                    <p class="font-medium">Service Percentage</p>
+                    <p>{{ statement.commissionPerc }}%</p>
+                </div>
+                <div class="flex justify-between">
+                    <p class="font-medium">Service Fee</p>
+                    <p>{{ statement.commissionAmount }}</p>
+                </div>
+                <div class="flex justify-between">
+                    <p class="font-medium">Tenant Fee</p>
+                    <p>{{ statement.surchargeAmount }}</p>
+                </div>
+                <div class="flex justify-between">
+                    <p class="font-medium">Refund</p>
+                    <p>{{ statement.refund }}</p>
+                </div>
             </div>
         </div>
-        <MyMeterTransactionCard v-for="transaction in paginated" :transaction="transaction" :statement="true"/>
+        <div class="mt-4">
+            <MyMeterTransactionCard v-for="transaction in paginated" :transaction="transaction" :statement="true"/>
+        </div>
     </div>
 </template>
 <script>
@@ -316,28 +322,42 @@ export default{
                 currentYear = statmentYear;
             }
             
-            if(!statmentMonth && statmentMonth !== 0) { // Important: check for 0 as well
-                currentMonth = today.getMonth(); // getMonth() zero-indexed
+            if(!statmentMonth && statmentMonth !== 0) {
+                currentMonth = today.getMonth();
             } else {
-                currentMonth = statmentMonth; // Use the exact month selected
+                currentMonth = statmentMonth;
             }
             
-            // When a specific month is selected, we want to show that exact month
-            // regardless of the current date
-            if(statmentMonth !== null) {
-                // For a selected month, show the full month range
-                var start = new Date(currentYear, currentMonth, 1); // First day of selected month
-                var end = new Date(currentYear, currentMonth + 1, 0); // Last day of selected month
-            } else {
-                // For auto calculation based on statement day
+            // For payment date type (selectedStatementType === 0)
+            if(this.selectedStatementType === 0) {
                 const currentDate = today.getDate();
                 
-                if (currentDate > statementDay) {
-                    var start = new Date(currentYear, currentMonth, statementDay + 1);
-                    var end = new Date(currentYear, currentMonth + 1, statementDay);
+                if (currentDate >= 26) {
+                    // If we're on or after the 26th, show current month 26th to next month 25th
+                    var start = new Date(currentYear, currentMonth, 26);
+                    var end = new Date(currentYear, currentMonth + 1, 25);
                 } else {
-                    var start = new Date(currentYear, currentMonth - 1, statementDay + 1);
-                    var end = new Date(currentYear, currentMonth, statementDay);
+                    // If we're before the 26th, show previous month 26th to current month 25th
+                    var start = new Date(currentYear, currentMonth - 1, 26);
+                    var end = new Date(currentYear, currentMonth, 25);
+                }
+            } else {
+                // For calendar type (selectedStatementType === 1)
+                if(statmentMonth !== null) {
+                    // For a selected month, show the full month range
+                    var start = new Date(currentYear, currentMonth, 1);
+                    var end = new Date(currentYear, currentMonth + 1, 0);
+                } else {
+                    // For auto calculation based on statement day
+                    const currentDate = today.getDate();
+                    
+                    if (currentDate > statementDay) {
+                        var start = new Date(currentYear, currentMonth, statementDay + 1);
+                        var end = new Date(currentYear, currentMonth + 1, statementDay);
+                    } else {
+                        var start = new Date(currentYear, currentMonth - 1, statementDay + 1);
+                        var end = new Date(currentYear, currentMonth, statementDay);
+                    }
                 }
             }
 
