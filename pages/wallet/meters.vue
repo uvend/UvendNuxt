@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-col md:flex-row">
       <!-- Sidebar navigation - blue with white text (consistent with other wallet pages) -->
-      <aside class="hidden md:block w-64 p-4 bg-blue-700 min-h-screen">
+      <aside class="hidden md:block w-64 p-4 bg-blue-500 min-h-screen">
         <div class="mb-8">
           <h2 class="text-xl font-bold mb-4 text-white">Wallet</h2>
           <nav class="space-y-1">
@@ -13,7 +13,7 @@
               <Icon name="lucide:credit-card" class="mr-2 h-5 w-5" />
               Transactions
             </NuxtLink>
-            <NuxtLink to="/wallet/meters" class="flex items-center px-3 py-2 rounded-md bg-blue-800 text-white font-medium">
+            <NuxtLink to="/wallet/meters" class="flex items-center px-3 py-2 rounded-md bg-yellow-500 text-white font-medium">
               <Icon name="lucide:gauge" class="mr-2 h-5 w-5" />
               Meters
             </NuxtLink>
@@ -474,8 +474,7 @@
         
         try {
           // API call will be implemented later
-          // const response = await useAuthFetch(`${API_URL}/wallet/meters`);
-          // this.meters = response.data;
+          
           
           // Simulate API delay
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -498,8 +497,6 @@
       async fetchWalletBalance() {
         try {
           // API call will be implemented later
-          // const response = await useAuthFetch(`${API_URL}/wallet/balance`);
-          // this.walletBalance = response.balance;
           
           // Simulate API delay
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -606,11 +603,7 @@
         
         try {
           if (this.editingMeter) {
-            // API call to update meter will be implemented later
-            // await useAuthFetch(`${API_URL}/wallet/meters/${this.editingMeter.id}`, {
-            //   method: 'PUT',
-            //   body: this.meterForm
-            // });
+            
             
             this.$toast({
               title: 'Meter Updated',
@@ -619,10 +612,7 @@
             });
           } else {
             // API call to add meter will be implemented later
-            // await useAuthFetch(`${API_URL}/wallet/meters`, {
-            //   method: 'POST',
-            //   body: this.meterForm
-            // });
+            
             
             this.$toast({
               title: 'Meter Added',
@@ -653,9 +643,7 @@
       async confirmRemoveMeter() {
         try {
           // API call to remove meter will be implemented later
-          // await useAuthFetch(`${API_URL}/wallet/meters/${this.meterToRemove.id}`, {
-          //   method: 'DELETE'
-          // });
+          
           
           this.$toast({
             title: 'Meter Removed',
@@ -682,10 +670,7 @@
         const updatedMeter = { ...meter, isFavorite: !meter.isFavorite };
         
         // API call to toggle favorite will be implemented later
-        // useAuthFetch(`${API_URL}/wallet/meters/${meter.id}/favorite`, {
-        //   method: 'PUT',
-        //   body: { isFavorite: !meter.isFavorite }
-        // });
+        
         
         // Update local state immediately for better UX
         this.meters = this.meters.map(m => m.id === meter.id ? updatedMeter : m);
@@ -745,16 +730,7 @@
           const amount = parseFloat(this.purchaseAmount);
           
           // API call will be implemented later
-          // const payload = {
-          //   meterId: this.selectedMeter.id,
-          //   amount: amount,
-          //   paymentMethod: this.paymentMethod
-          // };
-          // 
-          // const response = await useAuthFetch(`${API_URL}/wallet/purchase`, {
-          //   method: 'POST',
-          //   body: payload
-          // });
+          
           
           // For demonstration - update local state
           const meterIndex = this.meters.findIndex(m => m.id === this.selectedMeter.id);
@@ -793,31 +769,7 @@
       
       exportMeters() {
         // API call will be implemented later
-        // const filters = {
-        //   type: this.activeFilter === 'all' ? null : this.activeFilter,
-        //   search: this.searchQuery.trim() || null
-        // };
-        // 
-        // useAuthFetch(`${API_URL}/wallet/meters/export`, {
-        //   method: 'POST',
-        //   body: filters
-        // }).then(response => {
-        //   // Download the file
-        //   const url = window.URL.createObjectURL(new Blob([response.data]));
-        //   const link = document.createElement('a');
-        //   link.href = url;
-        //   link.setAttribute('download', `meters-${new Date().toISOString().split('T')[0]}.csv`);
-        //   document.body.appendChild(link);
-        //   link.click();
-        //   link.remove();
-        // }).catch(error => {
-        //   console.error('Error exporting meters:', error);
-        //   this.$toast({
-        //     title: 'Export Failed',
-        //     description: 'Failed to export meters data',
-        //     variant: 'destructive'
-        //   });
-        // });
+        
         
         this.$toast?.({
           title: 'Export Initiated',
