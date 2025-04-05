@@ -44,6 +44,7 @@ export default{
                 const refresh_token = response.refresh_token;
                 localStorage.setItem('wallet-access-token',access_token);
                 localStorage.setItem('wallet-refresh-token',refresh_token);
+                localStorage.setItem('customer','wallet');
                 // console.log(response)
                 return navigateTo('/wallet/dashboard');
             }catch(e){
