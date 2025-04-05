@@ -26,6 +26,7 @@ export default{
     methods:{
         async resetPassword(){
             try{
+                if(!this.email) return
                 await useWalletAuthFetch(`${WALLET_API_URL}/auth/send-reset-code`,{
                     method : "POST",
                     body: {
@@ -38,6 +39,7 @@ export default{
                     variant: "success"
                 });
             }catch(e){
+                console.log(e)
                 this.$toast({
                     title: 'Uh oh! Something went wrong.',
                     description: 'There was a problem with your request.',
