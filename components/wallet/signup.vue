@@ -46,7 +46,7 @@ export default{
                 localStorage.setItem('wallet-refresh-token',refresh_token);
                 localStorage.setItem('customer','wallet');
                 // console.log(response)
-                return navigateTo('/wallet/dashboard');
+                return navigateTo('/wallet');
             }catch(e){
                 console.log(e)
                 this.$toast({

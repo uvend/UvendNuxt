@@ -1,23 +1,36 @@
 <template>
     <div class="grid-container">
         <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
-            <ul>
+            <nav>
                 <MyLogo />
-                <li class="menu-item"><Icon name="lucide:shield"/><p class="text-sm">Accounts</p></li>
-                <ul class="sub-group">
-                    <li class="menu-item" @click="navigateTo('/admin/account/payments')"><Icon name="lucide:wallet-cards"/><p class="text-sm">Payments</p></li>
-                    <li class="menu-item" @click="navigateTo('/admin/account/batch')"><Icon name="lucide:layers"/><p class="text-sm">Payment Batch</p></li>
-                </ul>
-                <div v-if="mpesaUrl">
-                    <li class="menu-item" >
-                        <Icon name="lucide:smartphone-charging"/><p class="text-sm">Mpesa</p>
-                    </li>
-                    <ul class="sub-group">
+                <NuxtLink class="menu-item">
+                    <Icon name="lucide:shield" class="mr-2 h-5 w-5" />
+                    <p class="">Accounts</p>
+                </NuxtLink>
+                <nav class="sub-group">
+                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/payments')">
+                        <Icon name="lucide:wallet-cards" class="mr-2 h-5 w-5" />
+                        <p class="">Payments</p>
+                    </NuxtLink>
+                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/batch')">
+                        <Icon name="lucide:layers" class="mr-2 h-5 w-5" />
+                        <p class="">Payment Batch</p>
+                    </NuxtLink>
+                </nav>
+                <nav v-if="mpesaUrl">
+                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white font-medium" >
+                        <Icon name="lucide:smartphone-charging" class="mr-2 h-5 w-5" />
+                        <p class="">Mpesa</p>
+                    </NuxtLink>
+                    <nav class="sub-group">
                         <!--<li class="menu-item" @click="navigateTo('/admin/mpesa/transactions')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Transactions</p></li>-->
-                        <li class="menu-item" @click="navigateTo('/admin/mpesa/requests')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Requests</p></li>
-                    </ul>
-                </div>
-            </ul>
+                        <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/mpesa/requests')">
+                            <Icon name="lucide:arrow-right-left" class="mr-2 h-5 w-5" />
+                            <p class="">Requests</p>
+                        </NuxtLink>
+                    </nav>
+                </nav>
+            </nav>
             <ul>
             </ul>
         </aside>
@@ -26,7 +39,7 @@
                 <div></div>
                 <MyUserMenu />
             </header>
-            <div class="scroll hide-scrollbar bg-gray-50">
+            <div class="scroll hide-scrollbar bg-gray-50 p-4">
                 <slot class="overflow-y hide-scrollbar bg-gray-100"/>
             </div>
             <!-- Main content goes here -->
@@ -77,11 +90,6 @@ main {
     padding: 10px; /* Padding for sidebar content */
 }
 
-.scroll {
-    padding: 20px; /* Padding for main content */
-    overflow-y: auto; /* Enable vertical scrolling */
-    height: calc(100vh - var(--header-height)); /* Use the CSS variable */
-}
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
