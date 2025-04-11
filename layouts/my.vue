@@ -1,21 +1,21 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
-            <ul>
+        <aside class="hidden md:block p-4 bg-blue-500 min-h-screen" :style="{ backgroundColor: bgColor, color: fontColor }">
+            <nav>
                 <MyLogo />
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)">
-                    <Icon name="lucide:credit-card" />
-                    <p class="text-sm">Transactions</p>
-                </li>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/meters`)">
-                    <Icon name="lucide:parking-meter"/>
-                    <p class="text-sm">Meters</p>
-                </li>
-                <li class="menu-item" @click="navigateTo(`/my/${$route.params.customer_id}/statement`)">
-                    <Icon name="lucide:file-chart-column"/>
-                    <p class="text-sm">Statement</p>
-                </li>
-            </ul>
+                <NuxtLink class="menu-item  flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)">
+                    <Icon name="lucide:credit-card" class="mr-2 h-5 w-5"/>
+                    <p class="">Transactions</p>
+                </NuxtLink>
+                <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo(`/my/${$route.params.customer_id}/meters`)">
+                    <Icon name="lucide:gauge" class="mr-2 h-5 w-5"/>
+                    <p class="">Meters</p>
+                </NuxtLink>
+                <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo(`/my/${$route.params.customer_id}/statement`)">
+                    <Icon name="lucide:chart-bar-big" class="mr-2 h-5 w-5"/>
+                    <p class="">Statement</p>
+                </NuxtLink>
+            </nav>
             <ul>
             </ul>
         </aside>
