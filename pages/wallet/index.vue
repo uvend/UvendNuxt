@@ -48,9 +48,11 @@
                   </div>
               </CardContent>
           </Card>
+        <BarGraph />
     </div>
 </template>
 <script>
+import BarGraph from '~/components/wallet/BarGraph.vue';
 definePageMeta({
     layout: 'wallet'
 })
@@ -114,6 +116,9 @@ export default {
   },
   mounted() {
     this.fetchDashboardData();
+  },
+  components: {
+    BarGraph,
   }
 }
-</script>
+</script> 

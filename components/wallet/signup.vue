@@ -31,7 +31,7 @@ export default{
     },
     methods: {
         async signUp(){
-            if(this.validate) return
+            if(!this.validate) return
             try{
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/auth/create`,{
                     method: "POST",
@@ -60,6 +60,7 @@ export default{
             this.invalid = []
             if(!this.email) this.invalid.push('email')
             if(!this.password) this.invalid.push('password')
+            console.log(this.invalid)
             if(this.invalid.length > 0) return false
             return true
         }

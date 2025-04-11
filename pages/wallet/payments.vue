@@ -12,7 +12,7 @@
                     <p class="text-2xl font-bold">0.00</p>
                     <p class="text-sm text-gray-500"></p>
                 </div>
-            </Card>
+          </Card>
             
             <Card class="p-4 bg-white border shadow-sm">
                 <div class="flex flex-col">
@@ -22,7 +22,7 @@
                         <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
                         <span>% vs previous</span>
                     </div>
-                </div>
+            </div>
             </Card>
             
             <Card class="p-4 bg-white border shadow-sm">
@@ -32,23 +32,23 @@
                     <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
                         <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
                         <span>% vs previous</span>
-                    </div>
-                </div>
-            </Card>
-        </div>
+            </div>
+          </div>
+        </Card>
+      </div>
         <Card class="bg-white border shadow-sm overflow-x-auto">
-            <CardContent class="p-0">
+          <CardContent class="p-0">
                 <div v-if="isLoading" class="py-8 flex justify-center">
                     <MyLoader />
-                </div>
-                <div v-else-if="fundingHistory.length === 0" class="py-8 text-center text-gray-500">
+            </div>
+            <div v-else-if="fundingHistory.length === 0" class="py-8 text-center text-gray-500">
                     No payments found
-                </div>
-            </CardContent>
+                    </div>
+          </CardContent>
         </Card>
       </div>
     
-  </template>
+</template>
 <script>
 definePageMeta({
     layout: 'wallet'
@@ -64,20 +64,20 @@ export default {
   methods: {
     async fetchData() {
         this.isLoading = true;
-        try {
-          // API call will be implemented later
-          // Simulate API delay
+      try {
+        // API call will be implemented later
+        // Simulate API delay
           await Promise.all([
             new Promise(resolve => setTimeout(resolve, 3000))
         ]);
           
           // Reset when API integrations are ready
           this.meters = []; // Will be populated by API in the future
-          
-        } catch (error) {
+        
+      } catch (error) {
           console.error('Error fetching meters:', error);
-          this.$toast({
-            title: 'Error',
+        this.$toast({
+          title: 'Error',
             description: 'Failed to load meters',
             variant: 'destructive'
           });

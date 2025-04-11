@@ -1,7 +1,7 @@
 <template>
     <div class="w-full h-[100vh] flex items-center justify-center">
-        <WalletSignIn v-if="login && !resetPassword" @changeState="signUp(false)" @forgotPassword="toggleResetPassword()"/>
-        <WalletSignUp v-if="!login && !resetPassword" @changeState="signUp(true)"/>
+        <WalletSignin v-if="login && !resetPassword" @changeState="signUp(false)" @forgotPassword="toggleResetPassword()"/>
+        <WalletSignup v-if="!login && !resetPassword" @changeState="signUp(true)"/>
         <WalletForgotPassword v-if="resetPassword" @backToLogin="toggleResetPassword()"/>
     </div>
 </template>
