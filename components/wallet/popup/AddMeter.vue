@@ -19,7 +19,7 @@
           <Label for="name" class="">
             Name
           </Label>
-          <Input v-model="meterNumber" class="col-span-3" />
+          <Input v-model="name" class="col-span-3" />
         </div>
       </div>
       <DialogFooter>
@@ -41,7 +41,7 @@ export default{
     data(){
         return{
             isLoading: false,
-            isValid: true,
+            isValid: false,
             meterNumber: null
         } 
     },
