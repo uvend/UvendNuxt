@@ -3,23 +3,21 @@
     <div class="flex flex-col gap-4">
       <div class="flex justify-between flex-wrap gap-2 items-center">
         <WalletUtilitySelector v-model="filterOptions" @update="console.log"/>
-        <Button @click="" class="w-full sm:w-auto">
-            <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
-            Add New Meter
-        </Button>
+        <WalletPopupAddMeter label="Add New Meter"/>
       </div>
     </div>
-    <Card class="bg-white border shadow-sm w-full">              
+    <Card v-if="isLoading" class="bg-white border shadow-sm w-full">              
         <CardContent class="p-0">
-          <div>
-              <div v-if="isLoading" class="py-8 flex justify-center">
+              <div  class="py-8 flex justify-center">
                   <MyLoader />
               </div>
-              <div v-else class="py-8 text-center text-gray-500">
-                  No transactions found
-              </div>
-            </div>
         </CardContent>
+    </Card>
+    <Card v-if="meters" v-for="meter in meters" class="p-2">
+        {{ meter }}
+    </Card>
+    <Card v-else class="py-8 text-center text-gray-500">
+        No transactions found
     </Card>
 </div>    
 </template>
@@ -31,7 +29,7 @@
     data() {
       return {
         isLoading: true,
-        meters: [],
+        meters: null,
         searchQuery: '',
         walletBalance: null,
         filterOptions: [
@@ -53,14 +51,11 @@
       async fetchMeters() {
         this.isLoading = true;
         try {
-          // API call will be implemented later
-          // Simulate API delay
-          await Promise.all([
-            new Promise(resolve => setTimeout(resolve, 3000))
-        ]);
+          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
+          //console.log(response)
           
           // Reset when API integrations are ready
-          this.meters = []; // Will be populated by API in the future
+          this.meters = response.meters; // Will be populated by API in the future
           
         } catch (error) {
           console.error('Error fetching meters:', error);
