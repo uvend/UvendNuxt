@@ -31,7 +31,8 @@ export default{
     },
     methods: {
         async signUp(){
-            if(!this.validate) return
+            console.log();
+            if(!this.valid()) return
             try{
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/auth/create`,{
                     method: "POST",
@@ -44,9 +45,8 @@ export default{
                 const refresh_token = response.refresh_token;
                 localStorage.setItem('wallet-access-token',access_token);
                 localStorage.setItem('wallet-refresh-token',refresh_token);
-                localStorage.setItem('customer','wallet');
                 // console.log(response)
-                return navigateTo('/wallet');
+                return navigateTo('/');
             }catch(e){
                 console.log(e)
                 this.$toast({
@@ -56,11 +56,11 @@ export default{
                 });
             }
         },
-        validate(){
+        valid(){
             this.invalid = []
             if(!this.email) this.invalid.push('email')
             if(!this.password) this.invalid.push('password')
-            console.log(this.invalid)
+            console.log(this.invalid);
             if(this.invalid.length > 0) return false
             return true
         }

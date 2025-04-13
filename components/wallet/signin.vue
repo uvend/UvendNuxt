@@ -32,7 +32,7 @@ export default{
     },
     methods:{
         async signIn(){
-            if(!this.validate()) return
+            if(!this.valid()) return
             try{
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/auth/sign-in`,{
                     method: "POST",
@@ -45,9 +45,8 @@ export default{
                 const refresh_token = response.refresh_token;
                 localStorage.setItem('wallet-access-token',access_token);
                 localStorage.setItem('wallet-refresh-token',refresh_token);
-                localStorage.setItem('customer','wallet');
                 // console.log(response)
-                return navigateTo('/wallet');
+                return navigateTo('/');
             }catch(e){
                 this.$toast({
                     title: 'Uh oh! Something went wrong.',
@@ -56,7 +55,7 @@ export default{
                 });
             }
         },
-        validate(){
+        valid(){
             this.invalid = []
             if(!this.email) this.invalid.push('email')
             if(!this.password) this.invalid.push('password')
