@@ -41,43 +41,15 @@
         </div>
       </CardContent>
     </Card>
-
-    <!-- Meter List -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <Card v-for="meter in meters" :key="meter.id" class="relative">
-        <CardHeader>
-          <CardTitle>{{ meter.name }}</CardTitle>
-          <CardDescription>{{ meter.type }}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-muted-foreground">Status</span>
-              <Badge :variant="getStatusVariant(meter.status)">
-                {{ meter.status }}
-              </Badge>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-muted-foreground">Last Reading</span>
-              <span class="font-medium">{{ meter.lastReading || 'N/A' }}</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-muted-foreground">Last Updated</span>
-              <span class="font-medium">{{ formatDate(meter.lastUpdated) }}</span>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter class="flex justify-between">
-          <Button variant="outline" size="sm" @click="viewMeterDetails(meter.id)">
-            View Details
-          </Button>
-          <Button variant="destructive" size="sm" @click="removeMeter(meter.id)">
-            Remove
-          </Button>
-        </CardFooter>
+    <div v-else>
+      <Card v-if="meters" v-for="meter in meters" class="p-2 my-3">
+          {{ meter }}
+      </Card>
+      <Card v-else class="py-8 text-center text-gray-500">
+          No transactions found
       </Card>
     </div>
-  </div>
+</div>    
 </template>
 
 <script>
