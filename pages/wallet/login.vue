@@ -6,6 +6,9 @@
     </div>
 </template>
 <script>
+definePageMeta({
+    layout: 'noauth'
+})
 export default{
     data(){
         return{
@@ -21,7 +24,7 @@ export default{
             this.resetPassword = !this.resetPassword
         },
         isAlreadyLoggedin(){
-            if(localStorage.getItem('wallet-access-token')) return navigateTo("/wallet");
+            if(localStorage.getItem('wallet-access-token')) return navigateTo("/");
         }
     },
     mounted(){
