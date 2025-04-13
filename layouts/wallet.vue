@@ -93,7 +93,7 @@ export default{
         },
         toggleNav(){
             this.isNavOpen = !this.isNavOpen;
-            console.log(this.isNavOpen)
+            //console.log(this.isNavOpen)
         }
     },
     mounted() {
