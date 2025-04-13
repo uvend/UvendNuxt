@@ -13,12 +13,14 @@
               </div>
         </CardContent>
     </Card>
-    <Card v-if="meters" v-for="meter in meters" class="p-2">
-        {{ meter }}
-    </Card>
-    <Card v-else class="py-8 text-center text-gray-500">
-        No transactions found
-    </Card>
+    <div v-else>
+      <Card v-if="meters" v-for="meter in meters" class="p-2 my-3">
+          {{ meter }}
+      </Card>
+      <Card v-else class="py-8 text-center text-gray-500">
+          No transactions found
+      </Card>
+    </div>
 </div>    
 </template>
 <script>

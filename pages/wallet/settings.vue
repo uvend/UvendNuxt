@@ -12,9 +12,8 @@ definePageMeta({
 export default{
     methods:{
         logout(){
-            localStorage.removeItem('wallet-access-token');
-            localStorage.removeItem('wallet-refresh-token');
-            navigateTo("/wallet");
+            localStorage.clear()
+            navigateTo("/");
         }
     }
 }
