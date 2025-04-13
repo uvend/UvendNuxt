@@ -12,25 +12,25 @@
             ]">
             <nav class="space-y-1">
                 <MyLogo />
-                <NuxtLink to="/wallet" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
                     <Icon name="lucide:layout-dashboard" class="mr-2 h-5 w-5" />
                     Dashboard
                 </NuxtLink>
-                <NuxtLink to="/wallet/transactions" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/transactions" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
                     <Icon name="lucide:credit-card" class="mr-2 h-5 w-5" />
                     Transactions
                 </NuxtLink>
-                <NuxtLink to="/wallet/meters" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/meters" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
                     <Icon name="lucide:gauge" class="mr-2 h-5 w-5" />
                     Meters
                 </NuxtLink>
-                <NuxtLink to="/wallet/payments" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/payments" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
                     <Icon name="lucide:wallet" class="mr-2 h-5 w-5" />
                     Payments
                 </NuxtLink>
             </nav>
             <nav>
-                <NuxtLink to="/wallet/settings" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/settings" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
                     <Icon name="lucide:settings" class="mr-2 h-5 w-5" />
                     Settings
                 </NuxtLink>

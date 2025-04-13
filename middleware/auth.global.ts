@@ -1,20 +1,22 @@
-export default defineNuxtRouteMiddleware((to, from) => {    
-    //console.log('middleware')
+export default defineNuxtRouteMiddleware((to, from) => {
+    
+    console.log('middleware', APP_ENV)
     const path = to.path.split('/');
     if (to.meta.layout !== 'noauth') {
+        let redirect = false;
         const auth = localStorage.getItem('token')
-        if (!auth) {
-            // console.error('You are not logged in')
+        const walletAuth = localStorage.getItem('wallet-access-token');
+        if (!auth && APP_ENV == '') {
+            console.error('You are not logged in to app')
+            return navigateTo('/login')
+        }else if(!walletAuth && APP_ENV == 'wallet'){
+            console.error('You are not logged in to wallet')
             return navigateTo('/login')
         }
     }
 
-    // protect wallet routes
-    if(path[1] == "wallet" && path[2] != "login"){
-        const wallet_access_token = localStorage.getItem("wallet-access-token");
-        if(!wallet_access_token){
-            return navigateTo(`/wallet/login`);
-        }
+    if(['wallet'].includes(APP_ENV)){
+        return;
     }
 
     var customer = localStorage.getItem('customer') ?? ''
