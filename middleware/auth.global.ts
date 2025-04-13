@@ -1,4 +1,5 @@
 export default defineNuxtRouteMiddleware((to, from) => {
+    
     //console.log('middleware', APP_ENV)
     const path = to.path.split('/');
     if (to.meta.layout !== 'noauth') {
