@@ -7,11 +7,7 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-3">
             <Card class="p-4 bg-white border shadow-sm">
-                <div class="flex flex-col">
-                    <p class="text-gray-600 text-sm">Wallet Balance</p>
-                    <p class="text-2xl font-bold">0.00</p>
-                    <p class="text-sm text-gray-500"></p>
-                </div>
+                <WalletBalance />
           </Card>
             
             <Card class="p-4 bg-white border shadow-sm">

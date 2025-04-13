@@ -48,17 +48,9 @@
                                 {{ title }}
                             </p>
                         </div>
-                        
-                            
-                        
-                    
-                    </div>
-                            <div class="px-4 py-2">
-                                <p class="text-gray-600 text-sm">Wallet Balance</p>
-                                <p class="text-2xl font-bold">0.00</p>
-                                <p class="text-sm text-gray-500"></p>
-                             </div>
-                    <div>
+                     </div>
+                        <WalletBalance/>
+                        <div>
                         <button @click="showTransaction = true" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex-gap-2">
                             New Transaction
                         </button>
