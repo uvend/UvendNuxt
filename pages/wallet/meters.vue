@@ -23,6 +23,18 @@
     <!-- Meter Status -->
     <MeterStatus />
 
+    
+  </div>
+    
+  <WalletMeterCard v-if="meters" v-for="meter in meters" :key="meter.id" :meter="meter" />
+
+
+ 
+
+
+    <Card v-else class="py-8 text-center text-gray-500">
+        No transactions found
+    </Card> 
     <!-- Meter Readings Chart -->
     <Card class="w-full">
       <CardHeader>
@@ -75,51 +87,56 @@ import { Label } from '@/components/ui/label'
 definePageMeta({
     layout: 'wallet'
 })
-</script>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#components';
-import { Button } from '#components';
-import { Badge } from '#components';
-import { PlusIcon, RefreshCwIcon, Loader2Icon } from 'lucide-vue-next';
-import MeterStatus from '~/components/wallet/MeterStatus.vue';
-import { useMeter } from '~/composables/useMeter';
 
-const showAddMeter = ref(false);
-const isLoadingReadings = ref(false);
-const readingsError = ref(null);
 
-const { meters, isLoading, error, fetchMeters, getMeterStatus, getMeterReadings } = useMeter();
 
-const getStatusVariant = (status) => {
-  switch (status?.toLowerCase()) {
-    case 'active':
-      return 'success';
-    case 'inactive':
-      return 'destructive';
-    case 'maintenance':
-      return 'warning';
-    default:
-      return 'secondary';
-  }
-};
+  export default {
+    data() {
+      return {
+        isLoading: true,
+        meters: null,
+        searchQuery: '',
+        walletBalance: null,
+        filterOptions: [
+            { key : "all", value: "All Transactions"},
+            { key : "elect", value: "Electricity"},
+            { key : "water", value: "Water"},
+            { key : "favorites", value: "Favorites"},
 
-const formatDate = (date) => {
-  if (!date) return 'N/A';
-  return new Date(date).toLocaleString();
-};
-
-const refreshAllMeters = async () => {
-  await fetchMeters();
-  // Refresh status for each meter
-  for (const meter of meters.value) {
-    const status = await getMeterStatus(meter.id);
-    if (status) {
-      const meterIndex = meters.value.findIndex(m => m.id === meter.id);
-      if (meterIndex !== -1) {
-        meters.value[meterIndex] = { ...meters.value[meterIndex], ...status };
+        ],
+        selectedFilterOption: null
       }
+    },
+    created() {
+      this.selectedFilterOption = this.filterOptions[0];
+    },
+    computed: {
+    },
+    methods: {
+      async fetchMeters() {
+        this.isLoading = true;
+        try {
+          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
+          //console.log(response)
+          
+          // Reset when API integrations are ready
+          this.meters = response.meters; // Will be populated by API in the future
+          
+        } catch (error) {
+          console.error('Error fetching meters:', error);
+          this.$toast({
+            title: 'Error',
+            description: 'Failed to load meters',
+            variant: 'destructive'
+          });
+        } finally {
+          this.isLoading = false;
+        }
+      },
+    },
+    mounted() {
+      this.fetchMeters()
     }
     
   }
