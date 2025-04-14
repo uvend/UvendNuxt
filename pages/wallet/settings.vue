@@ -47,35 +47,12 @@
 definePageMeta({
     layout: 'wallet'
 })
-</script>
-
-<script setup>
-import { ref } from 'vue';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#components';
-import { Button } from '#components';
-import { PlusIcon, LogOutIcon } from 'lucide-vue-next';
-import AddCardDialog from '~/components/wallet/AddCardDialog.vue';
-
-const showAddCard = ref(false);
-const cards = ref([]);
-
-const handleAddCard = (cardData) => {
-  // Here you would typically make an API call to save the card
-  // For now, we'll just add it to the local state
-  cards.value.push({
-    id: Date.now(), // Simple way to generate unique ID
-    ...cardData
-  });
-};
-
-const removeCard = (cardId) => {
-  // Here you would typically make an API call to remove the card
-  cards.value = cards.value.filter(card => card.id !== cardId);
-};
-
-const logout = () => {
-  localStorage.removeItem('wallet-access-token');
-  localStorage.removeItem('wallet-refresh-token');
-  navigateTo("/wallet");
-};
+export default{
+    methods:{
+        logout(){
+            localStorage.clear()
+            navigateTo("/");
+        }
+    }
+}
 </script>
