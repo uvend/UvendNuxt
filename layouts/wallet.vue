@@ -28,6 +28,10 @@
                     <Icon name="lucide:wallet" class="mr-2 h-5 w-5" />
                     Payments
                 </NuxtLink>
+                <NuxtLink to= "/NewTransactions" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                    <Icon name="lucide:settings" class="mr-2 h-5 w-5" />
+                    New Transaction
+                </NuxtLink>
             </nav>
             <nav>
                 <NuxtLink to="/settings" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
@@ -51,10 +55,7 @@
                      </div>
                         <WalletBalance/>
                         <div>
-                        <button @click="showTransaction = true" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex-gap-2">
-                            New Transaction
-                        </button>
-                        <NewTransactions v-if="showTransaction" @close="showTransaction = false" />
+                        
                     </div>
                     
                     <WalletFund />
@@ -68,7 +69,7 @@
 </template>
 <script>
 import { ref } from 'vue'
-import NewTransactions from '@/components/wallet/NewTransactions.vue'
+import NewTransactions from '~/pages/wallet/NewTransactions.vue'
 
 const showTransaction = ref(false)
 export default{
