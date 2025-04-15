@@ -16,7 +16,7 @@ export default async function fetch<T>(url: string, options: any = {}, retry = t
     if (error?.response?.status === 401 && retry) {
       const refreshed = await refreshTokenFlow();
       if (refreshed) {
-        return fetch<T>(url, options, false); // retry once, with retry = false
+        return await fetch<T>(url, options, false); // retry once, with retry = false
       } else {
         console.warn('Token refresh failed, redirecting to login');
         localStorage.clear()
@@ -25,7 +25,7 @@ export default async function fetch<T>(url: string, options: any = {}, retry = t
     } else {
       console.error('Fetch error:', error);
     }
-    return null;
+    return error;
   }
 }
 

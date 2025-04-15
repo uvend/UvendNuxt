@@ -2,8 +2,8 @@
 <div class="flex flex-col p-4 gap-4 w-full">
     <div class="flex flex-col gap-4">
       <div class="flex justify-between flex-wrap gap-2 items-center">
-        <WalletUtilitySelector v-model="filterOptions" @update="console.log"/>
-        <WalletPopupAddMeter label="Add New Meter"/>
+        <WalletUtilitySelector v-model="filterOptions"/>
+        <WalletPopupAddMeter label="Add New Meter" @success="fetchMeters()"/>
       </div>
     </div>
     <Card v-if="isLoading" class="bg-white border shadow-sm w-full">              
