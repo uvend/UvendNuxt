@@ -39,8 +39,25 @@
           </button>
           
           <button class="text-sm font-medium text-blue-600 hover:text-blue-800">
-            View Details
+            View meter Details
           </button>
+          <div>
+             <Button @click="isOpen = true">Open Dialog</Button>
+    
+            <Dialog :open="isOpen" @update:open="isOpen = $event">
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Meter</DialogTitle>
+                   <DialogDescription>This is a dialog descript</DialogDescription>
+                  </DialogHeader>
+                  <p></p>
+                <DialogFooter>
+                  <Button @click="isOpen = false">Close</Button>
+                </DialogFooter>
+              </DialogContent>
+           </Dialog>
+         </div>
+          
         </div>
       </div>
     </Card>
@@ -67,7 +84,10 @@
         return date.toLocaleDateString('en-US', {
           year: 'numeric', 
           month: 'short', 
-          day: 'numeric'
+          day: 'numeric',
+          isOpen: false,
+          isOpen: true,
+          
         });
       }
     }
