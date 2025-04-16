@@ -1,44 +1,35 @@
 <template>
-    <Dialog v-model:open="dialogOpen">
-    <DialogTrigger as-child>
-      <Button class="w-full sm:w-auto">
-        {{ label }}
-      </Button>
-    </DialogTrigger>
-    <DialogContent class="h-full sm:max-w-[425px] sm:h-auto">
-      <div>
-        <div class="">
-          <div class="flex flex-col gap-2">
-            <Label for="name" class="text-sm">
-              Meter Number
-            </Label>
-            <Input v-model="meterNumber" class="col-span-3" :disabled="isValid"/>
-          </div>
-        </div>
-        <div v-if="isValid">
-          <div class="gap-2">
-            <Label for="name" class="text-sm">
-              Name
-            </Label>
-            <Input v-model="meterName" class="col-span-3" />
-          </div>
-        </div>
-      </div>
-      <DialogFooter v-if="!isValid" class="gap-2">
-        <Button @click="validateMeterNumber()" :disabled="isLoading">
-          Next
-        </Button>
-      </DialogFooter>
-      <DialogFooter v-else class="gap-2">
-        <Button @click="isValid = false">
-          Back
-        </Button>
-        <Button @click="saveMeter()">
-          Save
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+<Form class="flex flex-col gap-2">
+  <div class="">
+    <div class="flex flex-col gap-2">
+      <Label for="name" class="text-sm">
+        Meter Number
+      </Label>
+      <Input v-model="meterNumber" class="col-span-3" :disabled="isValid"/>
+    </div>
+  </div>
+  <div v-if="isValid">
+    <div class="gap-2">
+      <Label for="name" class="text-sm">
+        Name
+      </Label>
+      <Input v-model="meterName" class="col-span-3" />
+    </div>
+  </div>
+  <DialogFooter v-if="!isValid" class="gap-2">
+  <Button @click="validateMeterNumber()" :disabled="isLoading">
+    Next
+  </Button>
+  </DialogFooter>
+  <DialogFooter v-else class="gap-2">
+    <Button @click="isValid = false">
+      Back
+    </Button>
+    <Button @click="saveMeter()">
+      Save
+    </Button>
+  </DialogFooter>
+</Form>
 </template>
 <script>
 export default{

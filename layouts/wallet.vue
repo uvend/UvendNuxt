@@ -49,7 +49,9 @@
                             </p>
                         </div>
                     </div>
-                    <WalletFund />
+                    <WalletPopup buttonLabel="Buy now">
+                        <WalletBuyNow />
+                    </WalletPopup>
                 </header>
                 <div class="scroll hide-scrollbar bg-gray-50" style="max-width: 100vw">
                     <slot class="overflow-y-scroll overflow-x hide-scrollbar bg-gray-100 w-full max-h-screen"/>
