@@ -2,68 +2,37 @@
 
 
 <template>
-  <div class="container mx-auto p-4 space-y-6">
-    <div class="flex justify-between items-center">
-      <div>
-        <h1 class="text-2xl font-bold">Utility Meters</h1>
-        <p class="text-muted-foreground">Manage and monitor your utility meters</p>
-      </div>
-      <div class="flex items-center space-x-4">
-        <Button variant="outline" @click="refreshAllMeters">
-          <RefreshCwIcon class="w-4 h-4 mr-2" />
-          Refresh All
-        </Button>
-        <Button @click="showAddMeter = true">
-          <PlusIcon class="w-4 h-4 mr-2" />
-          Add Meter
-        </Button>
+<div class="flex flex-col p-4 gap-4 w-full">
+    <div class="flex flex-col gap-4">
+      <div class="flex justify-between flex-wrap gap-2 items-center">
+        <WalletUtilitySelector v-model="filterOptions" v-if="!selectedMeter"/>
+        <div v-else></div>
+        <WalletPopup buttonLabel="Add Meter" v-if="!selectedMeter">
+          <WalletAddMeter @success="fetchMeters()"/>
+        </WalletPopup>
       </div>
     </div>
-
-    <!-- Meter Status -->
-    <MeterStatus />
-
-    
-  </div>
-    
-  <WalletMeterCard v-if="meters" v-for="meter in meters" :key="meter.id" :meter="meter" />
-
-
- 
-
-
-    <Card v-else class="py-8 text-center text-gray-500">
-        No transactions found
-    </Card> 
-    <!-- Meter Readings Chart -->
-    <Card class="w-full">
-      <CardHeader>
-        <CardTitle>Meter Readings</CardTitle>
-        <CardDescription>Historical consumption data</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div v-if="isLoadingReadings" class="flex justify-center py-4">
-          <Loader2Icon class="h-6 w-6 animate-spin" />
-        </div>
-        <div v-else-if="readingsError" class="text-center py-4 text-red-500">
-          {{ readingsError }}
-        </div>
-        <div v-else>
-          <!-- Add your chart component here -->
-          <div class="h-[300px] flex items-center justify-center text-muted-foreground">
-            Chart will be displayed here
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div v-if="selectedMeter">
+      <WalletSelectedMeter :meter="selectedMeter" @deselect="selectedMeter = null"/>
+    </div>
     <div v-else>
-      <Card v-if="meters" v-for="meter in meters" class="p-2 my-3">
-          {{ meter }}
+      <Card v-if="isLoading" class="bg-white border shadow-sm w-full">              
+        <CardContent class="p-0">
+              <div  class="py-8 flex justify-center">
+                  <MyLoader />
+              </div>
+        </CardContent>
       </Card>
-      <Card v-else class="py-8 text-center text-gray-500">
-          No transactions found
-      </Card>
+      <div v-else>
+      <div v-if="meters" v-for="meter in meters">
+        <WalletCardMeter :meter="meter" @click="selectedMeter = meter"/>
+      </div>
+        <Card v-else class="py-8 text-center text-gray-500">
+            No transactions found
+        </Card>
+      </div>
     </div>
+    
 </div>    
 </template>
 
@@ -105,7 +74,8 @@ definePageMeta({
             { key : "favorites", value: "Favorites"},
 
         ],
-        selectedFilterOption: null
+        selectedFilterOption: null,
+        selectedMeter: null
       }
     },
     created() {
