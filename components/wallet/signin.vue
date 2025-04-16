@@ -41,6 +41,9 @@ export default{
                         "password" : this.password
                     }
                 });
+                if(!response.access_token){
+                    throw new Error(response)
+                }
                 const access_token = response.access_token;
                 const refresh_token = response.refresh_token;
                 localStorage.setItem('wallet-access-token',access_token);
