@@ -1,95 +1,154 @@
 <template>
-    <Card class="p-4">
-      <div class="flex flex-col space-y-3">
-        <!-- Header with name and status -->
-        <div class="flex justify-between items-center">
-          <h3 class="text-lg font-medium text-gray-900">{{ meter.name }}</h3>
-          <span 
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
-            :class="meter.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
-          >
-            {{ meter.active ? 'Active' : 'Inactive' }}
-          </span>
-        </div>
-        
-        <!-- Meter details -->
-        <div class="grid grid-cols-2 gap-2 text-sm">
-          <div class="text-gray-500">Meter Number:</div>
-          <div class="font-medium">{{ meter.meterNumber }}</div>
-          
-          <div class="text-gray-500">ID:</div>
-          <div class="font-medium">{{ meter.id }}</div>
-          
-          <div class="text-gray-500">Created:</div>
-          <div class="font-medium">{{ formatDate(meter.created) }}</div>
-        </div>
-        
-        <!-- Actions -->
-        <div class="flex justify-between items-center pt-2">
-          <button class="flex items-center text-sm text-gray-500 hover:text-gray-700">
-            <svg 
-              class="h-5 w-5 mr-1" 
-              :class="meter.favourite ? 'text-yellow-400' : 'text-gray-400'" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
-            >
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            {{ meter.favourite ? 'Favorited' : 'Add to favorites' }}
-          </button>
-          
-          <button class="text-sm font-medium text-blue-600 hover:text-blue-800">
-            View meter Details
-          </button>
-          <div>
-             <Button @click="isOpen = true">Open Dialog</Button>
-    
-            <Dialog :open="isOpen" @update:open="isOpen = $event">
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Meter</DialogTitle>
-                   <DialogDescription>This is a dialog descript</DialogDescription>
-                  </DialogHeader>
-                  <p></p>
-                <DialogFooter>
-                  <Button @click="isOpen = false">Close</Button>
-                </DialogFooter>
-              </DialogContent>
-           </Dialog>
-         </div>
-          
-        </div>
+  <Card class="p-4">
+    <div class="flex flex-col space-y-3">
+      <!-- Header with name and status -->
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-medium text-gray-900">{{ meter.name }}</h3>
+        <span 
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+          :class="meter.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
+        >
+          {{ meter.active ? 'Active' : 'Inactive' }}
+        </span>
       </div>
-    </Card>
-  </template>
-  
-  <script>
-  import Card from '../ui/card/Card.vue';
-  
-  export default {
-    name: 'MeterCard',
-    components: {
-      Card
-    },
-    props: {
-      meter: {
-        type: Object,
-        required: true
-      }
-    },
-    methods: {
-      formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric',
-          isOpen: false,
-          isOpen: true,
+      
+      <!-- Meter details -->
+      <div class="grid grid-cols-2 gap-2 text-sm">
+        <div class="text-gray-500">Meter Number:</div>
+        <div class="font-medium">{{ meter.meterNumber }}</div>
+        
+        <div class="text-gray-500">ID:</div>
+        <div class="font-medium">{{ meter.id }}</div>
+        
+        <div class="text-gray-500">Created:</div>
+        <div class="font-medium">{{ formatDate(meter.created) }}</div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="flex justify-between items-center pt-2">
+        <button class="flex items-center text-sm text-gray-500 hover:text-gray-700">
+          <svg 
+            class="h-5 w-5 mr-1" 
+            :class="meter.favourite ? 'text-yellow-400' : 'text-gray-400'" 
+            fill="currentColor" 
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          {{ meter.favourite ? 'Favorited' : 'Add to favorites' }}
+        </button>
+        
+        <button class="text-sm font-medium text-blue-600 hover:text-blue-800">
+          View meter Details
+        </button>
+        
+        <Button @click="openEditDialog">Edit meter</Button>
+      </div>
+    </div>
+    
+    <!-- Edit Dialog -->
+    <Dialog :open="isEditDialogOpen" @update:open="isEditDialogOpen = $event">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Meter</DialogTitle>
+          <DialogDescription>Edit details for {{ meter.name }}</DialogDescription>
+        </DialogHeader>
+        
+        <div class="py-4 space-y-4">
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label for="meter-name" class="text-right">Name</Label>
+            <Input id="meter-name" v-model="editedMeter.name" class="col-span-3" />
+          </div>
           
-        });
-      }
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label for="meter-number" class="text-right">Meter Number</Label>
+            <Input id="meter-number" v-model="editedMeter.meterNumber" class="col-span-3" />
+          </div>
+          
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label for="meter-active" class="text-right">Status</Label>
+            <div class="col-span-3">
+              <Switch id="meter-active" v-model="editedMeter.active" />
+              <span class="ml-2">{{ editedMeter.active ? 'Active' : 'Inactive' }}</span>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label for="meter-favourite" class="text-right">Favorite</Label>
+            
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <Button variant="outline" @click="isEditDialogOpen = false">Cancel</Button>
+          <Button @click="saveMeterChanges">Save Changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </Card>
+</template>
+
+<script>
+import Card from '../ui/card/Card.vue';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+
+
+export default {
+  name: 'MeterCard',
+  components: {
+    Card,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    Button,
+    Input,
+    Label,
+    
+  },
+  props: {
+    meter: {
+      type: Object,
+      required: true
+    }
+  },
+  data() {
+    return {
+      isEditDialogOpen: false,
+      editedMeter: {}
+    };
+  },
+  methods: {
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric'
+      });
+    },
+    openEditDialog() {
+      // Create a copy of the meter object to avoid direct mutation
+      this.editedMeter = { ...this.meter };
+      this.isEditDialogOpen = true;
+    },
+    saveMeterChanges() {
+      // Here you would typically call your API to update the meter details
+      // For example:
+      // this.$emit('update-meter', this.editedMeter);
+      
+      // For demo purposes, let's just emit an event with the edited meter
+      this.$emit('update-meter', this.editedMeter);
+      
+      // Close the dialog
+      this.isEditDialogOpen = false;
     }
   }
-  </script>
+};
+</script>
