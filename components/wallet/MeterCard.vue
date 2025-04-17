@@ -38,7 +38,10 @@
           {{ meter.favourite ? 'Favorited' : 'Add to favorites' }}
         </button>
         
-        <button class="text-sm font-medium text-blue-600 hover:text-blue-800">
+        <button 
+          class="text-sm font-medium text-blue-600 hover:text-blue-800"
+          @click="openViewDialog"
+        >
           View meter Details
         </button>
         
@@ -67,10 +70,7 @@
           
           <div class="grid grid-cols-4 items-center gap-4">
             <Label for="meter-active" class="text-right">Status</Label>
-            <div class="col-span-3">
-              <Switch id="meter-active" v-model="editedMeter.active" />
-              <span class="ml-2">{{ editedMeter.active ? 'Active' : 'Inactive' }}</span>
-            </div>
+            \
           </div>
           
           <div class="grid grid-cols-4 items-center gap-4">
@@ -82,6 +82,86 @@
         <DialogFooter>
           <Button variant="outline" @click="isEditDialogOpen = false">Cancel</Button>
           <Button @click="saveMeterChanges">Save Changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    
+    <!-- View Details Dialog -->
+    <Dialog :open="isViewDialogOpen" @update:open="isViewDialogOpen = $event">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Meter Details</DialogTitle>
+          <DialogDescription>Details for {{ meter.name }}</DialogDescription>
+        </DialogHeader>
+        
+        <div class="py-4">
+          <div class="space-y-4">
+            <!-- Basic Information -->
+            <div class="bg-gray-50 p-4 rounded-md">
+              <h4 class="font-medium text-gray-800 mb-2">Basic Information</h4>
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="text-gray-500">Name:</div>
+                <div class="font-medium">{{ meter.name }}</div>
+                
+                <div class="text-gray-500">ID:</div>
+                <div class="font-medium">{{ meter.id }}</div>
+                
+                <div class="text-gray-500">Meter Number:</div>
+                <div class="font-medium">{{ meter.meterNumber }}</div>
+                
+                <div class="text-gray-500">Status:</div>
+                <div class="font-medium" :class="meter.active ? 'text-green-600' : 'text-gray-600'">
+                  {{ meter.active ? 'Active' : 'Inactive' }}
+                </div>
+                
+                <div class="text-gray-500">Created Date:</div>
+                <div class="font-medium">{{ formatDate(meter.created) }}</div>
+                
+                <div class="text-gray-500">Favorite:</div>
+                <div class="font-medium flex items-center">
+                  <svg 
+                    class="h-4 w-4 mr-1" 
+                    :class="meter.favourite ? 'text-yellow-400' : 'text-gray-400'" 
+                    fill="currentColor" 
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  {{ meter.favourite ? 'Yes' : 'No' }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="bg-gray-50 p-4 rounded-md">
+              <h4 class="font-medium text-gray-800 mb-2">Additional Information</h4>
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="text-gray-500">Location:</div>
+                <div class="font-medium">{{ meter.location || 'Not specified' }}</div>
+                
+                <div class="text-gray-500">Last Reading:</div>
+                <div class="font-medium">{{ meter.lastReading || 'No reading available' }}</div>
+                
+                <div class="text-gray-500">Installation Date:</div>
+                <div class="font-medium">{{ meter.installDate || 'Not specified' }}</div>
+                
+                <div class="text-gray-500">Wallet Balance:</div>
+                <div class="font-medium">£{{ walletBalance.toFixed(2) }}</div>
+              </div>
+            </div>
+            
+            <!-- Transaction History Placeholder -->
+            <div class="bg-gray-50 p-4 rounded-md">
+              <h4 class="font-medium text-gray-800 mb-2">Recent Transactions</h4>
+              <div class="text-center text-gray-500 py-2">
+                No recent transactions found
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <Button @click="isViewDialogOpen = false">Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -115,11 +195,16 @@ export default {
     meter: {
       type: Object,
       required: true
+    },
+    walletBalance: {
+      type: Number,
+      default: 5000
     }
   },
   data() {
     return {
       isEditDialogOpen: false,
+      isViewDialogOpen: false,
       editedMeter: {}
     };
   },
@@ -137,6 +222,9 @@ export default {
       // Create a copy of the meter object to avoid direct mutation
       this.editedMeter = { ...this.meter };
       this.isEditDialogOpen = true;
+    },
+    openViewDialog() {
+      this.isViewDialogOpen = true;
     },
     saveMeterChanges() {
       // Here you would typically call your API to update the meter details

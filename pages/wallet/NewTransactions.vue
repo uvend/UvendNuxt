@@ -44,14 +44,6 @@
         <div class="text-gray-600">Status:</div>
         <div class="text-green-600">Active</div>
       </div>
-      <div class="mt-3 text-center">
-        <button 
-          @click="viewMeterDetails" 
-          class="text-sm text-blue-600 hover:text-blue-800"
-        >
-          View Full Details
-        </button>
-      </div>
     </div>
     
     <!-- Fund Button -->
@@ -130,76 +122,6 @@
         </div>
       </div>
     </div>
-    
-    <!-- View Meter Details Modal -->
-    <div v-if="showDetailsModal && selectedMeter" class="fixed inset-0 flex items-center justify-center z-50">
-      <!-- Backdrop -->
-      <div class="fixed inset-0 bg-black opacity-50" @click="showDetailsModal = false"></div>
-      
-      <!-- Modal Content -->
-      <div class="bg-white rounded-lg shadow-xl p-6 z-10 max-w-md w-full mx-4">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-medium">Meter Details</h3>
-          <button @click="showDetailsModal = false" class="text-gray-500 hover:text-gray-700">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        
-        <div class="space-y-4">
-          <!-- Basic Details -->
-          <div class="p-4 bg-gray-50 rounded-md">
-            <h4 class="font-medium text-gray-800 mb-2">Basic Information</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="text-gray-600">Name:</div>
-              <div class="font-medium">{{ selectedMeter.name }}</div>
-              
-              <div class="text-gray-600">ID:</div>
-              <div class="font-medium">{{ selectedMeter.id }}</div>
-              
-              <div class="text-gray-600">Meter Number:</div>
-              <div class="font-medium">{{ selectedMeter.meterNumber }}</div>
-              
-              <div class="text-gray-600">Status:</div>
-              <div class="text-green-600 font-medium">Active</div>
-            </div>
-          </div>
-          
-          <!-- Additional Details -->
-          <div class="p-4 bg-gray-50 rounded-md">
-            <h4 class="font-medium text-gray-800 mb-2">Additional Information</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="text-gray-600">Location:</div>
-              <div class="font-medium">{{ selectedMeter.location || 'Not specified' }}</div>
-              
-              <div class="text-gray-600">Last Reading:</div>
-              <div class="font-medium">{{ selectedMeter.lastReading || 'No reading available' }}</div>
-              
-              <div class="text-gray-600">Installation Date:</div>
-              <div class="font-medium">{{ selectedMeter.installDate || 'Not specified' }}</div>
-              
-              <div class="text-gray-600">Wallet Balance:</div>
-              <div class="font-medium">R{{ walletBalance.toFixed(2) }}</div>
-            </div>
-          </div>
-          
-          <!-- Transaction History Placeholder -->
-          <div class="p-4 bg-gray-50 rounded-md">
-            <h4 class="font-medium text-gray-800 mb-2">Recent Transactions</h4>
-            <div class="text-center text-gray-500 py-2">
-              No recent transactions found
-            </div>
-          </div>
-        </div>
-        
-        <div class="mt-6 flex justify-end">
-          <button @click="showDetailsModal = false" class="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
-            Close Details
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -221,7 +143,6 @@ export default {
       
       // Modal data
       showModal: false,
-      showDetailsModal: false,
       transactionSuccess: false,
       transactionMessage: '',
       transactionId: '',
@@ -241,10 +162,6 @@ export default {
     }
   },
   methods: {
-    viewMeterDetails() {
-      this.showDetailsModal = true;
-    },
-    
     async processTransaction() {
       // Validate amount
       if (!this.validateAmount()) return;
@@ -257,7 +174,7 @@ export default {
         
         // Get actual wallet balance from WalletBalance component
         // const walletBalance = this.$refs.walletBalance.balance;
-        const walletBalance = this.$refs.WalletBalance; // Using mock data for now
+        const walletBalance = this.walletBalance; // Using mock data for now
         
         // Check if balance is sufficient
         if (walletBalance >= this.amount) {
@@ -309,7 +226,11 @@ export default {
     }
   },
   mounted() {
+    // You might want to fetch meters from an API here
+    // this.fetchMeters();
     
+    // If you need to get the wallet balance from an API or store
+    // this.fetchWalletBalance();
   }
 }
 </script>
