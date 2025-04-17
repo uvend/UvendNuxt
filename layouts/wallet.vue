@@ -29,7 +29,7 @@
                     Payments
                 </NuxtLink>
                 <NuxtLink to= "/NewTransactions" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
-                    <Icon name="lucide:settings" class="mr-2 h-5 w-5" />
+                    <Icon name="lucide:banknote-arrow-up" class="mr-2 h-5 w-5" />
                     New Transaction
                 </NuxtLink>
             </nav>
