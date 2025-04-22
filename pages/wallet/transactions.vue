@@ -49,18 +49,15 @@
         <!-- Filter buttons in a scrollable container -->
         <WalletUtilitySelector v-model="filterOptions" @update="console.log"/>
     </div>
-    <Card class="bg-white border shadow-sm w-full">              
-        <CardContent class="p-0">
-          <div>
-              <div v-if="isLoading" class="py-8 flex justify-center">
-                  <MyLoader />
-              </div>
-              <div v-else class="py-8 text-center text-gray-500">
-                  No transactions found
-              </div>
-            </div>
-        </CardContent>
+    <Card v-if="isLoading" class="py-8 flex justify-center">
+        <MyLoader />
     </Card>
+    <div v-else>
+      <WalletCardPayment v-if="transactions.length > 0" v-for="payment in transactions" :data="payment"/>
+        <Card v-else class="py-8 text-center text-gray-500">
+          No payments found
+      </Card>
+    </div>
 </div>
 </template>
 
@@ -106,14 +103,8 @@ definePageMeta({
       async fetchTransactionsData() {
         this.isLoading = true;        
         try {
-          // Simulate API delay
-          await Promise.all([
-            new Promise(resolve => setTimeout(resolve, 1000)),
-            new Promise(resolve => setTimeout(resolve, 1500))
-          ]);
-          
-          // Reset when API integrations are ready
-          this.transactions = [];
+          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`)
+          this.transactions = response.transactions;
          
         } catch (error) {
           console.error('Error fetching transactions data:', error);
