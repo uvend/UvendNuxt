@@ -3,7 +3,7 @@
         {{ buttonLabel }}
     </Button>
     <Drawer v-if="isMobile" v-model:open="isOpen">
-        <DrawerContent class="h-5/6 p-3">
+        <DrawerContent class="h-5/6 overflow-y">
             <slot />
         </DrawerContent>
     </Drawer>

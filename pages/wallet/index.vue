@@ -6,19 +6,7 @@
             <WalletDateRangeSelector @update="console.log"/>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-3">
-            <Card class="p-4 bg-white border shadow-sm flex justify-between">
-              <div class="flex flex-col">
-                  <p class="text-gray-600 text-sm flex items-center">
-                    <Icon name="lucide:shield" class="mr-1 h-4 w-4"/>Your Wallet Balance</p>
-                  <p class="text-2xl font-bold">0.00</p>
-                  <p class="text-sm text-gray-500"></p>
-              </div>
-              <div>
-                <WalletPopup buttonLabel="Add money">
-                  <WalletAddMoney />
-                </WalletPopup>
-              </div>
-            </Card>
+            <WalletCardBalance :addMoney="true"/>
             
             <Card class="p-4 bg-white border shadow-sm">
               <div class="flex flex-col">

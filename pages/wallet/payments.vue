@@ -6,10 +6,7 @@
             <WalletDateRangeSelector @update="console.log"/>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-3">
-            <Card class="p-4 bg-white border shadow-sm">
-                <WalletBalance />
-          </Card>
-            
+            <WalletCardBalance :addMoney="true"/>
             <Card class="p-4 bg-white border shadow-sm">
                 <div class="flex flex-col">
                     <p class="text-gray-600 text-sm">Total</p>
@@ -18,7 +15,7 @@
                         <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
                         <span>% vs previous</span>
                     </div>
-            </div>
+                </div>
             </Card>
             
             <Card class="p-4 bg-white border shadow-sm">
@@ -28,23 +25,22 @@
                     <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
                         <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
                         <span>% vs previous</span>
-            </div>
-          </div>
-        </Card>
-      </div>
-        <Card class="bg-white border shadow-sm overflow-x-auto">
-          <CardContent class="p-0">
-                <div v-if="isLoading" class="py-8 flex justify-center">
-                    <MyLoader />
-            </div>
-            <div v-else-if="fundingHistory.length === 0" class="py-8 text-center text-gray-500">
-                    No payments found
                     </div>
-          </CardContent>
-        </Card>
+                </div>
+            </Card>
+        </div>
+            <Card v-if="isLoading" class="py-8 flex justify-center">
+                <MyLoader />
+            </Card>
+            <div v-else>
+              <WalletCardPayment v-if="fundingHistory.length > 0" v-for="payment in fundingHistory" :data="payment"/>
+              <Card v-else class="py-8 text-center text-gray-500">
+                No payments found
+            </Card>
+            </div>
       </div>
     
-</template>
+  </template>
 <script>
 definePageMeta({
     layout: 'wallet'
@@ -60,21 +56,15 @@ export default {
   methods: {
     async fetchData() {
         this.isLoading = true;
-      try {
-        // API call will be implemented later
-        // Simulate API delay
-          await Promise.all([
-            new Promise(resolve => setTimeout(resolve, 3000))
-        ]);
+        try {
+          const response = await useWalletAuthFetch(`${WALLET_API_URL}/pay/history`)
+          this.fundingHistory = response.payments;
           
-          // Reset when API integrations are ready
-          this.meters = []; // Will be populated by API in the future
-        
-      } catch (error) {
-          console.error('Error fetching meters:', error);
-        this.$toast({
-          title: 'Error',
-            description: 'Failed to load meters',
+        } catch (error) {
+          console.error('Error fetching payments:', error);
+          this.$toast({
+            title: 'Error',
+            description: 'Failed to load payments',
             variant: 'destructive'
           });
         } finally {

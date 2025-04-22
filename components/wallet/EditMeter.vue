@@ -1,5 +1,5 @@
 <template>
-<Form class="flex flex-col gap-2">
+<Form class="flex flex-col gap-2 p-4">
         <div class="">
           <div class="flex flex-col gap-2">
             <Label for="name" class="text-sm">

@@ -1,40 +1,106 @@
 <template>
-  
+  <div>
+    <div class="p-4 flex flex-col gap-2" v-if="!vendResponse">
+      <WalletCardBalance :addMoney="false"/>
+      <div v-if="meters.length > 0" class="flex flex-col gap-2">
+        <Label for="meter">Meter</Label>
+        <Select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a meter" />
+          </SelectTrigger>
+          <SelectContent>
+              <SelectItem v-for="meter in meters" :value="meter">
+                {{ meter.name }} ({{ meter.meterNumber }})
+              </SelectItem>
+          </SelectContent>
+        </Select>
+        <NumberField id="age" :min="0" v-model="amount" :format-options="{
+                  minimumFractionDigits: 2,
+                  }">
+          <Label for="age">Amount</Label>
+          <NumberFieldContent>
+            <NumberFieldInput />
+          </NumberFieldContent>
+        </NumberField>
+        <Button @click="creditToken(false)">Buy now</Button>
+      </div>
+      <div v-else>
+        <WalletAddMeter />
+      </div>
+    </div>
+    <div v-else class="p-2 h-fit">
+      <p v-for="token in vendResponse.listOfTokenTransactions" class="text-center">
+        <div v-for="tokens in token.tokens">
+          <span v-for="keys in tokens.tokenKeys">
+            <span>{{ keys }} &nbsp;</span>
+          </span>
+        </div>
+      </p>
+    </div>
+  </div>
 </template>
 <script>
-export default{
-    data(){
-        return{
-            meters: [],
-            isLoading: false,
-            value: null
-        }
-    },
-    methods:{
-        async fetchMeters() {
-        this.isLoading = true;
-        try {
-          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
-          console.log(response)
-          
-          // Reset when API integrations are ready
-          this.meters = response.meters; // Will be populated by API in the future
-          
-        } catch (error) {
-          console.error('Error fetching meters:', error);
-          this.$toast({
-            title: 'Error',
-            description: 'Failed to load meters',
-            variant: 'destructive'
-          });
-        } finally {
-          this.isLoading = false;
-        }
+import { WalletAddMeter } from '#components';
+import Wallet from '~/layouts/wallet.vue';
+
+export default {
+  data() {
+    return {
+      meters: [],
+      isLoading: false,
+      value: null,
+      amount: 30,
+      vendResponse: null
+    }
+  },
+  methods: {
+    async fetchMeters() {
+      this.isLoading = true;
+      try {
+        const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
+        console.log(response)
+        this.meters = response.meters; // Will be populated by API in the future
+      } catch (error) {
+        console.error('Error fetching meters:', error);
+        this.$toast({
+          title: 'Error',
+          description: 'Failed to load meters',
+          variant: 'destructive'
+        });
+      } finally {
+        this.isLoading = false;
       }
     },
-    async mounted(){
-        await this.fetchMeters()
+    async creditToken(preview) {
+      const id = this.value.id;
+      try {
+        const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/${id}`, {
+          method: 'POST',
+          body: {
+            amount: this.amount,
+            preview: preview
+          }
+        });
+
+        if (!response.balance) {
+          throw new Error('An unknown error occurred');
+        }
+
+        this.vendResponse = response.token;
+        this.$store.balance = response.balance
+      } catch (error) {
+        console.error('Error fetching vend response:', error);
+        this.$toast({
+          title: 'Error',
+          description: error.message, // Display the actual error message
+          variant: 'destructive'
+        });
+      }
     }
+  },
+  async mounted() {
+    await this.fetchMeters()
+  }
 }
 </script>
 <style>
