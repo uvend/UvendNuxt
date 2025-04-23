@@ -54,7 +54,6 @@ export default{
     methods:{
         async addCard(){
             const response = await useWalletAuthFetch(`${WALLET_API_URL}/pay/addCard`)
-            console.log(response)
             this.pay_requst_id = response.PAY_REQUEST_ID
             this.checksum = response.CHECKSUM
             this.tab = 'paygate'
@@ -100,6 +99,7 @@ export default{
         paymentComplete(){
             this.amount = 0.00
             this.tab = 'payment'
+            // TODO: emit success to reload parent
         }
     },
     mounted(){

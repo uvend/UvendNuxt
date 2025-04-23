@@ -9,7 +9,8 @@
         <Card class="p-4 bg-white border shadow-sm">
         <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Total Spent</p>
-            <p class="text-2xl font-bold">0.00</p>
+            <Skeleton class="w-16 h-9" v-if="isLoading"/>
+            <p class="text-2xl font-bold" v-else>{{ summary.totalSpent }}</p>
             <p class="text-sm text-gray-500">{{ period === 'year' ? 'Past year' : `Last ${period.replace('days', ' days')}` }}</p>
         </div>
         </Card>
@@ -17,7 +18,8 @@
         <Card class="p-4 bg-white border shadow-sm">
         <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Electricity</p>
-            <p class="text-2xl font-bold">0.00</p>
+            <Skeleton class="w-16 h-9" v-if="isLoading"/>
+            <p class="text-2xl font-bold" v-else>{{electricity}}</p>
             <div class="flex items-center text-sm mt-1" :class="0 ? 'text-red-500' : 'text-green-500'">
             <Icon :name="0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
             <span>% vs previous</span>
@@ -28,7 +30,8 @@
         <Card class="p-4 bg-white border shadow-sm">
         <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Water</p>
-            <p class="text-2xl font-bold">0.00</p>
+            <Skeleton class="w-16 h-9" v-if="isLoading"/>
+            <p class="text-2xl font-bold" v-else>0.00</p>
             <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
             <Icon :name="0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
             <span>% vs previous</span>
@@ -39,7 +42,8 @@
         <Card class="p-4 bg-white border shadow-sm">
         <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Transactions</p>
-            <p class="text-2xl font-bold">0</p>
+            <Skeleton class="w-16 h-9" v-if="isLoading"/>
+            <p class="text-2xl font-bold" v-else>{{summary.transactionCount}}</p>
             <p class="text-sm text-gray-500"></p>
         </div>
         </Card>
@@ -52,8 +56,8 @@
     <Card v-if="isLoading" class="py-8 flex justify-center">
         <MyLoader />
     </Card>
-    <div v-else>
-      <WalletCardPayment v-if="transactions.length > 0" v-for="payment in transactions" :data="payment"/>
+    <div v-else class="flex flex-col gap-2">
+      <WalletCardTransaction v-if="transactions.length > 0" v-for="payment in transactions" :data="payment"/>
         <Card v-else class="py-8 text-center text-gray-500">
           No payments found
       </Card>
@@ -105,6 +109,8 @@ definePageMeta({
         try {
           const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`)
           this.transactions = response.transactions;
+          this.summary.totalSpent = Number(response.totalAmount).toFixed(2)
+          this.summary.transactionCount = response.totalCount
          
         } catch (error) {
           console.error('Error fetching transactions data:', error);
@@ -138,6 +144,12 @@ definePageMeta({
       },
       searchQuery() {
         this.currentPage = 1; // Reset to first page when search changes
+      }
+    },
+    computed:{
+      electricity(){
+        let amount = 0
+        return amount.toFixed(2)
       }
     }
   }
