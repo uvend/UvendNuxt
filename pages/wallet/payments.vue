@@ -10,7 +10,8 @@
             <Card class="p-4 bg-white border shadow-sm">
                 <div class="flex flex-col">
                     <p class="text-gray-600 text-sm">Total</p>
-                    <p class="text-2xl font-bold">0.00</p>
+                    <Skeleton class="w-16 h-9" v-if="isLoading"/>
+                    <p class="text-2xl font-bold" v-else>{{ total }}</p>
                     <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
                         <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
                         <span>% vs previous</span>
@@ -21,7 +22,7 @@
             <Card class="p-4 bg-white border shadow-sm">
                 <div class="flex flex-col">
                     <p class="text-gray-600 text-sm">Transactions</p>
-                    <p class="text-2xl font-bold">0</p>
+                    <p class="text-2xl font-bold">{{ transactions }}</p>
                     <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
                         <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
                         <span>% vs previous</span>
@@ -32,8 +33,8 @@
             <Card v-if="isLoading" class="py-8 flex justify-center">
                 <MyLoader />
             </Card>
-            <div v-else>
-              <WalletCardPayment v-if="fundingHistory.length > 0" v-for="payment in fundingHistory" :data="payment"/>
+            <div v-else class="flex flex-col gap-2">
+              <WalletCardPayment v-if="fundingHistory.length > 0" v-for="payment in fundingHistory" :data="payment" />
               <Card v-else class="py-8 text-center text-gray-500">
                 No payments found
             </Card>
@@ -42,6 +43,7 @@
     
   </template>
 <script>
+
 definePageMeta({
     layout: 'wallet'
 })
@@ -50,7 +52,9 @@ export default {
     return {
       isLoading: true,
       historyFilter: 'all',
-      fundingHistory: []
+      fundingHistory: [],
+      total: null,
+      transactions: null
     }
   },
   methods: {
@@ -59,6 +63,8 @@ export default {
         try {
           const response = await useWalletAuthFetch(`${WALLET_API_URL}/pay/history`)
           this.fundingHistory = response.payments;
+          this.total = (response.totalAmount / 100).toFixed(2)
+          this.transactions = response.totalCount
           
         } catch (error) {
           console.error('Error fetching payments:', error);

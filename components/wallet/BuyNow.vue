@@ -4,7 +4,7 @@
       <WalletCardBalance :addMoney="false"/>
       <div v-if="meters.length > 0" class="flex flex-col gap-2">
         <Label for="meter">Meter</Label>
-        <Select>
+        <Select v-model="value">
           <SelectTrigger>
             <SelectValue placeholder="Select a meter" />
           </SelectTrigger>
@@ -40,9 +40,6 @@
   </div>
 </template>
 <script>
-import { WalletAddMeter } from '#components';
-import Wallet from '~/layouts/wallet.vue';
-
 export default {
   data() {
     return {
@@ -88,6 +85,7 @@ export default {
 
         this.vendResponse = response.token;
         this.$store.balance = response.balance
+        // TODO: emit success to reload parent
       } catch (error) {
         console.error('Error fetching vend response:', error);
         this.$toast({
