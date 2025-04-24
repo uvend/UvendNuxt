@@ -38,7 +38,8 @@ export default{
                     method: "POST",
                     body : {
                         email : this.email,
-                        password : this.password
+                        password : this.password,
+                        verification_callback_url: `${window.location.origin}/handler/email-verification`
                     }
                 })
                 const access_token = response.access_token;

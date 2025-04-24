@@ -23,6 +23,8 @@ export default{
             email: null
         }
     },
+    mounted(){
+    },
     methods:{
         async resetPassword(){
             try{
@@ -30,7 +32,8 @@ export default{
                 await useWalletAuthFetch(`${WALLET_API_URL}/auth/send-reset-code`,{
                     method : "POST",
                     body: {
-                        email : this.email
+                        email : this.email,
+                        callback_url: `${window.location.origin}/handler/reset-password`
                     }
                 })
                 this.$toast({
