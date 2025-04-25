@@ -24,8 +24,8 @@
         </NumberField>
         <Button @click="creditToken(false)">Buy now</Button>
       </div>
-      <div v-else>
-        <WalletAddMeter />
+      <div v-if="!isLoading && meters.length == 0">
+          <!-- navigate to add a button -->
       </div>
     </div>
     <div v-else class="p-2 h-fit">
@@ -94,7 +94,7 @@ export default {
           variant: 'destructive'
         });
       }
-    }
+    },
   },
   async mounted() {
     await this.fetchMeters()
