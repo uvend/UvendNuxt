@@ -1,28 +1,43 @@
 <template>
-    <ScrollArea class="flex gap-2 w-full md:w-auto h-fit">
-        <div class="flex gap-2 w-full hide-scrollbar" style="overflow-x: scroll;">
-            <Button v-for="data in modelValue" size="sm" variant="outline" class="flex-1 sm:flex-none bg-white" @click="setDateRange(data.key)">{{ data.value }}</Button>
+    <ScrollArea class="w-full">
+        <div class="flex space-x-2 pb-2">
+            <Button
+                v-for="option in options"
+                :key="option.key"
+                size="sm"
+                :variant="modelValue === option.key ? 'default' : 'outline'"
+                class="whitespace-nowrap"
+                @click="handleSelect(option.key)"
+            >
+                {{ option.value }}
+            </Button>
         </div>
-      </ScrollArea>
+    </ScrollArea>
 </template>
+
 <script>
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
+
 export default {
+    components: {
+        ScrollArea,
+        Button
+    },
     props: {
         modelValue: {
+            type: String,
+            default: 'all'
+        },
+        options: {
             type: Array,
             default: () => []
         }
     },
-  data() {
-    return {
-      // your internal data here
+    methods: {
+        handleSelect(value) {
+            this.$emit('update:modelValue', value);
+        }
     }
-  },
-  methods:{
-    setDateRange(value){
-      this.$emit('update', value);
-
-    }
-  }
 }
 </script>

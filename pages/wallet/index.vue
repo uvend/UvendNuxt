@@ -2,8 +2,15 @@
     <div class="flex flex-col p-4 gap-4 overflow-hidden">
         <!-- Filter buttons in a scrollable container on mobile -->
         <div class="flex justify-between flex-wrap gap-2">
-            <WalletUtilitySelector v-model="filterOptions" @update="console.log"/>
-            <WalletDateRangeSelector @update="console.log"/>
+            <WalletUtilitySelector
+                v-model="selectedFilter"
+                :options="filterOptions"
+                @update:modelValue="handleFilterUpdate"
+            />
+            <WalletDateRangeSelector
+                v-model="selectedDateRange"
+                @update:modelValue="handleDateRangeUpdate"
+            />
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-3">
             <WalletCardBalance :addMoney="true"/>
@@ -67,11 +74,13 @@ export default {
         { name: null, value: null }
       ],
       transactions: [],
+      selectedFilter: 'all',
+      selectedDateRange: '7days',
       filterOptions: [
-        { key : "all", value: "All Transactions"},
-        { key : "elect", value: "Electricity"},
-        { key : "water", value: "Water"},
-        { key : "payments", value: "Payments"},
+        { key: "all", value: "All Transactions" },
+        { key: "elect", value: "Electricity" },
+        { key: "water", value: "Water" },
+        { key: "payments", value: "Payments" },
       ]
     }
   },
@@ -82,20 +91,31 @@ export default {
     }
   },
   methods: {
-    setDateRange(range) {
-      this.dateRange = range;
+    handleFilterUpdate(value) {
+      this.selectedFilter = value;
+      this.fetchDashboardData();
+    },
+    handleDateRangeUpdate(value) {
+      this.selectedDateRange = value;
+      this.fetchDashboardData();
     },
     async fetchDashboardData() {
       this.isLoading = true;
       try {
-        // API calls will be implemented later
+        // Here you would make your API calls with both filters
+        const params = {
+          filter: this.selectedFilter,
+          dateRange: this.selectedDateRange
+        };
+        console.log('Fetching data with params:', params);
+        // Example API call (replace with your actual API endpoints)
+        // await this.$api.get('/wallet/transactions', { params });
         await Promise.all([
-            new Promise(resolve => setTimeout(resolve, 3000))
+          new Promise(resolve => setTimeout(resolve, 3000))
         ]);
-        
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        this.$toast({
+        this.$toast?.({
           title: 'Error',
           description: 'Failed to load dashboard data',
           variant: 'destructive'
@@ -103,7 +123,6 @@ export default {
       } finally {
         this.isLoading = false;
       }
-      
     },
   },
   mounted() {

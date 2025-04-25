@@ -23,6 +23,8 @@
       <div v-else>
       <div v-if="meters" v-for="meter in meters">
         <WalletCardMeter :meter="meter" @click="selectedMeter = meter"/>
+        
+
       </div>
         <Card v-else class="py-8 text-center text-gray-500">
             No transactions found

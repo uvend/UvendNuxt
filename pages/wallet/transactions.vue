@@ -2,8 +2,11 @@
 <div class="flex flex-col p-4 gap-4">
     <div class="flex justify-between">
         <div></div>
-        <WalletDateRangeSelector @update="console.log"/>
-     </div>
+        <WalletDateRangeSelector 
+            v-model="period"
+            @update="handlePeriodChange"
+        />
+    </div>
     <!-- Transactions Summary Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card class="p-4 bg-white border shadow-sm">
@@ -11,7 +14,7 @@
             <p class="text-gray-600 text-sm">Total Spent</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
             <p class="text-2xl font-bold" v-else>{{ summary.totalSpent }}</p>
-            <p class="text-sm text-gray-500">{{ period === 'year' ? 'Past year' : `Last ${period.replace('days', ' days')}` }}</p>
+            <p class="text-sm text-gray-500">{{ getPeriodLabel }}</p>
         </div>
         </Card>
         
@@ -70,88 +73,102 @@ definePageMeta({
     layout: 'wallet'
 })
   
-  export default {
+export default {
     data() {
-      return {
-        isLoading: true,
-        activeFilter: 'all',
-        period: '30days',
-        searchQuery: '',
-        currentPage: 1,
-        pageSize: 10,
-        transactions: [],
-        monthlyData: [],
-        summary: {
-          totalSpent: null,
-          electricity: null,
-          electricityTrend: null,
-          water: null,
-          waterTrend: null,
-          transactionCount: null
-        },
-        showReceipt: false,
-        selectedTransaction: null,
-        filterOptions: [
-            { key : "all", value: "All Transactions"},
-            { key : "elect", value: "Electricity"},
-            { key : "water", value: "Water"},
-        ]
-      }
+        return {
+            isLoading: true,
+            activeFilter: 'all',
+            period: '30days',
+            searchQuery: '',
+            currentPage: 1,
+            pageSize: 10,
+            transactions: [],
+            monthlyData: [],
+            summary: {
+                totalSpent: null,
+                electricity: null,
+                electricityTrend: null,
+                water: null,
+                waterTrend: null,
+                transactionCount: null
+            },
+            showReceipt: false,
+            selectedTransaction: null,
+            filterOptions: [
+                { key : "all", value: "All Transactions"},
+                { key : "elect", value: "Electricity"},
+                { key : "water", value: "Water"},
+            ]
+        }
     },
     computed: {
-      filteredTransactions() {
-        return [];
-      },
+        filteredTransactions() {
+            return [];
+        },
+        getPeriodLabel() {
+            const labels = {
+                'all': 'All Time',
+                'year': 'Past year',
+                '7days': 'Last 7 days',
+                '30days': 'Last 30 days',
+                '6months': 'Last 6 months',
+                '12months': 'Last 12 months'
+            }
+            return labels[this.period] || 'All Time'
+        }
     },
     methods: {
-      async fetchTransactionsData() {
-        this.isLoading = true;        
-        try {
-          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`)
-          this.transactions = response.transactions;
-          this.summary.totalSpent = Number(response.totalAmount).toFixed(2)
-          this.summary.transactionCount = response.totalCount
-         
-        } catch (error) {
-          console.error('Error fetching transactions data:', error);
-          this.$toast({
-            title: 'Error',
-            description: 'Failed to load transactions data',
-            variant: 'destructive'
-          });
-        } finally {
-          this.isLoading = false;
-        }
-      },
-      
-      getUtilityClass(type) {
-        const classes = {
-          'Electricity': 'bg-blue-500',
-          'Water': 'bg-teal-500',
-          'Funding': 'bg-purple-500',
-          'Withdrawal': 'bg-gray-500'
-        };
+        handlePeriodChange(value) {
+            this.period = value;
+            this.fetchTransactionsData();
+        },
+        async fetchTransactionsData() {
+            this.isLoading = true;        
+            try {
+                const params = new URLSearchParams();
+                if (this.period !== 'all') {
+                    params.append('period', this.period);
+                }
+                
+                const response = await useWalletAuthFetch(
+                    `${WALLET_API_URL}/meter/token/history${params.toString() ? '?' + params.toString() : ''}`
+                );
+                
+                this.transactions = response.transactions;
+                this.summary.totalSpent = Number(response.totalAmount).toFixed(2);
+                this.summary.transactionCount = response.totalCount;
+            } catch (error) {
+                console.error('Error fetching transactions data:', error);
+                this.$toast({
+                    title: 'Error',
+                    description: 'Failed to load transactions data',
+                    variant: 'destructive'
+                });
+            } finally {
+                this.isLoading = false;
+            }
+        },
         
-        return classes[type] || 'bg-gray-500';
-      },
+        getUtilityClass(type) {
+            const classes = {
+                'Electricity': 'bg-blue-500',
+                'Water': 'bg-teal-500',
+                'Funding': 'bg-purple-500',
+                'Withdrawal': 'bg-gray-500'
+            };
+            
+            return classes[type] || 'bg-gray-500';
+        },
     },
     mounted() {
-      this.fetchTransactionsData();
-    },
-    watch: {
-      period() {
         this.fetchTransactionsData();
-      },
-      searchQuery() {
-        this.currentPage = 1; // Reset to first page when search changes
-      }
     },
     computed:{
-      electricity(){
-        let amount = 0
-        return amount.toFixed(2)
-      }
+        electricity(){
+            let amount = 0
+            return amount.toFixed(2)
+        }
     }
-  }
-  </script>
+}
+</script>
   
