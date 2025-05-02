@@ -14,13 +14,17 @@ export default{
                 { key : "30days", value : "30 days"},
                 { key : "6months", value : "6 months"},
                 { key : "12months", value : "12 months"}
-            ]
+            ],
+            selectedRange: "7days"
         }
     },
     methods: {
         setDateRange(value){
-            this.$emit('update',value)
+            this.$store.dateRange = value
         }
+    },
+    mounted(){
+        this.$store.dateRange = this.dateRangeOptions[0].key
     }
 }
 </script>

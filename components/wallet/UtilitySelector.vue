@@ -20,8 +20,8 @@ export default {
   },
   methods:{
     setDateRange(value){
-      this.$emit('update', value);
-
+      this.$store.utilityType = value
+      console.log(value)
     }
   }
 }
