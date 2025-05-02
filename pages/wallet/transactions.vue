@@ -11,7 +11,7 @@
             <p class="text-gray-600 text-sm">Total Spent</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
             <p class="text-2xl font-bold" v-else>{{ summary.totalSpent }}</p>
-            <p class="text-sm text-gray-500">{{ period === 'year' ? 'Past year' : `Last ${period.replace('days', ' days')}` }}</p>
+            <p class="text-sm text-gray-500" v-if="$store.dateRange">{{ $store.dateRange }}</p>
         </div>
         </Card>
         
@@ -20,10 +20,10 @@
             <p class="text-gray-600 text-sm">Electricity</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
             <p class="text-2xl font-bold" v-else>{{electricity}}</p>
-            <div class="flex items-center text-sm mt-1" :class="0 ? 'text-red-500' : 'text-green-500'">
+            <!-- <div class="flex items-center text-sm mt-1" :class="0 ? 'text-red-500' : 'text-green-500'">
             <Icon :name="0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
-            <span>% vs previous</span>
-            </div>
+            <span>% vs previous</span> 
+            </div> -->
         </div>
         </Card>
         
@@ -32,10 +32,10 @@
             <p class="text-gray-600 text-sm">Water</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
             <p class="text-2xl font-bold" v-else>0.00</p>
-            <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
+            <!-- <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
             <Icon :name="0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
             <span>% vs previous</span>
-            </div>
+            </div> -->
         </div>
         </Card>
         
@@ -69,13 +69,11 @@
 definePageMeta({
     layout: 'wallet'
 })
-  
   export default {
     data() {
       return {
         isLoading: true,
-        activeFilter: 'all',
-        period: '30days',
+        activeFilter: null,
         searchQuery: '',
         currentPage: 1,
         pageSize: 10,
@@ -92,10 +90,12 @@ definePageMeta({
         showReceipt: false,
         selectedTransaction: null,
         filterOptions: [
-            { key : "all", value: "All Transactions"},
-            { key : "elect", value: "Electricity"},
-            { key : "water", value: "Water"},
-        ]
+            { key : null, value: "All Transactions"},
+            { key : "Electricity", value: "Electricity"},
+            { key : "Water", value: "Water"},
+        ],
+        startDate: null,
+        endDate: null
       }
     },
     computed: {
@@ -107,7 +107,13 @@ definePageMeta({
       async fetchTransactionsData() {
         this.isLoading = true;        
         try {
-          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`)
+          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`,{
+            params: {
+              startDate: this.startDate,
+              endDate: this.endDate,
+              utilityType: this.activeFilter
+            }
+          })
           this.transactions = response.transactions;
           this.summary.totalSpent = Number(response.totalAmount).toFixed(2)
           this.summary.transactionCount = response.totalCount
@@ -134,21 +140,66 @@ definePageMeta({
         
         return classes[type] || 'bg-gray-500';
       },
+      formatDate(rawDate){
+        return rawDate.toISOString().split('T')[0];
+      },
+      setDateRange(newValue){
+        const startDate = new Date();
+        const endDate = new Date();
+        if(newValue == '7days'){
+          startDate.setDate(endDate.getDate() - 7);
+        }
+        if(newValue == '30days'){
+          startDate.setDate(endDate.getDate() - 30);
+        }
+        if(newValue == '6months'){
+          startDate.setDate(endDate.getDate() - 182);
+        }
+        if(newValue == '12months'){
+          startDate.setDate(endDate.getDate() - 265);
+        }
+        this.startDate = this.formatDate(startDate);
+        this.endDate = this.formatDate(endDate);
+      }
     },
-    mounted() {
-      this.fetchTransactionsData();
+    async mounted() {
+      this.setDateRange('7days');
+      await this.fetchTransactionsData();
     },
     watch: {
-      period() {
+      '$store.dateRange'(newValue){
+        this.setDateRange(newValue)
+        this.fetchTransactionsData();
+      },
+      '$store.utilityType'(newValue){
+        this.activeFilter = newValue;
         this.fetchTransactionsData();
       },
       searchQuery() {
-        this.currentPage = 1; // Reset to first page when search changes
+        this.currentPage = 1;
       }
     },
     computed:{
       electricity(){
         let amount = 0
+        if(this.transactions){
+          this.transactions.forEach(transaction => {
+            if(transaction.utilityType == 'Electricity'){
+              amount += parseFloat(transaction.amount)
+            }
+          })
+        }
+        return amount.toFixed(2)
+      },
+      water(){
+        let amount = 0
+        if(this.transactions){
+          this.transactions.forEach(transaction => {
+            if(transaction.utilityType == 'Water'){
+              amount += parseFloat(transaction.amount)
+            }
+          })
+        }
         return amount.toFixed(2)
       }
     }
