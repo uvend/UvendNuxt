@@ -2,10 +2,8 @@
 <div class="flex flex-col p-4 gap-4">
     <div class="flex justify-between">
         <div></div>
-        <WalletDateRangeSelector 
-            v-model="period"
-            @update="handlePeriodChange"
-        />
+        <WalletUtilitySelector v-model="selectedUtility" :options="filterOptions" class="mr-2"/>
+        <WalletDateRangeSelector v-model="selectedDateRange" @update="handlePeriodChange"/>
     </div>
     <!-- Transactions Summary Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -69,6 +67,8 @@
 </template>
 
 <script>
+import { server } from 'typescript';
+
 definePageMeta({
     layout: 'wallet'
 })
@@ -79,6 +79,8 @@ export default {
             isLoading: true,
             activeFilter: 'all',
             period: '30days',
+            selectedUtility: 'all',
+            selectedDateRange: '30days',
             searchQuery: '',
             currentPage: 1,
             pageSize: 10,
@@ -119,21 +121,18 @@ export default {
     },
     methods: {
         handlePeriodChange(value) {
-            this.period = value;
+            this.selectedDateRange = value;
             this.fetchTransactionsData();
         },
         async fetchTransactionsData() {
             this.isLoading = true;        
             try {
-                const params = new URLSearchParams();
-                if (this.period !== 'all') {
-                    params.append('period', this.period);
-                }
-                
+                const params = {};
+                if (this.selectedDateRange && this.selectedDateRange !== 'all') params.dateRange = this.selectedDateRange;
+                if (this.selectedUtility && this.selectedUtility !== 'all') params.utilityType = this.selectedUtility;
                 const response = await useWalletAuthFetch(
-                    `${WALLET_API_URL}/meter/token/history${params.toString() ? '?' + params.toString() : ''}`
+                    `${{server}}/meter/token/history`, { params }
                 );
-                
                 this.transactions = response.transactions;
                 this.summary.totalSpent = Number(response.totalAmount).toFixed(2);
                 this.summary.transactionCount = response.totalCount;
@@ -162,6 +161,10 @@ export default {
     },
     mounted() {
         this.fetchTransactionsData();
+    },
+    watch: {
+        selectedUtility() { this.fetchTransactionsData(); },
+        selectedDateRange() { this.fetchTransactionsData(); }
     },
     computed:{
         electricity(){

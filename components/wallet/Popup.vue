@@ -1,5 +1,6 @@
 <template>
-    <Button @click="toggleOpen" :class="buttonClass" :variant="buttonVariant" >
+  <div>
+    <Button @click="handleClick" :class="buttonClass" :variant="buttonVariant" >
         {{ buttonLabel }}
     </Button>
     <Drawer v-if="isMobile" v-model:open="isOpen">
@@ -12,10 +13,11 @@
             <slot />
         </DialogContent>
     </Dialog>
-    
+  </div>
 </template>
 <script>
 export default{
+    emits: ['click'],
     props:{
         buttonClass: "",
         buttonLabel: "",
@@ -28,6 +30,10 @@ export default{
         }
     },
     methods:{
+        handleClick(event) {
+            this.$emit('click', event);
+            this.toggleOpen();
+        },
         toggleOpen(){
             this.isOpen = !this.isOpen;
         },

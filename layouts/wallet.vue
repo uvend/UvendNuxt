@@ -50,7 +50,7 @@
                         </div>
                     </div>
                     <WalletPopup buttonLabel="Buy now">
-                        <WalletBuyNow />
+                        <WalletBuyNow @tokenPurchased="handleTokenPurchase" />
                     </WalletPopup>
                 </header>
                 <div class="scroll hide-scrollbar bg-gray-50" style="max-width: 100vw">
@@ -95,6 +95,18 @@ export default{
         },
         toggleNav(){
             this.isNavOpen = !this.isNavOpen;
+        },
+        handleTokenPurchase() {
+            // Find the meters page component if it exists
+            const metersPage = this.$children?.find(child => child.$options.name === 'meters');
+            if (metersPage) {
+                // If on meters page and a meter is selected, refresh token history
+                if (metersPage.$refs.selectedMeter) {
+                    metersPage.$refs.selectedMeter.fetchTokenHistory();
+                }
+                // Refresh meters list
+                metersPage.fetchMeters();
+            }
         }
     },
     mounted() {

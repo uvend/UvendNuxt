@@ -84,8 +84,20 @@ export default {
         }
 
         this.vendResponse = response.token;
-        this.$store.balance = response.balance
-        // TODO: emit success to reload parent
+        this.$store.balance = response.balance;
+        
+        // Emit success event to notify parent components
+        this.$emit('tokenPurchased', {
+          meterId: id,
+          token: response.token
+        });
+        
+        // Show success message
+        this.$toast({
+          title: 'Success',
+          description: 'Token purchased successfully',
+          variant: 'default'
+        });
       } catch (error) {
         console.error('Error fetching vend response:', error);
         this.$toast({

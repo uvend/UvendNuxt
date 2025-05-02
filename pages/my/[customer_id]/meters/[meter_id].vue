@@ -66,80 +66,37 @@ export default{
         }
     },
     methods:{
-        async getAdminMeterActivity(){
+        async getMeterTransactions(){
             this.isLoading = true;
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`,{
-                method: "GET",
-                params: {
-                    StartDate: this.dateRange.start,
-                    EndDate: this.dateRange.end,
-                    ResponseFormatType: 0,
-                    ReportParentType: 7, //specific meter
-                    ParentUniqueID: this.$route.params.meter_id
-                }
-            })
-            this.meterTransactions = result.responseData.transactionData
-            console.log(result)
-            this.meterNumber = result.responseData.transactionData[0]?.meterNumber ?? ''
-            this.$store.pageTitle = this.meterNumber;
-            this.isLoading = false;
+            try {
+                const params = {
+                    meterNumber: this.$route.params.meter_id,
+                    startDate: this.dateRange?.start,
+                    endDate: this.dateRange?.end
+                };
+                const response = await useAuthFetch(`${WALLET_API_URL}/token/history`, { params });
+                this.meterTransactions = response.transactions || [];
+                this.meterNumber = this.$route.params.meter_id;
+                this.$store.pageTitle = this.meterNumber;
+            } catch (error) {
+                console.error('Error fetching meter transactions:', error);
+                this.meterTransactions = [];
+            } finally {
+                this.isLoading = false;
+            }
         },
         changePage(page){
             if (page >= 1 && page <= this.totalPages) {
                 this.currentPage = page;
             }
         },
-        async getVendMeterActivity(){
-            this.isLoading = true
-            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
-                method: "GET",
-                params: {
-                    StartDate: this.dateRange.start,
-                    EndDate: this.dateRange.end,
-                    //ResponseFormatType: 0,
-                    //ReportParentType: 7, //specific meter
-                    HasMeterIdentifier: true,
-                    SpecificMeterIdentifier: this.$route.params.meter_id
-                }
-            })
-            //console.log(result)
-            this.meterTransactions = result.responseData.transactionData
-            this.isLoading = false
-        },
-        async getMeterActivity(){
-            if(localStorage.getItem('customer') === 'admin'){
-                await this.getAdminMeterActivity()
-            }else{
-                await this.getVendMeterActivity()
-            }
-        },
         async getMeterInfo(){
-            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterInfo`,{
-                method: "GET",
-                params: {
-                    "MeterNumber": this.meterNumber,
-                    "ApiUserParams.TerminalID" : VEND_TerminalID,
-                    "ApiUserParams.OperatorID" : VEND_OperatorID,
-                    "ApiUserParams.RequestID" : new Date()
-                }
-            })
-            console.log(result)
-            this.meterInfo = result
-            this.meterStatus = result.requestedMeterState
+            const result = await useAuthFetch(`${WALLET_API_URL}/meter/${this.$route.params.meter_id}/info`);
+            this.meterInfo = result;
+            this.meterStatus = result?.requestedMeterState || null;
         },
         async blockMeter(state = true){
-            const response = await useAuthFetch(`${VEND_URL}/MeterVend/SetMeterBlockState`,{
-                method: "GET",
-                params: {
-                    "Block" : state,
-                    "MeterNumber": this.meterNumber,
-                    "ApiUserParams.TerminalID" : VEND_TerminalID,
-                    "ApiUserParams.OperatorID" : VEND_OperatorID,
-                    "ApiUserParams.RequestID" : new Date()
-                }
-            })
-            this.meterStatus = response.requestedMeterState
-            //console.log(response)
+            // Implement if needed for new API
         }
     },
     async mounted(){
@@ -150,6 +107,8 @@ export default{
             start : lastMonth.toISOString(),
             end : today.toISOString()
         }
+        await this.getMeterTransactions();
+        await this.getMeterInfo();
     },
     computed:{
         totalPages() {
@@ -164,7 +123,7 @@ export default{
     },
     watch:{
         dateRange(){
-            this.getMeterActivity();
+            this.getMeterTransactions();
         },
         meterNumber(){
             this.getMeterInfo();

@@ -7,7 +7,7 @@
           <WalletEditMeter />
         </WalletPopup>
     </div>
-    <WalletCardMeter :meter="meter" @click="$emit('deselect')" open="true"/>
+    <WalletCardMeter :meter="meter" @click="$emit('deselect')" :open="true"/>
     
     <!-- Meter info section -->
     <Card class="mt-6">
@@ -67,16 +67,26 @@
                 <CardTitle>Token History</CardTitle>
                 <CardDescription>Recent token purchases and usage</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" @click="fetchTokenHistory">
-                <Icon name="lucide:refresh-cw" class="h-4 w-4" />
-            </Button>
+            <div class="flex gap-2">
+                <Button variant="ghost" size="sm" @click="fetchTokenHistory">
+                    <Icon name="lucide:refresh-cw" class="h-4 w-4" />
+                </Button>
+                <Button 
+                    v-if="tokenHistory.length > 10"
+                    variant="outline" 
+                    size="sm" 
+                    @click="showAllTransactions = !showAllTransactions"
+                >
+                    {{ showAllTransactions ? 'Show Less' : 'View All' }}
+                </Button>
+            </div>
         </CardHeader>
         <CardContent>
             <div v-if="isLoadingTokens" class="flex justify-center py-6">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
             <div v-else-if="tokenHistory && tokenHistory.length > 0" class="space-y-2">
-                <div v-for="(token, index) in tokenHistory" :key="index" class="flex items-center justify-between py-3 border-b last:border-0">
+                <div v-for="(token, index) in displayedTransactions" :key="index" class="flex items-center justify-between py-3 border-b last:border-0">
                     <div class="flex items-center space-x-4">
                         <div class="rounded-full p-2" :class="getTokenStatusClass(token.status)">
                             <Icon :name="getTokenStatusIcon(token.status)" class="h-4 w-4" />
@@ -182,7 +192,16 @@ export default{
             showTokenDialog: false,
             tokenAmount: '',
             paymentMethod: 'card',
-            tokenResponse: null
+            tokenResponse: null,
+            showAllTransactions: false
+        }
+    },
+    computed: {
+        displayedTransactions() {
+            if (this.showAllTransactions) {
+                return this.tokenHistory;
+            }
+            return this.tokenHistory.slice(0, 10);
         }
     },
     mounted(){
@@ -194,7 +213,6 @@ export default{
         async fetchMeterInfo() {
             this.isLoadingInfo = true;
             try {
-                
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/${this.meter.meterNumber}/info`);
                 this.meterInfo = response;
             } catch (error) {
@@ -212,11 +230,52 @@ export default{
         async fetchTokenHistory() {
             this.isLoadingTokens = true;
             try {
+                const params = new URLSearchParams({
+                    utilityType: this.meter.utilityType || 'Electricity',
+                    startDate: this.formatDateForAPI(new Date()),
+                    endDate: this.formatDateForAPI(new Date()),
+                    meterNumber: this.meter.meterNumber
+                });
+
+                const url = `${WALLET_API_URL}/meter/token/history?${params.toString()}`;
+                console.log('Fetching token history from:', url); // Debug log
+
+                const response = await useWalletAuthFetch(url);
                 
-                const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history?meterNumber=${this.meter.meterNumber}`);
-                this.tokenHistory = response;
+                // Check if response is HTML (indicating a redirect)
+                if (typeof response === 'string' && response.includes('<!DOCTYPE html>')) {
+                    console.error('Received HTML response instead of JSON. Authentication may have failed.');
+                    this.tokenHistory = [];
+                    this.$toast({
+                        title: 'Error',
+                        description: 'Failed to fetch token history. Please try logging in again.',
+                        variant: 'destructive'
+                    });
+                    return;
+                }
+
+                console.log('Token history response:', response); // Debug log
+
+                // Validate response structure
+                if (!Array.isArray(response)) {
+                    console.error('Expected array response, got:', typeof response);
+                    this.tokenHistory = [];
+                    return;
+                }
+
+                // Filter out empty or invalid tokens
+                this.tokenHistory = response.filter(token => {
+                    return token && (token.tokenNumber || token.amount || token.date);
+                });
+
+                console.log('Processed token history:', this.tokenHistory); // Debug log
             } catch (error) {
                 console.error('Error fetching token history:', error);
+                this.$toast({
+                    title: 'Error',
+                    description: 'Failed to fetch token history. Please try again.',
+                    variant: 'destructive'
+                });
                 this.tokenHistory = [];
             } finally {
                 this.isLoadingTokens = false;
@@ -225,7 +284,6 @@ export default{
         async purchaseToken() {
             this.isPurchasing = true;
             try {
-                
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/${this.meter.id}`, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -341,6 +399,9 @@ export default{
                 default:
                     return 'outline';
             }
+        },
+        formatDateForAPI(date) {
+            return date.toISOString().split('T')[0];  // Returns YYYY-MM-DD format
         }
     }
 }
