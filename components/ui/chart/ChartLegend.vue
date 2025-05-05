@@ -1,60 +1,41 @@
 <script setup lang="ts">
 import type { BulletLegendItemInterface } from '@unovis/ts'
-import { buttonVariants } from '@/components/ui/button'
-import { BulletLegend } from '@unovis/ts'
-import { VisBulletLegend } from '@unovis/vue'
-import { nextTick, onMounted, ref } from 'vue'
+import type { PropType } from 'vue'
 
-const props = withDefaults(defineProps<{ items: BulletLegendItemInterface[] }>(), {
-  items: () => [],
+const props = defineProps({
+  items: {
+    type: Array as PropType<BulletLegendItemInterface[]>,
+    required: true,
+  },
 })
 
-const emits = defineEmits<{
-  'legendItemClick': [d: BulletLegendItemInterface, i: number]
-  'update:items': [payload: BulletLegendItemInterface[]]
+const emit = defineEmits<{
+  'update:items': [items: BulletLegendItemInterface[]]
+  'legend-item-click': [item: BulletLegendItemInterface, index: number]
 }>()
 
-const elRef = ref<HTMLElement>()
-
-function keepStyling() {
-  const selector = `.${BulletLegend.selectors.item}`
-  nextTick(() => {
-    const elements = elRef.value?.querySelectorAll(selector)
-    const classes = buttonVariants({ variant: 'ghost', size: 'xs' }).split(' ')
-
-    elements?.forEach(el => el.classList.add(...classes, '!inline-flex', '!mr-2'))
-  })
-}
-
-onMounted(() => {
-  keepStyling()
-})
-
-function onLegendItemClick(d: BulletLegendItemInterface, i: number) {
-  emits('legendItemClick', d, i)
-  const isBulletActive = !props.items[i].inactive
-  const isFilterApplied = props.items.some(i => i.inactive)
-  if (isFilterApplied && isBulletActive) {
-    // reset filter
-    emits('update:items', props.items.map(item => ({ ...item, inactive: false })))
-  }
-  else {
-    // apply selection, set other item as inactive
-    emits('update:items', props.items.map(item => item.name === d.name ? ({ ...d, inactive: false }) : { ...item, inactive: true }))
-  }
-  keepStyling()
+function handleItemClick(item: BulletLegendItemInterface, index: number) {
+  const newItems = [...props.items]
+  newItems[index] = { ...item, inactive: !item.inactive }
+  emit('update:items', newItems)
+  emit('legend-item-click', item, index)
 }
 </script>
 
 <template>
-  <div
-    ref="elRef" class="w-max" :style="{
-      '--vis-legend-bullet-size': '16px',
-    }"
-  >
-    <VisBulletLegend
-      :items="items"
-      :on-legend-item-click="onLegendItemClick"
-    />
+  <div class="flex flex-wrap gap-4 mb-4">
+    <button
+      v-for="(item, i) in items"
+      :key="item.name"
+      class="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+      :class="{ 'opacity-50': item.inactive }"
+      @click="handleItemClick(item, i)"
+    >
+      <span
+        class="w-3 h-3 rounded-full"
+        :style="{ backgroundColor: item.color }"
+      />
+      <span class="text-sm font-medium">{{ item.name }}</span>
+    </button>
   </div>
 </template>

@@ -10,104 +10,170 @@
             
             <Card class="p-4 bg-white border shadow-sm">
               <div class="flex flex-col">
-                  <p class="text-gray-600 text-sm">Total</p>
-                  <p class="text-2xl font-bold">0.00</p>
-                  <!--<div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
-                      <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
-                      <span>% vs previous</span>
-                  </div>-->
+                  <p class="text-gray-600 text-sm">Active Meters</p>
+                  <p class="text-2xl font-bold">{{ activeMeters }}</p>
+                  <p class="text-sm text-muted-foreground">Total meters: {{ totalMeters }}</p>
               </div>
             </Card>
             
             <Card class="p-4 bg-white border shadow-sm">
               <div class="flex flex-col">
-                  <p class="text-gray-600 text-sm">Transactions</p>
-                  <p class="text-2xl font-bold">0</p>
-                  <!--<div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
-                      <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
-                      <span>% vs previous</span>
-                  </div>-->
+                  <p class="text-gray-600 text-sm">Total Transactions</p>
+                  <p class="text-2xl font-bold">{{ totalTransactions }}</p>
+                  <p class="text-sm text-muted-foreground">Last 30 days</p>
               </div>
             </Card>
         </div>
-        <Card class="bg-white border shadow-sm w-full">              
-              <CardContent class="p-0">
-                <div>
+
+        <!-- Meter Vending Statistics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Bar Chart -->
+            <Card class="bg-white border shadow-sm">              
+                <CardHeader>
+                    <CardTitle>Meter Vending Distribution</CardTitle>
+                    <CardDescription>Vending amount by meter</CardDescription>
+                </CardHeader>
+                <CardContent>
                     <div v-if="isLoading" class="py-8 flex justify-center">
                         <MyLoader />
                     </div>
-                    <div v-else class="py-8 text-center text-gray-500">
-                        No transactions found
+                    <div v-else-if="meterStats.length > 0" class="h-[400px]">
+                        <BarChart
+                            :data="meterStats"
+                            :categories="['amount']"
+                            index="name"
+                            :colors="['#2563eb']"
+                            type="grouped"
+                            :rounded-corners="4"
+                            :y-formatter="formatAmount"
+                            :show-legend="false"
+                        />
                     </div>
-                  </div>
-              </CardContent>
-          </Card>
+                    <div v-else class="py-8 text-center text-gray-500">
+                        No transaction data available
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- List View -->
+            <Card class="bg-white border shadow-sm">
+                <CardHeader>
+                    <CardTitle>Top Vending Meters</CardTitle>
+                    <CardDescription>Ranked by vending amount</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div v-if="isLoading" class="py-8 flex justify-center">
+                        <MyLoader />
+                    </div>
+                    <div v-else-if="meterStats.length > 0" class="divide-y">
+                        <div v-for="(meter, index) in meterStats" 
+                             :key="meter.name"
+                             class="py-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
+                             @click="navigateToMeter(meter)">
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium">
+                                    {{ index + 1 }}
+                                </span>
+                                <div>
+                                    <p class="font-medium">{{ meter.name }}</p>
+                                    <p class="text-sm text-gray-500">{{ formatAmount(meter.amount) }}</p>
+                                </div>
+                            </div>
+                            <Icon name="lucide:chevron-right" class="text-gray-400" />
+                        </div>
+                    </div>
+                    <div v-else class="py-8 text-center text-gray-500">
+                        No transaction data available
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
     </div>
 </template>
-<script>
+
+<script setup>
 definePageMeta({
     layout: 'wallet'
 })
-export default {
-  data() {
-    return {
-      walletBalance: null,
-      isLoading: true,
-      isLoadingTransactions: true,
-      statsData: {
-        dashboard: null,
-        outbox: null,
-        favorites: null,
-        monthlyTotal: null
-      },
-      chartData: [],
-      labels: [
-        { name: null, value: null },
-        { name: null, value: null },
-        { name: null, value: null }
-      ],
-      transactions: [],
-      filterOptions: [
-        { key : "all", value: "All Transactions"},
-        { key : "elect", value: "Electricity"},
-        { key : "water", value: "Water"},
-        { key : "payments", value: "Payments"},
-      ]
-    }
-  },
-  computed: {
-    currentMonthYear() {
-      const date = new Date();
-      return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-    }
-  },
-  methods: {
-    setDateRange(range) {
-      this.dateRange = range;
-    },
-    async fetchDashboardData() {
-      this.isLoading = true;
-      try {
-        // API calls will be implemented later
-        await Promise.all([
-            new Promise(resolve => setTimeout(resolve, 3000))
-        ]);
-        
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        this.$toast({
-          title: 'Error',
-          description: 'Failed to load dashboard data',
-          variant: 'destructive'
-        });
-      } finally {
-        this.isLoading = false;
-      }
-      
-    },
-  },
-  mounted() {
-    this.fetchDashboardData();
-  }
+
+import { ref, onMounted } from 'vue'
+import { BarChart } from '@/components/ui/chart-bar'
+
+const walletBalance = ref(null)
+const isLoading = ref(true)
+const activeMeters = ref(0)
+const totalMeters = ref(0)
+const totalTransactions = ref(0)
+const meterStats = ref([])
+const filterOptions = ref([
+    { key: "all", value: "All Transactions" },
+    { key: "elect", value: "Electricity" },
+    { key: "water", value: "Water" },
+    { key: "payments", value: "Payments" },
+])
+
+function formatAmount(amount) {
+    return new Intl.NumberFormat('en-ZA', {
+        style: 'currency',
+        currency: 'ZAR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(amount)
 }
+
+function navigateToMeter(meter) {
+    // Navigate to meter details page
+    navigateTo(`/wallet/meters/${meter.meterNumber}`)
+}
+
+async function fetchDashboardData() {
+    isLoading.value = true
+    try {
+        // Fetch meters data
+        const metersResponse = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
+        totalMeters.value = metersResponse.meters.length
+        activeMeters.value = metersResponse.meters.filter(meter => meter.status === 'Active').length
+
+        // Fetch transactions data
+        const transactionsResponse = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`)
+        totalTransactions.value = transactionsResponse.transactions.length
+
+        // Process meter statistics
+        const meterTransactions = new Map()
+        transactionsResponse.transactions.forEach(transaction => {
+            const meterNumber = transaction.meterNumber
+            const amount = parseFloat(transaction.amount)
+            
+            if (meterTransactions.has(meterNumber)) {
+                meterTransactions.get(meterNumber).amount += amount
+            } else {
+                const meter = metersResponse.meters.find(m => m.meterNumber === meterNumber)
+                meterTransactions.set(meterNumber, {
+                    meterNumber: meterNumber,
+                    name: meter?.name || meterNumber,
+                    amount: amount
+                })
+            }
+        })
+
+        // Convert to array and sort by amount
+        meterStats.value = Array.from(meterTransactions.values())
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 10) // Show top 10 meters
+
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+        useToast({
+            title: 'Error',
+            description: 'Failed to load dashboard data',
+            variant: 'destructive'
+        })
+    } finally {
+        isLoading.value = false
+    }
+}
+
+onMounted(() => {
+    fetchDashboardData()
+})
 </script>
