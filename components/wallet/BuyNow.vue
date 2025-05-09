@@ -25,7 +25,13 @@
         <Button @click="creditToken(false)">Buy now</Button>
       </div>
       <div v-if="!isLoading && meters.length == 0">
-          <!-- navigate to add a button -->
+          <!-- navigate to add a meter -->
+           <p class="mb-2">
+            Oops, you do not have any meters loaded.
+           </p>
+            <DialogClose as-child>
+              <Button @click="navigateTo('/meters')" type="submit">Go to meters <Icon name="lucide:arrow-right"/> </Button>
+            </DialogClose>
       </div>
     </div>
     <div v-else class="p-2 h-fit">
