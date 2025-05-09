@@ -2,44 +2,6 @@
     <div class="main-grid">
         <div :style="{ backgroundColor: bgColor }" class="bg-dynamic">
             <MyLogo />
-            <div class="p-6">
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">Top 5 Meters by Vending Amount</h3>
-                        <button 
-                            @click="fetchDashboardData" 
-                            class="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
-                            :disabled="chartIsLoading"
-                        >
-                            <span v-if="chartIsLoading">Loading...</span>
-                            <span v-else>Refresh</span>
-                        </button>
-                    </div>
-                    
-                    <div v-if="chartIsLoading" class="flex justify-center items-center h-64">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    </div>
-                    
-                    <div v-else-if="chartError" class="text-red-500 text-center h-64 flex items-center justify-center">
-                        {{ chartError }}
-                    </div>
-                    
-                    <BarChart
-                        v-else-if="chartData.length > 0"
-                        :data="chartData"
-                        :categories="['amount']"
-                        index="name"
-                        :colors="['#2563eb']"
-                        type="grouped"
-                        :rounded-corners="4"
-                        :y-formatter="formatAmount"
-                        :show-legend="false"
-                    />
-                    <p v-else class="text-center text-gray-500 h-64 flex items-center justify-center">
-                        No vending data available
-                    </p>
-                </div>
-            </div>
         </div>
         <div class="profile-grid flex h-full">
             <div class="flex justify-between py-2 px-4">
