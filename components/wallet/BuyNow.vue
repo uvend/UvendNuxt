@@ -77,8 +77,8 @@ export default {
     },
     async creditToken(preview) {
       this.vending = true;
-      const id = this.value.id;
       try {
+        const id = this.value?.id ?? null
         const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/${id}`, {
           method: 'POST',
           body: {
