@@ -22,7 +22,7 @@
             <NumberFieldInput />
           </NumberFieldContent>
         </NumberField>
-        <Button @click="creditToken(false)">Buy now</Button>
+        <Button @click="creditToken(false)" :disabled="vending">Buy now</Button>
       </div>
       <div v-if="!isLoading && meters.length == 0">
           <!-- navigate to add a meter -->
@@ -34,14 +34,14 @@
             </DialogClose>
       </div>
     </div>
-    <div v-else class="p-2 h-fit">
-      <p v-for="token in vendResponse.listOfTokenTransactions" class="text-center">
-        <div v-for="tokens in token.tokens">
-          <span v-for="keys in tokens.tokenKeys">
-            <span>{{ keys }} &nbsp;</span>
-          </span>
-        </div>
-      </p>
+    <div v-else class="p-2 h-full flex items-center justify-center text-xl">
+      <p v-for="token in vendResponse.listOfTokenTransactions">
+            <div v-for="tokens in token.tokens">
+                <span v-for="keys in tokens.tokenKeys">
+                    <span>{{ keys }} &nbsp;</span>
+                </span>
+            </div>
+        </p>
     </div>
   </div>
 </template>
@@ -53,7 +53,8 @@ export default {
       isLoading: false,
       value: null,
       amount: 30,
-      vendResponse: null
+      vendResponse: null,
+      vending: false
     }
   },
   methods: {
@@ -75,6 +76,7 @@ export default {
       }
     },
     async creditToken(preview) {
+      this.vending = true;
       const id = this.value.id;
       try {
         const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/${id}`, {
@@ -99,6 +101,8 @@ export default {
           description: error.message, // Display the actual error message
           variant: 'destructive'
         });
+      } finally{
+        this.vending = false;
       }
     },
   },

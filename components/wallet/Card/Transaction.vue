@@ -1,5 +1,5 @@
 <template>
-    <Card class="p-4 hover:bg-gray-50 transition-colors">
+    <Card class="p-4 hover:bg-gray-50 transition-colors" @click="togglePopup">
         <div class="card-grid gap-4">
             <div class="space-y-1">
                 <p class="text-sm text-muted-foreground">Meter Number</p>
@@ -19,13 +19,28 @@
             </div>
         </div>
     </Card>
+    <WalletPopup v-model="isOpen" :hasButton="false">
+        <p v-for="token in data.vendResponse.listOfTokenTransactions" class="text-center h-full flex items-center justify-center text-xl">
+            <div v-for="tokens in token.tokens">
+                <span v-for="keys in tokens.tokenKeys">
+                    <span>{{ keys }} &nbsp;</span>
+                </span>
+            </div>
+        </p>
+    </WalletPopup>
 </template>
 <script>
 export default{
     props: {
         data: Object
     },
+    data(){
+        return{
+            isOpen: false
+        }
+    },
     mounted(){
+        console.log(this.data)
     },
     methods:{
         formattedDate(dateString){
@@ -33,7 +48,10 @@ export default{
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
-            return `${day}-${month}-${year}`;
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${day}-${month}-${year} ${hours}:${minutes}`;
         },
         formatAmount(amount) {
             return parseFloat(amount).toFixed(2);
@@ -45,6 +63,9 @@ export default{
                 'gas': 'Gas'
             };
             return types[type] || type;
+        },
+        togglePopup(){
+            this.isOpen = !this.isOpen;
         }
     }
 }

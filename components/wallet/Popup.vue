@@ -1,5 +1,5 @@
 <template>
-    <Button @click="toggleOpen" :class="buttonClass" :variant="buttonVariant" >
+    <Button @click="toggleOpen()" :class="buttonClass" :variant="buttonVariant" v-if="hasButton">
         {{ buttonLabel }}
     </Button>
     <Drawer v-if="isMobile" v-model:open="isOpen">
@@ -19,17 +19,37 @@ export default{
     props:{
         buttonClass: "",
         buttonLabel: "",
-        buttonVariant: "primary"
+        buttonVariant: "primary",
+        hasButton: {
+            type: Boolean,
+            default: true
+        },
+        modelValue: {
+            type: Boolean,
+            default: false
+        },
     },
     data(){
         return {
             isMobile: false,
-            isOpen:  false
+            localOpen: this.modelValue
+        }
+    },
+    computed: {
+        isOpen: {
+            get() {
+                return this.localOpen; // Return the local state
+            },
+            set(value) {
+                this.localOpen = value; // Update local state
+                this.$emit('update:modelValue', value); // Emit the updated value to the parent
+            }
         }
     },
     methods:{
         toggleOpen(){
-            this.isOpen = !this.isOpen;
+            console.log(this.isOpen); // Log the current state
+            this.isOpen = !this.isOpen; // Toggle the computed property
         },
         checkMobile() {
             this.isMobile = window.innerWidth <= 768
@@ -38,6 +58,11 @@ export default{
     mounted(){
         this.checkMobile()
         window.addEventListener('resize', this.checkMobile)
-    }
+    },
+    watch: {
+        modelValue(newValue) {
+            this.localOpen = newValue; // Sync local state with prop changes
+        }
+    },
 }
 </script>
