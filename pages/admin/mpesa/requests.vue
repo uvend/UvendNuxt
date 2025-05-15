@@ -3,9 +3,13 @@
         <div class="flex justify-between">
             <div class="flex gap-1">
                 <div class="flex gap-1">
-                <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange" />
+                    <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange" />
+                    <div class="flex flex-row gap-1">
+                        <Button variant="secondary" @click="toggleSearch"><Icon name="lucide:search"/></Button>
+                        <Input type="text" placeholder="Search" v-if="searchActive" v-model="search" @input="debouncedSearch"/>
+                    </div>
+                </div>
             </div>
-        </div>
             <div class="flex flex-row w-fit gap-1">
                 <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
@@ -71,8 +75,8 @@
                         </div>
                     </div>
                     <div class="text-center">
-                        {{ formattedTime(request.createdAt)}}<br>
-                        {{ formatedDate(request.createdAt) }}
+                        {{ formattedTime(request.kenyaCreatedAt) }}<br>
+                        {{ formatedDate(request.kenyaCreatedAt) }}
                     </div>
                     <div class="font-bold">{{ request.statusCode }}</div>
                 </Card>
@@ -81,7 +85,7 @@
                 <DialogHeader>
                     <DialogTitle>{{ request.transID }}</DialogTitle>
                     <DialogDescription>
-                        {{ formattedTime(request.createdAt) }} {{ formatedDate(request.createdAt) }}
+                        {{ formattedTime(request.kenyaCreatedAt) }} {{ formatedDate(request.kenyaCreatedAt) }}
                     </DialogDescription>
                 </DialogHeader>
                 <div class="formatted-text">
@@ -141,10 +145,16 @@ export default{
             requests: [],
             totalPages: 0,
             dateRange: null,
-            smsBalance: null
+            smsBalance: null,
+            searchActive: false,
+            search: null
+
         }
     },
     methods:{
+        toggleSearch(){
+            this.searchActive = !this.searchActive
+        },
         async getRequests(){
             await this.getSMSBalance()
             this.isLoading = true
@@ -157,7 +167,8 @@ export default{
                     page: this.page,
                     pageSize: this.pageSize,
                     fromDate: this.dateRange.start,
-                    toDate: this.dateRange.end
+                    toDate: this.dateRange.end,
+                    meterNumber: this.search
                 },
                 //mode: 'no-cors'
             })
@@ -174,6 +185,10 @@ export default{
             console.log(response)
             this.smsBalance = response.balance;
         },
+        debouncedSearch: debounce(async function(){
+            this.page = 1
+            this.getRequests()
+        }),
         ressend: debounce(async function (id){
             try{
                 const response = await $fetch(`${MPESA_URL}/resend`,{
@@ -225,7 +240,7 @@ export default{
             start : lastMonth.toISOString(),
             end : today.toISOString()
         }
-        this.getRequests()
+       // this.getRequests()
     },
     watch:{
         dateRange(){
