@@ -6,18 +6,18 @@
                 <p class="font-medium">{{ data.meterNumber }}</p>
             </div>
             <div class="space-y-1">
-                <p class="text-sm text-muted-foreground">Token</p>
+                <p class="">Token</p>
                 <p v-for="token in data.vendResponse.listOfTokenTransactions">
                     <div v-for="tokens in token.tokens">
                         <span v-for="keys in tokens.tokenKeys">
-                            <span>{{ keys }} &nbsp;</span>
+                            <span class="font-medium">{{ keys }} &nbsp;</span>
                         </span>
                     </div>
                 </p>
             </div>
             <div class="text-right space-y-1">
                 <p class="text-sm text-muted-foreground">Amount</p>
-                <p class="font-medium text-lg">R {{ formatAmount(data.amount) }}</p>
+                <p class="font-medium">R {{ formatAmount(data.amount) }}</p>
             </div>
             <div class="text-right space-y-1">
                 <p class="text-sm text-muted-foreground">Type</p>
