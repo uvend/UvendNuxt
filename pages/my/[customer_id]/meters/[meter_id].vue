@@ -8,8 +8,7 @@
         </div>
             <div class="flex flex-row w-fit gap-1">
                 <div>
-                    <Button v-if="meterStatus === 'Ok'" variant="secondary" class="mx-1" @click="blockMeter(true)"><Icon name="lucide:lock-open" class="w-5 h-5"/></Button>
-                    <Button v-else class="mx-1" @click="blockMeter(false)"><Icon name="lucide:lock" class="w-5 h-5"/></Button>
+                   
                 </div>
                 <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
@@ -41,6 +40,8 @@
             <p>Meter State</p>
             <div class="flex gap-2 items-center">
                 <p>{{ this.meterStatus }}</p>
+                <Button v-if="meterStatus === 'Ok'" variant="secondary" class="mx-1" @click="blockMeter(true)"><Icon name="lucide:lock-open" class="w-5 h-5"/></Button>
+                <Button v-else class="mx-1" @click="blockMeter(false)"><Icon name="lucide:lock" class="w-5 h-5"/></Button>
                 <Button @click="resetTamper">Reset</Button>
             </div>
         </div>
