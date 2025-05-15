@@ -31,7 +31,7 @@
         <div class="flex flex-col">
             <p class="text-gray-600 text-sm">Water</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
-            <p class="text-2xl font-bold" v-else>0.00</p>
+            <p class="text-2xl font-bold" v-else>{{water}}</p>
             <!-- <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
             <Icon :name="0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
             <span>% vs previous</span>
