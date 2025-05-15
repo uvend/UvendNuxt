@@ -11,6 +11,11 @@
                     <Button v-if="meterStatus === 'Ok'" variant="secondary" class="mx-1" @click="blockMeter(true)"><Icon name="lucide:lock-open" class="w-5 h-5"/></Button>
                     <Button v-else class="mx-1" @click="blockMeter(false)"><Icon name="lucide:lock" class="w-5 h-5"/></Button>
                 </div>
+                <div>
+                    <Button variant="secondary" class="mx-1" @click="resetTamper">
+                        <Icon name="lucide:shield-alert" class="w-5 h-5"/>
+                    </Button>
+                </div>
                 <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
                         <SelectValue placeholder="Page Size" />
@@ -140,6 +145,20 @@ export default{
             })
             this.meterStatus = response.requestedMeterState
             //console.log(response)
+        },
+        async resetTamper(){
+            const response = await useAuthFetch(`${VEND_URL}/MeterVend/ResetTamper`,{
+                method: "GET",
+                params: {
+                    "ResetTamper" : true,
+                    "MeterNumber": this.meterNumber,
+                    "ApiUserParams.TerminalID" : VEND_TerminalID,   
+                    "ApiUserParams.OperatorID" : VEND_OperatorID,
+                    "ApiUserParams.RequestID" : new Date(),
+                    
+                }
+            })
+            this.meterStatus = response.requestedMeterState
         }
     },
     async mounted(){
