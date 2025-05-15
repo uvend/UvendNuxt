@@ -1,17 +1,19 @@
 <template>
-    <Card class="p-2 card-grid">
-        <div>
-            <div>
+    <Card class="p-4 card-grid items-center">
+        <div class="flex flex-col gap-1">
+            <div class="text-sm font-medium">
                 {{ data.payvault_data_1 }}
             </div>
-            <div>
-                {{ data.result_desc }}
+            <div class="flex items-center gap-2">
+                <Badge :class="data.result_desc.toLowerCase() === 'auth done' ? 'bg-green-100 text-green-800 hover:bg-green-100/80' : 'bg-red-100 text-red-800 hover:bg-red-100/80'">
+                    {{ data.result_desc.toLowerCase() === 'auth done' ? 'Successful' : data.result_desc }}
+                </Badge>
             </div>
         </div>
-        <div>
-            {{ formatAmount(data.amount) }}
+        <div class="text-right font-medium">
+            R {{ formatAmount(data.amount) }}
         </div>
-        <div>
+        <div class="text-right text-sm text-muted-foreground">
             {{ formattedDate(data.created) }}
         </div>
     </Card>
@@ -24,10 +26,14 @@ export default{
     methods:{
         formattedDate(dateString){
             const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}-${month}-${year}`;
+            const options = { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return date.toLocaleDateString('en-ZA', options);
         },
         formatAmount(amount){
             return (parseFloat(amount) / 100).toFixed(2);
@@ -38,6 +44,7 @@ export default{
 <style>
 .card-grid{
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1rem;
 }
 </style>

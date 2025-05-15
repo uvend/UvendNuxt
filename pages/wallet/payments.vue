@@ -9,7 +9,7 @@
             <WalletCardBalance :addMoney="true"/>
             <Card class="p-4 bg-white border shadow-sm">
                 <div class="flex flex-col">
-                    <p class="text-gray-600 text-sm">Total Purchase</p>
+                    <p class="text-gray-600 text-sm">Total Wallet Funding</p>
                     <Skeleton class="w-16 h-9" v-if="isLoading"/>
                     <p class="text-2xl font-bold" v-else>{{ total }}</p>
                     <!--<div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
@@ -24,21 +24,23 @@
                     <p class="text-gray-600 text-sm">Transactions</p>
                     <Skeleton class="w-16 h-9" v-if="isLoading"/>
                     <p class="text-2xl font-bold" v-else>{{ transactions }}</p>
-                    <!--<div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
-                        <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
-                        <span>% vs previous</span>
-                    </div>-->
+                    
                 </div>
             </Card>
         </div>
             <Card v-if="isLoading" class="py-8 flex justify-center">
                 <MyLoader />
             </Card>
-            <div v-else class="flex flex-col gap-2">
-              <WalletCardPayment v-if="fundingHistory.length > 0" v-for="payment in fundingHistory" :data="payment" />
-              <Card v-else class="py-8 text-center text-gray-500">
-                No payments found
-            </Card>
+            <div v-else class="flex flex-col space-y-4">
+              <WalletCardPayment 
+                v-if="fundingHistory.length > 0" 
+                v-for="payment in fundingHistory" 
+                :data="payment" 
+                class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-200"
+              />
+              <Card v-else class="rounded-lg border bg-muted p-8 text-center">
+                <p class="text-sm text-muted-foreground">No payments found</p>
+              </Card>
             </div>
       </div>
     
