@@ -6,7 +6,7 @@
                 <p class="font-medium">{{ data.meterNumber }}</p>
             </div>
             <div class="space-y-1">
-                <p class="text-sm text-muted-foreground">Token</p>
+                <p class="">Token</p>
                 <p v-for="token in data.vendResponse.listOfTokenTransactions">
                     <div v-for="tokens in token.tokens">
                         <span v-for="keys in tokens.tokenKeys">
