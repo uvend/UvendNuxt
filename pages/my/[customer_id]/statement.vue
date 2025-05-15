@@ -39,10 +39,6 @@
                 <Button @click="getStatementPDF()" variant="secondary">
                     <Icon name="lucide:printer" />
                 </Button>
-                <!--<Button @click="toggleSearch()" variant="secondary">
-                    <Icon name="lucide:search"/>
-                </Button>
-                <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>-->
             </div>
             <div>
                 <Select  v-model="selectedUtility">
@@ -89,6 +85,13 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="flex pt-2 gap-2 justify-between">
+        <Button @click="toggleSearch()" variant="secondary">
+            <Icon name="lucide:search"/>
+        </Button>
+        <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
+        
     </div>
     <MySkeletenCardList v-if="isLoading"/>
     <div v-else>
@@ -142,7 +145,8 @@
     </div>
 </template>
 <script>
-
+import _ from 'lodash';
+const { debounce } = _;
 definePageMeta({
     layout: 'my'
 })
@@ -207,11 +211,15 @@ export default{
             yearArr: [],
             dateRange: null,
             customerStatementPeriod: 0,
-            searchActive: false
-
+            searchActive: true,
+            search: null,
+            response: null
         }
     },
     methods:{
+        toggleSearch(){
+            //this.searchActive = !this.searchActive;
+        },
         async getAdminTransactions(){
             this.isLoading = true;
             const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetSummarisedMeterActivity`,{
@@ -228,6 +236,12 @@ export default{
             })
             this.transactionResponseData = result.responseData
             this.transactions = result.responseData.transactionData
+            if(this.search && this.search != ''){
+                // filter this.transactions on meter number
+                this.transactions = this.transactions.filter( transaction => {
+                    return transaction.meterNumber.toLowerCase().includes(this.search.toLowerCase()) || transaction.complexName.toLowerCase().includes(this.search.toLowerCase())
+                })
+            }
             this.statement.name = this.transactionResponseData.reportParentName
             this.statement.startDate = this.transactionResponseData.startDate,
             this.statement.endDate = this.transactionResponseData.endDate
@@ -269,6 +283,12 @@ export default{
             console.log('hydrate')
             this.transactionResponseData = result.responseData
             this.transactions = result.responseData.transactionData
+            if(this.search && this.search != ''){
+                // filter this.transactions on meter number
+                this.transactions = this.transactions.filter( transaction => {
+                    return transaction.meterNumber.toLowerCase().includes(this.search.toLowerCase()) || transaction.complexName.toLowerCase().includes(this.search.toLowerCase())
+                })
+            }
             this.statement.name = this.transactionResponseData.reportParentName
             this.statement.startDate = this.transactionResponseData.startDate,
             this.statement.endDate = this.transactionResponseData.endDate
@@ -412,7 +432,10 @@ export default{
         },
         yearUpdated(value) {
             this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod, this.selectedMonth, value);
-        }
+        },
+        debouncedSearch: debounce(async function () {
+            this.getTransactions()
+        }, 500), // Delay of 500ms after the user stops typing
     },
     async mounted(){
         this.generateYearArr();
