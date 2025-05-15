@@ -118,8 +118,8 @@
                         <p class="ml-4">{{ request.message || 'No message available' }}</p>
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button @click="ressend(request.id)" v-if="request.message">
+                <DialogFooter class="flex">
+                    <Button @click="ressend(request.id)" v-if="request.message" class="w-full">
                         Resend SMS
                     </Button>
                 </DialogFooter>
@@ -260,6 +260,7 @@ export default{
 }
 .dialog-mpesa-request-grid{
     display: grid;
-    grid-template-columns: 1fr 3fr;
+    grid-template-columns: 1fr 2fr;
+    width: 100%;
 }
 </style>
