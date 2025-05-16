@@ -10,7 +10,12 @@
             
             <Card class="p-4 bg-white border shadow-sm">
               <div class="flex flex-col">
-                  <p class="text-gray-600 text-sm">Active Meters</p>
+                  <div class="flex justify-between items-center mb-2">
+                    <p class="text-gray-600 text-sm">Active Meters</p>
+                    <WalletPopup buttonLabel="Add Meter">
+                      <WalletAddMeter @success="fetchDashboardData()"/>
+                    </WalletPopup>
+                  </div>
                   <p class="text-2xl font-bold">{{ activeMeters }}</p>
                   <p class="text-sm text-muted-foreground">Total meters: {{ totalMeters }}</p>
               </div>
@@ -42,11 +47,24 @@
                             :data="meterStats"
                             :categories="['amount']"
                             index="name"
-                            :colors="['#2563eb']"
+                            :colors="['#3b82f6']"
                             type="grouped"
-                            :rounded-corners="4"
+                            :rounded-corners="6"
                             :y-formatter="formatAmount"
                             :show-legend="false"
+                            :grid="true"
+                            :y-axis="true"
+                            :x-axis="true"
+                            :tooltip="true"
+                            :animate="true"
+                            :value-formatter="(value) => formatAmount(value)"
+                            :show-values="true"
+                            class="[&>svg]:stroke-border [&>svg]:stroke-[1]"
+                            :attributes="{
+                                'vis-grouped-bar__bar': {
+                                    width: (d) => d.transactionCount === 1 ? 0.4 : 0.8
+                                }
+                            }"
                         />
                     </div>
                     <div v-else class="py-8 text-center text-gray-500">
@@ -69,17 +87,16 @@
                         <div v-for="(meter, index) in meterStats" 
                              :key="meter.name"
                              class="py-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
-                             @click="navigateToMeter(meter)">
+                             >
                             <div class="flex items-center gap-3">
-                                <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium">
-                                    {{ index + 1 }}
-                                </span>
                                 <div>
                                     <p class="font-medium">{{ meter.name }}</p>
-                                    <p class="text-sm text-gray-500">{{ formatAmount(meter.amount) }}</p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ formatAmount(meter.amount) }}
+                                        <span class="text-xs text-gray-400 ml-2">({{ meter.transactionCount }} {{ meter.transactionCount === 1 ? 'purchase' : 'purchases' }})</span>
+                                    </p>
                                 </div>
                             </div>
-                            <Icon name="lucide:chevron-right" class="text-gray-400" />
                         </div>
                     </div>
                     <div v-else class="py-8 text-center text-gray-500">
@@ -118,6 +135,7 @@ function formatAmount(amount) {
         currency: 'ZAR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
+        notation: amount > 999999 ? 'compact' : 'standard'
     }).format(amount)
 }
 
@@ -145,13 +163,16 @@ async function fetchDashboardData() {
             const amount = parseFloat(transaction.amount)
             
             if (meterTransactions.has(meterNumber)) {
-                meterTransactions.get(meterNumber).amount += amount
+                const existing = meterTransactions.get(meterNumber)
+                existing.amount += amount
+                existing.transactionCount++
             } else {
                 const meter = metersResponse.meters.find(m => m.meterNumber === meterNumber)
                 meterTransactions.set(meterNumber, {
                     meterNumber: meterNumber,
                     name: meter?.name || meterNumber,
-                    amount: amount
+                    amount: amount,
+                    transactionCount: 1
                 })
             }
         })

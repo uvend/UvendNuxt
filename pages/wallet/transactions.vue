@@ -41,7 +41,7 @@
         
         <Card class="p-4 bg-white border shadow-sm">
         <div class="flex flex-col">
-            <p class="text-gray-600 text-sm">Transactions</p>
+            <p class="text-gray-600 text-sm">Transaction History</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
             <p class="text-2xl font-bold" v-else>{{summary.transactionCount}}</p>
             <p class="text-sm text-gray-500"></p>

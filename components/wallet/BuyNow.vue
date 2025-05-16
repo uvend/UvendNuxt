@@ -22,7 +22,7 @@
             <NumberFieldInput />
           </NumberFieldContent>
         </NumberField>
-        <Button @click="creditToken(false)" :disabled="vending">Buy now</Button>
+        <Button @click="creditToken(false)" :disabled="vending">Purchase Tokens</Button>
       </div>
       <div v-if="!isLoading && meters.length == 0">
           <!-- navigate to add a meter -->
