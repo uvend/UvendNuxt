@@ -13,7 +13,7 @@
                 </NumberField>
                 <div class="flex justify-end">
                     <Button class="w-full" @click="addFunds">
-                        Add Money
+                        Top Up Wallet
                     </Button>
                 </div>
             <div v-if="cards.length > 0">

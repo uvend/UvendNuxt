@@ -8,7 +8,7 @@
             <p class="text-sm text-gray-500"></p>
         </div>
         <div>
-        <WalletPopup v-if="addMoney" buttonLabel="Add money">
+        <WalletPopup v-if="addMoney" buttonLabel="Top Up Wallet">
             <WalletAddMoney />
         </WalletPopup>
         </div>

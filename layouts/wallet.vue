@@ -18,7 +18,7 @@
                 </NuxtLink>
                 <NuxtLink to="/transactions" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
                     <Icon name="lucide:credit-card" class="mr-2 h-5 w-5" />
-                    Transactions
+                    Transaction History
                 </NuxtLink>
                 <NuxtLink to="/meters" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
                     <Icon name="lucide:gauge" class="mr-2 h-5 w-5" />
@@ -49,7 +49,7 @@
                             </p>
                         </div>
                     </div>
-                    <WalletPopup buttonLabel="Buy now">
+                    <WalletPopup buttonLabel="Purchase Token">
                         <WalletBuyNow />
                     </WalletPopup>
                 </header>
@@ -76,6 +76,9 @@ export default{
             }
             if(route.length == 2 && route.at(-1) == 'wallet'){
                 return "Dashboard";
+            }
+            if(route.at(-1) === 'transactions'){
+                return "Transaction History";
             }
             return route.at(-1)
         },
