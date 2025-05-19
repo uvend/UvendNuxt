@@ -63,7 +63,7 @@ export default {
         this.isLoading = true;
         try {
           const response = await useWalletAuthFetch(`${WALLET_API_URL}/pay/history`)
-          this.fundingHistory = response.payments;
+          this.fundingHistory = response.payments.reverse();
           this.total = (response.totalAmount / 100).toFixed(2)
           this.transactions = response.totalCount
           
