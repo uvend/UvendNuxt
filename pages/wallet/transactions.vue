@@ -2,7 +2,7 @@
 <div class="flex flex-col p-4 gap-4">
     <div class="flex justify-between">
         <div></div>
-        <WalletDateRangeSelector @update="console.log"/>
+        <WalletDateRangeSelector @update=""/>
      </div>
     <!-- Transactions Summary Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -114,7 +114,7 @@ definePageMeta({
               utilityType: this.activeFilter
             }
           })
-          this.transactions = response.transactions;
+          this.transactions = response.transactions.reverse();
           this.summary.totalSpent = Number(response.totalAmount).toFixed(2)
           this.summary.transactionCount = response.totalCount
          
