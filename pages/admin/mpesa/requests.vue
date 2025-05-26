@@ -263,4 +263,10 @@ export default{
     grid-template-columns: 1fr 2fr;
     width: 100%;
 }
+
+.dialog-mpesa-request-grid p {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
 </style>
