@@ -8,8 +8,7 @@
         </div>
             <div class="flex flex-row w-fit gap-1">
                 <div>
-                    <Button v-if="meterStatus === 'Ok'" variant="secondary" class="mx-1" @click="blockMeter(true)"><Icon name="lucide:lock-open" class="w-5 h-5"/></Button>
-                    <Button v-else class="mx-1" @click="blockMeter(false)"><Icon name="lucide:lock" class="w-5 h-5"/></Button>
+                   
                 </div>
                 <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
@@ -39,13 +38,27 @@
         </div>
         <div class="flex justify-between">
             <p>Meter State</p>
-            <p>{{ this.meterStatus }}</p>
+            <div class="flex gap-2 items-center">
+                <p>{{ this.meterStatus }}</p>
+                <Button v-if="meterStatus === 'Ok'" variant="secondary" class="mx-1" @click="blockMeter(true)"><Icon name="lucide:lock-open" class="w-5 h-5"/></Button>
+                <Button v-else class="mx-1" @click="blockMeter(false)"><Icon name="lucide:lock" class="w-5 h-5"/></Button>
+                <Button @click="resetTamper">Reset</Button>
+            </div>
         </div>
     </div>
     <MySkeletenCardList v-if="isLoading"/>
     <MyMeterTransactionCard v-else v-for="transaction in paginated" :transaction="transaction" />
+    <Dialog :open="isOpen" @update:open="isOpen = $event">
+        <DialogContent>
+            <pre class="text-center" v-if="printJob">{{ printJob }}</pre>
+            <DialogFooter class="flex">
+                <Button class="w-full" @click="copy">Copy</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
 <script>
+import _ from 'lodash';
 definePageMeta({
     layout: 'my'
 })
@@ -62,7 +75,9 @@ export default{
             currentPage: 1,
             meterNumber: null,
             meterInfo: null,
-            meterStatus: null
+            meterStatus: null,
+            isOpen: false,
+            printJob: null
         }
     },
     methods:{
@@ -140,6 +155,28 @@ export default{
             })
             this.meterStatus = response.requestedMeterState
             //console.log(response)
+        },
+        resetTamper: _.debounce( async function(){
+            const response = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterTamperToken`,{
+                method: "GET",
+                params: {
+                    "MeterNumber": this.meterNumber,
+                    "ApiUserParams.TerminalID" : VEND_TerminalID,
+                    "ApiUserParams.OperatorID" : VEND_OperatorID,
+                    "ApiUserParams.RequestID" : new Date()
+                }
+            })
+            console.log(response);
+            this.printJob = response.listOfTokenTransactions[0].tokens[0].delimitedTokenNumber;
+            this.isOpen = true;
+        },300),
+        async copy(){
+            try {
+                await navigator.clipboard.writeText(this.printJob)
+                console.log('Copied to clipboard!')
+            } catch (err) {
+                console.error('Failed to copy: ', err)
+            }
         }
     },
     async mounted(){

@@ -115,11 +115,11 @@
                     </div>
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Message</p>
-                        <p class="ml-4">{{ request.message || 'No message available' }}</p>
+                        <p class="ml-4" v-html="(request.message || 'No message available').replace(/\n/g, '<br>')"></p>
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button @click="ressend(request.id)" v-if="request.message">
+                <DialogFooter class="flex">
+                    <Button @click="resend(request.id)" v-if="request.message" class="w-full">
                         Resend SMS
                     </Button>
                 </DialogFooter>
@@ -189,7 +189,7 @@ export default{
             this.page = 1
             this.getRequests()
         }),
-        ressend: debounce(async function (id){
+        resend: debounce(async function (id){
             try{
                 const response = await $fetch(`${MPESA_URL}/resend`,{
                     params : {
@@ -260,6 +260,13 @@ export default{
 }
 .dialog-mpesa-request-grid{
     display: grid;
-    grid-template-columns: 1fr 3fr;
+    grid-template-columns: 1fr 2fr;
+    width: 100%;
+}
+
+.dialog-mpesa-request-grid p {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
 }
 </style>
