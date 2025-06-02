@@ -5,41 +5,45 @@
             <h1 class="text-lg font-semibold text-center">Registration</h1>
         </div>
 
-        <div class="max-w-3xl mx-auto px-4 md:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto px-4 md:px-6 lg:px-8">
             <!-- Progress Steps - Hidden on mobile -->
             <div class="hidden md:block py-12">
-                <div class="flex justify-between items-center">
-                    <div v-for="(step, index) in steps" :key="step.id" class="flex items-center">
+                <div class="relative flex justify-between">
+                    <!-- Progress Line -->
+                    <div class="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 bg-gray-200">
                         <div
-                            :class="[
-                                'h-8 w-8 rounded-full flex items-center justify-center',
-                                currentStep > index + 1
-                                    ? 'bg-green-500 text-white'
-                                    : currentStep === index + 1
-                                    ? 'bg-primary text-white'
-                                    : 'bg-gray-200 text-gray-600'
-                            ]"
-                        >
-                            <span v-if="currentStep > index + 1">✓</span>
-                            <span v-else>{{ index + 1 }}</span>
-                        </div>
-                        <div
-                            v-if="index < steps.length - 1"
-                            :class="[
-                                'h-1 w-16 sm:w-32 mx-2',
-                                currentStep > index + 1 ? 'bg-green-500' : 'bg-gray-200'
-                            ]"
+                            class="absolute top-0 left-0 h-full bg-primary transition-all duration-300"
+                            :style="{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }"
                         />
                     </div>
-                </div>
-                <div class="flex justify-between mt-2">
-                    <div
-                        v-for="step in steps"
-                        :key="step.id"
-                        class="text-xs text-gray-600"
-                        :style="{ width: `${100 / steps.length}%`, textAlign: 'center' }"
-                    >
-                        {{ step.name }}
+
+                    <!-- Steps -->
+                    <div v-for="(step, index) in steps" :key="step.id" class="relative flex flex-col items-center">
+                        <div
+                            :class="[
+                                'w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10',
+                                currentStep > index + 1
+                                    ? 'bg-primary border-primary text-white'
+                                    : currentStep === index + 1
+                                    ? 'bg-white border-primary text-primary'
+                                    : 'bg-white border-gray-300 text-gray-500'
+                            ]"
+                        >
+                            <span v-if="currentStep > index + 1" class="text-sm">✓</span>
+                            <span v-else class="text-sm font-medium">{{ index + 1 }}</span>
+                        </div>
+                        <span 
+                            class="absolute top-12 text-sm font-medium whitespace-nowrap"
+                            :class="[
+                                currentStep > index + 1
+                                    ? 'text-primary'
+                                    : currentStep === index + 1
+                                    ? 'text-primary'
+                                    : 'text-gray-500'
+                            ]"
+                        >
+                            {{ step.name }}
+                        </span>
                     </div>
                 </div>
             </div>
