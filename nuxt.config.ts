@@ -56,5 +56,17 @@ export default defineNuxtConfig({
         }
       ]
     }
+  },
+  runtimeConfig: {
+    // Private keys are only available on the server
+    // apiSecret: '123'
+
+    // Public keys that are exposed to the client
+    public: {
+      APP_ENV: process.env.APP_ENV || 'default'
+    }
+  },
+  routeRules: {
+    '/registration/**': { middleware: ['registration-access'] }
   }
 })

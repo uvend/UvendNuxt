@@ -1,197 +1,176 @@
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full space-y-8">
-            <!-- Header -->
-            <div class="text-center">
-                <h2 class="mt-6 text-3xl font-bold text-gray-900">Create your account</h2>
-                <p class="mt-2 text-sm text-gray-600">
-                    Already have an account?
-                    <NuxtLink to="/login" class="font-medium text-blue-600 hover:text-blue-500">
-                        Sign in
-                    </NuxtLink>
-                </p>
+    <div v-if="isRegistrationEnabled" class="min-h-screen bg-gray-50">
+        <!-- Mobile Header -->
+        <div class="md:hidden bg-white px-4 py-3 border-b fixed top-0 left-0 right-0 z-10">
+            <h1 class="text-lg font-semibold text-center">Registration</h1>
+        </div>
+
+        <div class="max-w-3xl mx-auto px-4 md:px-6 lg:px-8">
+            <!-- Progress Steps - Hidden on mobile -->
+            <div class="hidden md:block py-12">
+                <div class="flex justify-between items-center">
+                    <div v-for="(step, index) in steps" :key="step.id" class="flex items-center">
+                        <div
+                            :class="[
+                                'h-8 w-8 rounded-full flex items-center justify-center',
+                                currentStep > index + 1
+                                    ? 'bg-green-500 text-white'
+                                    : currentStep === index + 1
+                                    ? 'bg-primary text-white'
+                                    : 'bg-gray-200 text-gray-600'
+                            ]"
+                        >
+                            <span v-if="currentStep > index + 1">✓</span>
+                            <span v-else>{{ index + 1 }}</span>
+                        </div>
+                        <div
+                            v-if="index < steps.length - 1"
+                            :class="[
+                                'h-1 w-16 sm:w-32 mx-2',
+                                currentStep > index + 1 ? 'bg-green-500' : 'bg-gray-200'
+                            ]"
+                        />
+                    </div>
+                </div>
+                <div class="flex justify-between mt-2">
+                    <div
+                        v-for="step in steps"
+                        :key="step.id"
+                        class="text-xs text-gray-600"
+                        :style="{ width: `${100 / steps.length}%`, textAlign: 'center' }"
+                    >
+                        {{ step.name }}
+                    </div>
+                </div>
             </div>
 
-            <!-- Registration Form -->
-            <form class="mt-8 space-y-6" @submit.prevent="handleSubmit">
-                <div class="rounded-md shadow-sm space-y-4">
-                    <!-- Personal Information -->
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>
-                                <Label for="firstName">First Name</Label>
-                                <Input
-                                    id="firstName"
-                                    v-model="form.firstName"
-                                    type="text"
-                                    required
-                                    :class="{ 'border-red-500': errors.firstName }"
-                                />
-                                <span v-if="errors.firstName" class="text-xs text-red-500">{{ errors.firstName }}</span>
-                            </div>
-                            <div>
-                                <Label for="lastName">Last Name</Label>
-                                <Input
-                                    id="lastName"
-                                    v-model="form.lastName"
-                                    type="text"
-                                    required
-                                    :class="{ 'border-red-500': errors.lastName }"
-                                />
-                                <span v-if="errors.lastName" class="text-xs text-red-500">{{ errors.lastName }}</span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <Label for="email">Email address</Label>
-                            <Input
-                                id="email"
-                                v-model="form.email"
-                                type="email"
-                                autocomplete="email"
-                                required
-                                :class="{ 'border-red-500': errors.email }"
-                            />
-                            <span v-if="errors.email" class="text-xs text-red-500">{{ errors.email }}</span>
-                        </div>
-
-                        <div>
-                            <Label for="phone">Phone Number</Label>
-                            <Input
-                                id="phone"
-                                v-model="form.phone"
-                                type="tel"
-                                required
-                                :class="{ 'border-red-500': errors.phone }"
-                            />
-                            <span v-if="errors.phone" class="text-xs text-red-500">{{ errors.phone }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Password Section -->
-                    <div class="space-y-4">
-                        <div>
-                            <Label for="password">Password</Label>
-                            <Input
-                                id="password"
-                                v-model="form.password"
-                                type="password"
-                                required
-                                :class="{ 'border-red-500': errors.password }"
-                            />
-                            <span v-if="errors.password" class="text-xs text-red-500">{{ errors.password }}</span>
-                        </div>
-
-                        <div>
-                            <Label for="confirmPassword">Confirm Password</Label>
-                            <Input
-                                id="confirmPassword"
-                                v-model="form.confirmPassword"
-                                type="password"
-                                required
-                                :class="{ 'border-red-500': errors.confirmPassword }"
-                            />
-                            <span v-if="errors.confirmPassword" class="text-xs text-red-500">{{ errors.confirmPassword }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Terms and Conditions -->
-                    <div class="flex items-center">
-                        <Checkbox
-                            id="terms"
-                            v-model="form.acceptTerms"
-                            :class="{ 'border-red-500': errors.acceptTerms }"
+            <!-- Form Container -->
+            <div class="bg-white shadow-xl rounded-lg mt-16 md:mt-0 mb-24 md:mb-12">
+                <form id="registrationForm" @submit.prevent="handleStepComplete">
+                    <KeepAlive>
+                        <component
+                            :is="currentComponent"
+                            v-model:type="formData.type"
+                            :registration-data="formData"
+                            class="p-6"
                         />
-                        <Label for="terms" class="ml-2 block text-sm text-gray-900">
-                            I agree to the
-                            <a href="#" class="font-medium text-blue-600 hover:text-blue-500">Terms and Conditions</a>
-                        </Label>
-                    </div>
-                    <span v-if="errors.acceptTerms" class="text-xs text-red-500">{{ errors.acceptTerms }}</span>
-                </div>
+                    </KeepAlive>
+                </form>
+            </div>
 
-                <!-- Submit Button -->
-                <div>
-                    <Button
-                        type="submit"
-                        class="w-full"
-                        :loading="isLoading"
-                        :disabled="isLoading"
-                    >
-                        {{ isLoading ? 'Creating account...' : 'Create account' }}
-                    </Button>
-                </div>
-            </form>
+            <!-- Navigation Buttons -->
+            <NavigationButtons
+                :current-step="currentStep"
+                :total-steps="steps.length"
+                :show-prev="currentStep > 1"
+                :is-last-step="currentStep === steps.length"
+                :loading="loading"
+                @prev="prevStep"
+            />
+        </div>
+    </div>
+    <div v-else class="min-h-screen flex items-center justify-center bg-gray-50">
+        <div class="text-center px-4">
+            <h2 class="text-2xl font-bold text-gray-900">Registration Not Available</h2>
+            <p class="mt-2 text-gray-600">Registration is currently not enabled in this environment.</p>
+            <NuxtLink to="/" class="mt-4 inline-block text-primary hover:text-primary/90">
+                Return to Home
+            </NuxtLink>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, computed, markRaw } from 'vue'
+import RegistrationType from '~/components/registration/RegistrationType.vue'
+import PersonalInfo from '~/components/registration/PersonalInfo.vue'
+import DocumentUpload from '~/components/registration/DocumentUpload.vue'
+import BankingDetails from '~/components/registration/BankingDetails.vue'
+import AddressDetails from '~/components/registration/AddressDetails.vue'
+import MeterDetails from '~/components/registration/MeterDetails.vue'
+import Summary from '~/components/registration/Summary.vue'
+import NavigationButtons from '~/components/registration/NavigationButtons.vue'
 
-const isLoading = ref(false)
-const errors = reactive({})
+const config = useRuntimeConfig()
+const isRegistrationEnabled = computed(() => config.public.APP_ENV === 'registration')
 
-const form = reactive({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    acceptTerms: false
+const steps = [
+    { id: 'type', name: 'Type', component: markRaw(RegistrationType) },
+    { id: 'personal', name: 'Personal Info', component: markRaw(PersonalInfo) },
+    { id: 'documents', name: 'Documents', component: markRaw(DocumentUpload) },
+    { id: 'banking', name: 'Banking', component: markRaw(BankingDetails) },
+    { id: 'address', name: 'Address', component: markRaw(AddressDetails) },
+    { id: 'meters', name: 'Meters', component: markRaw(MeterDetails) },
+    { id: 'summary', name: 'Summary', component: markRaw(Summary) }
+]
+
+const currentStep = ref(1)
+const loading = ref(false)
+const formData = ref({
+    type: '',
+    personal: null,
+    documents: null,
+    banking: null,
+    address: null,
+    meters: null
 })
 
-function validateForm() {
-    errors.firstName = !form.firstName ? 'First name is required' : ''
-    errors.lastName = !form.lastName ? 'Last name is required' : ''
-    errors.email = !form.email ? 'Email is required' : 
-                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ? 'Invalid email format' : ''
-    errors.phone = !form.phone ? 'Phone number is required' : ''
-    errors.password = !form.password ? 'Password is required' : 
-                     form.password.length < 8 ? 'Password must be at least 8 characters' : ''
-    errors.confirmPassword = !form.confirmPassword ? 'Please confirm your password' :
-                           form.password !== form.confirmPassword ? 'Passwords do not match' : ''
-    errors.acceptTerms = !form.acceptTerms ? 'You must accept the terms and conditions' : ''
+const currentComponent = computed(() => steps[currentStep.value - 1].component)
 
-    return Object.values(errors).every(error => !error)
+const prevStep = () => {
+    if (currentStep.value > 1) {
+        currentStep.value--
+    }
 }
 
-async function handleSubmit() {
-    if (!validateForm()) return
-
-    isLoading.value = true
+const handleStepComplete = async () => {
+    loading.value = true
     try {
-        // Call your registration API here
-        const response = await useAuthFetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            body: {
-                firstName: form.firstName,
-                lastName: form.lastName,
-                email: form.email,
-                phone: form.phone,
-                password: form.password
-            }
-        })
-
-        // Handle successful registration
-        useToast({
-            title: 'Success',
-            description: 'Your account has been created successfully',
-            variant: 'success'
-        })
-
-        // Redirect to login page or dashboard
-        navigateTo('/login')
+        // Here you would validate the current step's data
+        const stepId = steps[currentStep.value - 1].id
+        
+        if (currentStep.value === steps.length) {
+            await handleSubmit()
+        } else {
+            // Move to next step
+            currentStep.value++
+        }
     } catch (error) {
-        console.error('Registration error:', error)
         useToast({
             title: 'Error',
-            description: error.message || 'Failed to create account',
+            description: error.message || 'Please check your input and try again.',
             variant: 'destructive'
         })
     } finally {
-        isLoading.value = false
+        loading.value = false
+    }
+}
+
+const handleSubmit = async () => {
+    try {
+        // Here you would typically send the data to your backend
+        console.log('Registration submitted:', formData.value)
+
+        useToast({
+            title: 'Success',
+            description: 'Your registration has been submitted successfully. We will send you a confirmation email shortly.',
+            variant: 'success'
+        })
+
+        await navigateTo('/')
+    } catch (error) {
+        console.error('Error submitting registration:', error)
+        throw new Error('There was an error submitting your registration. Please try again.')
     }
 }
 </script>
+
+<style scoped>
+/* Add padding to account for fixed navigation on mobile */
+@media (max-width: 768px) {
+    .min-h-screen {
+        padding-top: 56px; /* Height of mobile header */
+        padding-bottom: 72px; /* Height of mobile navigation */
+    }
+}
+</style>

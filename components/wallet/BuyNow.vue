@@ -98,7 +98,7 @@ export default {
         console.error('Error fetching vend response:', error);
         this.$toast({
           title: 'Error',
-          description: error.message, // Display the actual error message
+          description: 'Invalid meter number entered',
           variant: 'destructive'
         });
       } finally{
