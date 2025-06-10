@@ -4,6 +4,12 @@
       <div class="text-center md:text-left">
         <h2 class="text-xl font-semibold text-gray-900">Document Upload</h2>
         <p class="mt-1 text-sm text-gray-500">Please upload the required documents</p>
+        <NuxtLink 
+          to="/registration/special-docs"
+          class="inline-block mt-2 text-primary hover:text-primary/80 text-sm font-medium"
+        >
+          Need to submit special documentation? Click here
+        </NuxtLink>
       </div>
 
       <div class="space-y-6">

@@ -1,56 +1,85 @@
 <template>
-  <div class="space-y-6">
-    <div class="text-center">
-      <h2 class="text-3xl font-bold text-gray-900">Select Registration Type</h2>
-      <p class="mt-2 text-sm text-gray-600">Please choose your registration type below</p>
+  <div>
+    <div class="text-center md:text-left">
+      <h2 class="text-2xl font-semibold text-gray-900">Registration Type</h2>
+      <p class="mt-1 text-sm text-gray-500">Please select your registration type</p>
     </div>
 
-    <div class="grid gap-4">
-      <Button
-        v-for="type in registrationTypes"
-        :key="type.value"
-        :variant="selectedType === type.value ? 'default' : 'outline'"
-        class="w-full p-6 h-auto flex flex-col items-center gap-2"
-        @click="selectType(type.value)"
+    <div class="mt-8 space-y-4">
+      <div
+        v-for="option in registrationTypes"
+        :key="option.value"
+        class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
+        :class="{
+          'border-primary ring-2 ring-primary': selectedType === option.value,
+          'border-gray-300': selectedType !== option.value
+        }"
+        @click="selectType(option.value)"
       >
-        <component :is="type.icon" class="h-6 w-6" />
-        <span class="text-lg font-semibold">{{ type.label }}</span>
-        <span class="text-sm text-gray-500">{{ type.description }}</span>
-      </Button>
+        <div class="flex w-full items-center justify-between">
+          <div class="flex items-center">
+            <div class="text-sm">
+              <p class="font-medium text-gray-900">{{ option.title }}</p>
+              <p class="text-gray-500">{{ option.description }}</p>
+            </div>
+          </div>
+          <CheckIcon
+            v-if="selectedType === option.value"
+            class="h-5 w-5 text-primary"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { UserPlus, UserCheck, PencilLine } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
+import { CheckIcon } from 'lucide-vue-next'
 
-const emit = defineEmits(['update:type'])
-const selectedType = ref('')
+const props = defineProps({
+  registrationData: {
+    type: Object,
+    required: true
+  }
+})
 
 const registrationTypes = [
   {
+    title: 'New Registration',
     value: 'new',
-    label: 'New Registration',
-    description: 'Register as a new user',
-    icon: UserPlus
+    description: 'Register as a new user or business'
   },
   {
-    value: 'existing',
-    label: 'Existing User',
-    description: 'Already registered user',
-    icon: UserCheck
-  },
-  {
+    title: 'Update Details',
     value: 'update',
-    label: 'Update Registration',
-    description: 'Update your existing registration',
-    icon: PencilLine
+    description: 'Update your existing registration information'
+  },
+  {
+    title: 'Existing Registration',
+    value: 'existing',
+    description: 'Access or view your existing registration'
   }
 ]
 
+const selectedType = ref('')
+
+// Initialize from props if available
+watch(() => props.registrationData?.type, (newValue) => {
+  if (newValue) {
+    selectedType.value = newValue
+  }
+}, { immediate: true })
+
 const selectType = (type) => {
   selectedType.value = type
-  emit('update:type', type)
 }
+
+// Expose component data
+defineExpose({
+  validate: () => selectedType.value !== '',
+  getData: () => ({
+    type: selectedType.value
+  })
+})
 </script> 

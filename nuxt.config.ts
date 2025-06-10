@@ -68,5 +68,10 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/registration/**': { middleware: ['registration-access'] }
+  },
+  router: {
+    options: {
+      sensitive: false // Make routes case-insensitive
+    }
   }
 })

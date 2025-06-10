@@ -94,9 +94,13 @@ import AddressDetails from '~/components/registration/AddressDetails.vue'
 import MeterDetails from '~/components/registration/MeterDetails.vue'
 import Summary from '~/components/registration/Summary.vue'
 import NavigationButtons from '~/components/registration/NavigationButtons.vue'
+import { useRegistrationStore } from '~/stores/registration'
 
 const config = useRuntimeConfig()
 const isRegistrationEnabled = computed(() => config.public.APP_ENV === 'registration')
+
+const registrationStore = useRegistrationStore()
+const registrationData = registrationStore.data
 
 const steps = [
     { id: 'type', name: 'Type', component: markRaw(RegistrationType) },

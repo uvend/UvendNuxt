@@ -116,29 +116,64 @@
           Edit
         </Button>
       </div>
-      <div class="space-y-4">
+      <div class="space-y-6">
+        <!-- Main Business Address -->
         <div>
-          <span class="text-sm font-medium text-gray-500">Street Address</span>
-          <p class="mt-1">{{ registrationData.address?.streetAddress || 'Not provided' }}</p>
+          <h4 class="font-medium text-gray-700 mb-3">Main Business Address</h4>
+          <div class="space-y-4">
+            <div>
+              <span class="text-sm font-medium text-gray-500">Street Address</span>
+              <p class="mt-1">{{ registrationData.address?.streetAddress || 'Not provided' }}</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span class="text-sm font-medium text-gray-500">Suburb</span>
+                <p class="mt-1">{{ registrationData.address?.suburb || 'Not provided' }}</p>
+              </div>
+              <div>
+                <span class="text-sm font-medium text-gray-500">City</span>
+                <p class="mt-1">{{ registrationData.address?.city || 'Not provided' }}</p>
+              </div>
+              <div>
+                <span class="text-sm font-medium text-gray-500">Province</span>
+                <p class="mt-1">{{ registrationData.address?.province || 'Not provided' }}</p>
+              </div>
+              <div>
+                <span class="text-sm font-medium text-gray-500">Postal Code</span>
+                <p class="mt-1">{{ registrationData.address?.postalCode || 'Not provided' }}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <span class="text-sm font-medium text-gray-500">Suburb</span>
-            <p class="mt-1">{{ registrationData.address?.suburb || 'Not provided' }}</p>
-          </div>
-          <div>
-            <span class="text-sm font-medium text-gray-500">City</span>
-            <p class="mt-1">{{ registrationData.address?.city || 'Not provided' }}</p>
-          </div>
-          <div>
-            <span class="text-sm font-medium text-gray-500">Province</span>
-            <p class="mt-1">{{ registrationData.address?.province || 'Not provided' }}</p>
-          </div>
-          <div>
-            <span class="text-sm font-medium text-gray-500">Postal Code</span>
-            <p class="mt-1">{{ registrationData.address?.postalCode || 'Not provided' }}</p>
+
+        <!-- Complexes -->
+        <div v-if="registrationData.address?.complexes?.length">
+          <h4 class="font-medium text-gray-700 mb-3">Complexes</h4>
+          <div class="space-y-6">
+            <div 
+              v-for="(complex, index) in registrationData.address.complexes" 
+              :key="index"
+              class="border rounded-lg p-4"
+            >
+              <h5 class="font-medium text-gray-900 mb-3">Complex {{ index + 1 }}</h5>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <span class="text-sm font-medium text-gray-500">Complex Name</span>
+                  <p class="mt-1">{{ complex.name }}</p>
+                </div>
+                <div>
+                  <span class="text-sm font-medium text-gray-500">Number of Units</span>
+                  <p class="mt-1">{{ complex.unitCount }}</p>
+                </div>
+                <div class="md:col-span-2">
+                  <span class="text-sm font-medium text-gray-500">Complex Address</span>
+                  <p class="mt-1">{{ complex.address }}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+        <p v-else class="text-sm text-gray-500">No complexes added</p>
       </div>
     </div>
 
