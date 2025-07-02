@@ -20,13 +20,14 @@
             id="streetAddress"
             v-model="formData.streetAddress"
             type="text"
-            maxlength="100"
-            placeholder="Enter your street name and number"
+            placeholder="Enter your street address"
+            class="transition-all duration-200 focus:border-blue-400 focus:ring-blue-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.streetAddress,
               'border-green-500 focus:ring-green-500': formData.streetAddress && !errors.streetAddress
             }"
             aria-describedby="streetAddress-error streetAddress-hint"
+            @input="handleDataChange"
           />
           <p id="streetAddress-hint" class="text-xs text-gray-500">Include your street name and building number</p>
           <span 
@@ -50,13 +51,14 @@
             id="suburb"
             v-model="formData.suburb"
             type="text"
-            maxlength="50"
             placeholder="Enter your suburb"
+            class="transition-all duration-200 focus:border-blue-400 focus:ring-blue-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.suburb,
               'border-green-500 focus:ring-green-500': formData.suburb && !errors.suburb
             }"
             aria-describedby="suburb-error"
+            @input="handleDataChange"
           />
           <span 
             v-if="errors.suburb" 
@@ -80,13 +82,14 @@
               id="city"
               v-model="formData.city"
               type="text"
-              maxlength="50"
               placeholder="Enter your city"
+              class="transition-all duration-200 focus:border-blue-400 focus:ring-blue-200"
               :class="{ 
                 'border-red-500 focus:ring-red-500': errors.city,
                 'border-green-500 focus:ring-green-500': formData.city && !errors.city
               }"
               aria-describedby="city-error"
+              @input="handleDataChange"
             />
             <span 
               v-if="errors.city" 
@@ -116,6 +119,7 @@
                 'border-green-500 focus:ring-green-500': formData.province && !errors.province
               }"
               aria-describedby="province-error"
+              @input="handleDataChange"
             />
             <span 
               v-if="errors.province" 
@@ -204,6 +208,7 @@
                   :class="{ 
                     'border-red-500': errors[`complexes.${index}.name`]
                   }"
+                  @input="handleDataChange"
                 />
                 <span 
                   v-if="errors[`complexes.${index}.name`]" 
@@ -224,6 +229,7 @@
                   :class="{ 
                     'border-red-500': errors[`complexes.${index}.address`]
                   }"
+                  @input="handleDataChange"
                 />
                 <span 
                   v-if="errors[`complexes.${index}.address`]" 
@@ -245,6 +251,7 @@
                   :class="{ 
                     'border-red-500': errors[`complexes.${index}.unitCount`]
                   }"
+                  @input="handleDataChange"
                 />
                 <span 
                   v-if="errors[`complexes.${index}.unitCount`]" 
@@ -277,6 +284,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['dataChange'])
+
 const formData = ref({
   streetAddress: '',
   suburb: '',
@@ -301,6 +310,7 @@ watch(() => props.registrationData?.address, (newValue) => {
 // Format postal code to only allow numbers
 const formatPostalCode = (event) => {
   formData.value.postalCode = event.target.value.replace(/\D/g, '').slice(0, 4)
+  handleDataChange()
 }
 
 const addComplex = () => {
@@ -309,10 +319,17 @@ const addComplex = () => {
     address: '',
     unitCount: null
   })
+  handleDataChange()
 }
 
 const removeComplex = (index) => {
   formData.value.complexes.splice(index, 1)
+  handleDataChange()
+}
+
+const handleDataChange = () => {
+  // Emit the data to parent
+  emit('dataChange', { ...formData.value })
 }
 
 // Validate form data before submitting

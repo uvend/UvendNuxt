@@ -9,9 +9,9 @@
             <WalletCardBalance :addMoney="true"/>
             <Card class="p-4 bg-white border shadow-sm">
                 <div class="flex flex-col">
-                    <p class="text-gray-600 text-sm">Total Wallet Funding</p>
+                    <p class="text-gray-600 text-base font-semibold">Total Wallet Funding</p>
                     <Skeleton class="w-16 h-9" v-if="isLoading"/>
-                    <p class="text-2xl font-bold" v-else>{{ total }}</p>
+                    <p class="text-4xl font-black" v-else>{{ total }}</p>
                     <!--<div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
                         <Icon :name=" 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
                         <span>% vs previous</span>
@@ -21,9 +21,9 @@
             
             <Card class="p-4 bg-white border shadow-sm">
                 <div class="flex flex-col">
-                    <p class="text-gray-600 text-sm">Transactions</p>
+                    <p class="text-gray-600 text-base font-semibold">Transactions</p>
                     <Skeleton class="w-16 h-9" v-if="isLoading"/>
-                    <p class="text-2xl font-bold" v-else>{{ transactions }}</p>
+                    <p class="text-4xl font-black" v-else>{{ transactions }}</p>
                     
                 </div>
             </Card>
@@ -39,7 +39,7 @@
                 class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-200"
               />
               <Card v-else class="rounded-lg border bg-muted p-8 text-center">
-                <p class="text-sm text-muted-foreground">No payments found</p>
+                <p class="text-base font-semibold text-muted-foreground">No payments found</p>
               </Card>
             </div>
       </div>

@@ -6,20 +6,20 @@
      </div>
     <!-- Transactions Summary Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <Card class="p-4 bg-white border shadow-sm">
+        <Card class="p-4 bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
         <div class="flex flex-col">
-            <p class="text-gray-600 text-sm">Total Spent</p>
+            <p class="text-gray-600 text-base font-semibold">Total Spent</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
-            <p class="text-2xl font-bold" v-else>{{ summary.totalSpent }}</p>
-            <p class="text-sm text-gray-500" v-if="$store.dateRange">{{ $store.dateRange }}</p>
+            <p class="text-4xl font-black" v-else>{{ summary.totalSpent }}</p>
+            <p class="text-base font-semibold text-gray-500" v-if="$store.dateRange">{{ $store.dateRange }}</p>
         </div>
         </Card>
         
-        <Card class="p-4 bg-white border shadow-sm">
+        <Card class="p-4 bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
         <div class="flex flex-col">
-            <p class="text-gray-600 text-sm">Electricity</p>
+            <p class="text-gray-600 text-base font-semibold">Electricity</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
-            <p class="text-2xl font-bold" v-else>{{electricity}}</p>
+            <p class="text-4xl font-black" v-else>{{electricity}}</p>
             <!-- <div class="flex items-center text-sm mt-1" :class="0 ? 'text-red-500' : 'text-green-500'">
             <Icon :name="0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
             <span>% vs previous</span> 
@@ -27,11 +27,11 @@
         </div>
         </Card>
         
-        <Card class="p-4 bg-white border shadow-sm">
+        <Card class="p-4 bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
         <div class="flex flex-col">
-            <p class="text-gray-600 text-sm">Water</p>
+            <p class="text-gray-600 text-base font-semibold">Water</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
-            <p class="text-2xl font-bold" v-else>{{water}}</p>
+            <p class="text-4xl font-black" v-else>{{water}}</p>
             <!-- <div class="flex items-center text-sm mt-1" :class=" 0 ? 'text-red-500' : 'text-green-500'">
             <Icon :name="0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="mr-1 h-4 w-4" />
             <span>% vs previous</span>
@@ -39,12 +39,12 @@
         </div>
         </Card>
         
-        <Card class="p-4 bg-white border shadow-sm">
+        <Card class="p-4 bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
         <div class="flex flex-col">
-            <p class="text-gray-600 text-sm">Transaction History</p>
+            <p class="text-gray-600 text-base font-semibold">Transaction History</p>
             <Skeleton class="w-16 h-9" v-if="isLoading"/>
-            <p class="text-2xl font-bold" v-else>{{summary.transactionCount}}</p>
-            <p class="text-sm text-gray-500"></p>
+            <p class="text-4xl font-black" v-else>{{summary.transactionCount}}</p>
+            <p class="text-base font-semibold text-gray-500"></p>
         </div>
         </Card>
     </div>
@@ -53,12 +53,12 @@
         <!-- Filter buttons in a scrollable container -->
         <WalletUtilitySelector v-model="filterOptions" @update="console.log"/>
     </div>
-    <Card v-if="isLoading" class="py-8 flex justify-center">
+    <Card v-if="isLoading" class="py-8 flex justify-center bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg">
         <MyLoader />
     </Card>
     <div v-else class="flex flex-col gap-2">
       <WalletCardTransaction v-if="transactions.length > 0" v-for="payment in transactions" :data="payment"/>
-        <Card v-else class="py-8 text-center text-gray-500">
+        <Card v-else class="py-8 text-center text-gray-500 text-base font-semibold bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg">
           No payments found
       </Card>
     </div>

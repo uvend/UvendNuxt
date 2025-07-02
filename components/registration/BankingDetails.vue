@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div class="space-y-6">
+    <div class="space-y-8">
       <div class="text-center md:text-left">
-        <h2 class="text-xl font-semibold text-gray-900">Banking Details</h2>
-        <p class="mt-1 text-sm text-gray-500">Please provide your banking information</p>
+        <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">Banking Details</h2>
+        <p class="mt-2 text-sm text-gray-600">Please provide your banking information for payments</p>
       </div>
 
       <div class="space-y-6">
-        <div class="space-y-2">
-          <Label for="accountHolder" class="flex items-center justify-between">
+        <div class="space-y-3">
+          <Label for="accountHolder" class="flex items-center justify-between text-gray-700 font-medium">
             <span>Account Holder Name</span>
             <span v-if="formData.accountHolder" class="text-xs text-gray-500">
               {{ formData.accountHolder.length }}/100 characters
@@ -18,13 +18,14 @@
             id="accountHolder"
             v-model="formData.accountHolder"
             type="text"
-            maxlength="100"
-            placeholder="Enter the name on your bank account"
+            placeholder="Enter account holder name"
+            class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.accountHolder,
               'border-green-500 focus:ring-green-500': formData.accountHolder && !errors.accountHolder
             }"
-            aria-describedby="accountHolder-error accountHolder-hint"
+            aria-describedby="accountHolder-error"
+            @input="handleDataChange"
           />
           <p id="accountHolder-hint" class="text-xs text-gray-500">Enter the name exactly as it appears on your bank account</p>
           <span 
@@ -37,36 +38,20 @@
           </span>
         </div>
 
-        <div class="space-y-2">
-          <Label for="bankName">Bank Name</Label>
-          <Select
+        <div class="space-y-3">
+          <Label for="bankName" class="text-gray-700 font-medium">Bank Name</Label>
+          <Input
+            id="bankName"
             v-model="formData.bankName"
+            type="text"
+            placeholder="Enter bank name"
+            class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.bankName,
               'border-green-500 focus:ring-green-500': formData.bankName && !errors.bankName
             }"
-          >
-            <SelectTrigger id="bankName" aria-describedby="bankName-error">
-              <SelectValue placeholder="Select your bank" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Major Banks</SelectLabel>
-                <SelectItem value="ABSA">ABSA</SelectItem>
-                <SelectItem value="Capitec">Capitec</SelectItem>
-                <SelectItem value="FNB">FNB</SelectItem>
-                <SelectItem value="Nedbank">Nedbank</SelectItem>
-                <SelectItem value="Standard Bank">Standard Bank</SelectItem>
-              </SelectGroup>
-              <SelectGroup>
-                <SelectLabel>Other Banks</SelectLabel>
-                <SelectItem value="African Bank">African Bank</SelectItem>
-                <SelectItem value="Bidvest Bank">Bidvest Bank</SelectItem>
-                <SelectItem value="Discovery Bank">Discovery Bank</SelectItem>
-                <SelectItem value="TymeBank">TymeBank</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+            @input="handleDataChange"
+          />
           <span 
             v-if="errors.bankName" 
             id="bankName-error" 
@@ -77,8 +62,8 @@
           </span>
         </div>
 
-        <div class="space-y-2">
-          <Label for="accountNumber" class="flex items-center justify-between">
+        <div class="space-y-3">
+          <Label for="accountNumber" class="flex items-center justify-between text-gray-700 font-medium">
             <span>Account Number</span>
             <span v-if="formData.accountNumber" class="text-xs text-gray-500">
               {{ formData.accountNumber.length }}/16 digits
@@ -89,12 +74,12 @@
             v-model="formData.accountNumber"
             type="text"
             maxlength="16"
-            placeholder="Enter your account number"
+            placeholder="Enter account number"
+            class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.accountNumber,
               'border-green-500 focus:ring-green-500': formData.accountNumber && !errors.accountNumber
             }"
-            aria-describedby="accountNumber-error"
             @input="formatAccountNumber"
           />
           <span 
@@ -107,16 +92,17 @@
           </span>
         </div>
 
-        <div class="space-y-2">
-          <Label for="accountType">Account Type</Label>
+        <div class="space-y-3">
+          <Label for="accountType" class="text-gray-700 font-medium">Account Type</Label>
           <Select
             v-model="formData.accountType"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.accountType,
               'border-green-500 focus:ring-green-500': formData.accountType && !errors.accountType
             }"
+            @update:model-value="handleDataChange"
           >
-            <SelectTrigger id="accountType" aria-describedby="accountType-error">
+            <SelectTrigger id="accountType" aria-describedby="accountType-error" class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200">
               <SelectValue placeholder="Select account type" />
             </SelectTrigger>
             <SelectContent>
@@ -135,8 +121,8 @@
           </span>
         </div>
 
-        <div class="space-y-2">
-          <Label for="branchCode" class="flex items-center justify-between">
+        <div class="space-y-3">
+          <Label for="branchCode" class="flex items-center justify-between text-gray-700 font-medium">
             <span>Branch Code</span>
             <span v-if="formData.branchCode" class="text-xs text-gray-500">
               {{ formData.branchCode.length }}/6 digits
@@ -148,6 +134,7 @@
             type="text"
             maxlength="6"
             placeholder="Enter 6-digit branch code"
+            class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.branchCode,
               'border-green-500 focus:ring-green-500': formData.branchCode && !errors.branchCode
@@ -192,6 +179,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['dataChange'])
+
 const formData = ref({
   accountHolder: '',
   bankName: '',
@@ -212,11 +201,13 @@ watch(() => props.registrationData?.banking, (newValue) => {
 // Format account number to only allow numbers
 const formatAccountNumber = (event) => {
   formData.value.accountNumber = event.target.value.replace(/\D/g, '').slice(0, 16)
+  handleDataChange()
 }
 
 // Format branch code to only allow numbers
 const formatBranchCode = (event) => {
   formData.value.branchCode = event.target.value.replace(/\D/g, '').slice(0, 6)
+  handleDataChange()
 }
 
 // Validate form data before submitting
@@ -251,6 +242,11 @@ watch(formData, (newValue) => {
 
   errors.value = newErrors
 }, { deep: true })
+
+const handleDataChange = () => {
+  // Emit the data to parent
+  emit('dataChange', { ...formData.value })
+}
 
 // Expose form data to parent
 defineExpose({

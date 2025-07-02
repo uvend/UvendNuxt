@@ -34,6 +34,7 @@
                   required
                   placeholder="Enter meter number"
                   :class="{ 'border-red-500': errors[`meters.${index}.meterNumber`] }"
+                  @input="handleDataChange"
                 />
                 <span v-if="errors[`meters.${index}.meterNumber`]" class="text-xs text-red-500 flex items-center gap-1">
                   <AlertCircle class="h-4 w-4" />
@@ -46,6 +47,7 @@
                 <Select
                   v-model="meter.utilityType"
                   :class="{ 'border-red-500': errors[`meters.${index}.utilityType`] }"
+                  @update:model-value="handleDataChange"
                 >
                   <SelectTrigger :id="'utilityType-' + index">
                     <SelectValue placeholder="Select utility type" />
@@ -72,6 +74,7 @@
                 required
                 placeholder="e.g., Main Building Basement, Unit 101"
                 :class="{ 'border-red-500': errors[`meters.${index}.location`] }"
+                @input="handleDataChange"
               />
               <span v-if="errors[`meters.${index}.location`]" class="text-xs text-red-500 flex items-center gap-1">
                 <AlertCircle class="h-4 w-4" />
@@ -83,6 +86,7 @@
               <Checkbox
                 :id="'isActive-' + index"
                 v-model="meter.isActive"
+                @update:checked="handleDataChange"
               />
               <Label :for="'isActive-' + index">Meter is currently active</Label>
             </div>
@@ -101,6 +105,7 @@
                   required
                   placeholder="e.g., Unit 101"
                   :class="{ 'border-red-500': errors[`meters.${index}.unit.unitNumber`] }"
+                  @input="handleDataChange"
                 />
                 <span v-if="errors[`meters.${index}.unit.unitNumber`]" class="text-xs text-red-500 flex items-center gap-1">
                   <AlertCircle class="h-4 w-4" />
@@ -113,6 +118,7 @@
                 <Select
                   v-model="meter.unit.unitType"
                   :class="{ 'border-red-500': errors[`meters.${index}.unit.unitType`] }"
+                  @update:model-value="handleDataChange"
                 >
                   <SelectTrigger :id="'unitType-' + index">
                     <SelectValue placeholder="Select unit type" />
@@ -139,6 +145,7 @@
                 <Checkbox
                   :id="'hasTenant-' + index"
                   v-model="meter.unit.hasTenant"
+                  @update:checked="handleDataChange"
                 />
                 <Label :for="'hasTenant-' + index">Unit has current tenant</Label>
               </div>
@@ -155,6 +162,7 @@
                     required
                     placeholder="Enter tenant's full name"
                     :class="{ 'border-red-500': errors[`meters.${index}.unit.tenant.name`] }"
+                    @input="handleDataChange"
                   />
                   <span v-if="errors[`meters.${index}.unit.tenant.name`]" class="text-xs text-red-500 flex items-center gap-1">
                     <AlertCircle class="h-4 w-4" />
@@ -171,6 +179,7 @@
                     required
                     placeholder="Enter tenant's phone number"
                     :class="{ 'border-red-500': errors[`meters.${index}.unit.tenant.phone`] }"
+                    @input="handleDataChange"
                   />
                   <span v-if="errors[`meters.${index}.unit.tenant.phone`]" class="text-xs text-red-500 flex items-center gap-1">
                     <AlertCircle class="h-4 w-4" />
@@ -188,6 +197,7 @@
                   required
                   placeholder="Enter tenant's email address"
                   :class="{ 'border-red-500': errors[`meters.${index}.unit.tenant.email`] }"
+                  @input="handleDataChange"
                 />
                 <span v-if="errors[`meters.${index}.unit.tenant.email`]" class="text-xs text-red-500 flex items-center gap-1">
                   <AlertCircle class="h-4 w-4" />
@@ -204,6 +214,7 @@
                     type="date"
                     required
                     :class="{ 'border-red-500': errors[`meters.${index}.unit.tenant.leaseStart`] }"
+                    @input="handleDataChange"
                   />
                   <span v-if="errors[`meters.${index}.unit.tenant.leaseStart`]" class="text-xs text-red-500 flex items-center gap-1">
                     <AlertCircle class="h-4 w-4" />
@@ -219,6 +230,7 @@
                     type="date"
                     required
                     :class="{ 'border-red-500': errors[`meters.${index}.unit.tenant.leaseEnd`] }"
+                    @input="handleDataChange"
                   />
                   <span v-if="errors[`meters.${index}.unit.tenant.leaseEnd`]" class="text-xs text-red-500 flex items-center gap-1">
                     <AlertCircle class="h-4 w-4" />
@@ -260,10 +272,24 @@ import {
   SelectValue,
 } from '~/components/ui/select'
 
-const emit = defineEmits(['prev', 'next'])
+const emit = defineEmits(['dataChange'])
+
+const props = defineProps({
+  registrationData: {
+    type: Object,
+    required: true
+  }
+})
 
 const meters = ref([])
 const errors = reactive({})
+
+// Initialize form data from props if available
+watch(() => props.registrationData?.meters, (newValue) => {
+  if (newValue && newValue.length > 0) {
+    meters.value = [...newValue]
+  }
+}, { immediate: true })
 
 const addMeter = () => {
   meters.value.push({
@@ -284,10 +310,17 @@ const addMeter = () => {
       }
     }
   })
+  handleDataChange()
 }
 
 const removeMeter = (index) => {
   meters.value.splice(index, 1)
+  handleDataChange()
+}
+
+const handleDataChange = () => {
+  // Emit the data to parent
+  emit('dataChange', [...meters.value])
 }
 
 const validateForm = () => {
@@ -362,10 +395,7 @@ const validateForm = () => {
 
 const handleSubmit = () => {
   if (validateForm()) {
-    emit('next', { meters: meters.value })
+    handleDataChange()
   }
 }
-
-// Add an initial meter by default
-addMeter()
 </script> 

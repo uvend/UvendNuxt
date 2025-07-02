@@ -3,8 +3,8 @@
         @click="toggleNav"
         class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300">
     </div>
-    <div class="flex">
-        <aside class="flex flex-col justify-between bg-blue-500 min-h-screen"
+    <div class="flex min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
+        <aside class="flex flex-col justify-between bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen shadow-xl"
             :class="[
                 !isMobile ? 'w-64 p-4' : '',
                 isMobile && !isNavOpen ? 'w-0 p-0 overflow-hidden' : '',
@@ -12,25 +12,25 @@
             ]">
             <nav class="space-y-1">
                 <MyLogo />
-                <NuxtLink to="/" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
                     <Icon name="lucide:layout-dashboard" class="mr-2 h-5 w-5" />
                     Dashboard
                 </NuxtLink>
-                <NuxtLink to="/transactions" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/transactions" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
                     <Icon name="lucide:credit-card" class="mr-2 h-5 w-5" />
                     Transaction History
                 </NuxtLink>
-                <NuxtLink to="/meters" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/meters" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
                     <Icon name="lucide:gauge" class="mr-2 h-5 w-5" />
                     Meters
                 </NuxtLink>
-                <NuxtLink to="/payments" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/payments" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
                     <Icon name="lucide:wallet" class="mr-2 h-5 w-5" />
                     Payments
                 </NuxtLink>
             </nav>
             <nav>
-                <NuxtLink to="/settings" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="toggleNav">
+                <NuxtLink to="/settings" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
                     <Icon name="lucide:settings" class="mr-2 h-5 w-5" />
                     Settings
                 </NuxtLink>
@@ -38,10 +38,10 @@
         </aside>
         <div class="flex-1" >
             <main class="">
-                <header class="flex justify-between items-center py-2 px-4">
+                <header class="flex justify-between items-center py-4 px-6 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200">
                     <div>
                         <div>
-                            <p class="title font-bold flex items-center">
+                            <p class="title font-black text-xl text-gray-800 flex items-center">
                                 <Button v-if="isMobile" @click="toggleNav" variant="secondary" class="mr-2" size="sm">
                                     <Icon name="lucide:menu"/>
                                 </Button>
@@ -53,8 +53,8 @@
                         <WalletBuyNow />
                     </WalletPopup>
                 </header>
-                <div class="scroll hide-scrollbar bg-gray-50" style="max-width: 100vw">
-                    <slot class="overflow-y-scroll overflow-x hide-scrollbar bg-gray-100 w-full max-h-screen"/>
+                <div class="scroll hide-scrollbar" style="max-width: 100vw">
+                    <slot class="overflow-y-scroll overflow-x hide-scrollbar w-full max-h-screen"/>
                 </div>
             </main>
         </div>

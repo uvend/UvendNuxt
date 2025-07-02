@@ -1,11 +1,11 @@
 <template>
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 md:relative md:bg-transparent md:border-0 md:p-0">
+  <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-blue-300 p-4 md:relative md:bg-transparent md:border-0 md:p-0">
     <div class="flex justify-between items-center max-w-3xl mx-auto w-full">
       <Button
         v-if="showPrev"
         type="button"
         variant="outline"
-        class="w-[120px]"
+        class="w-[120px] border-blue-400 text-blue-700 hover:bg-blue-50 hover:border-blue-500 transition-all duration-200"
         @click="$emit('prev')"
       >
         <ChevronLeft class="h-4 w-4 mr-2" />
@@ -19,19 +19,19 @@
             v-for="i in totalSteps"
             :key="i"
             :class="[
-              'h-2 w-2 rounded-full transition-all duration-200',
-              i <= currentStep ? 'bg-primary' : 'bg-gray-200'
+              'h-2 w-2 rounded-full transition-all duration-300',
+              i <= currentStep ? 'bg-gradient-to-r from-blue-700 to-orange-500' : 'bg-gray-200'
             ]"
           />
         </div>
-        <span class="text-sm text-gray-500 md:hidden">
+        <span class="text-sm text-gray-600 md:hidden font-medium">
           Step {{ currentStep }} of {{ totalSteps }}
         </span>
       </div>
 
       <Button
         type="submit"
-        class="w-[120px]"
+        class="w-[120px] bg-gradient-to-r from-blue-700 to-orange-600 hover:from-blue-800 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
         :disabled="loading"
         form="registrationForm"
       >
