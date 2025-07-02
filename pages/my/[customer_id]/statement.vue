@@ -13,7 +13,13 @@
                         </SelectItem>
                     </SelectContent>
                 </Select>
-                <MyDateRangePicker  v-if="selectedStatementType" v-model="dateRange" :months="2"/>
+                <MyDateRangePicker
+                    v-if="selectedStatementType"
+                    v-model="dateRange"
+                    :months="2"
+                    :selected-month.sync="selectedMonth"
+                    :selected-year.sync="selectedYear"
+                />
                 <div v-else class="flex gap-1">
                     <Select v-model="selectedMonth" @update:model-value="monthUpdated">
                         <SelectTrigger class="w-[150px]">
