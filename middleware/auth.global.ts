@@ -1,4 +1,6 @@
 export default defineNuxtRouteMiddleware((to, from) => {
+    const config = useRuntimeConfig()
+    const APP_ENV = config.public.APP_ENV
     
     //console.log('middleware', APP_ENV)
     const path = to.path.split('/');
@@ -13,17 +15,25 @@ export default defineNuxtRouteMiddleware((to, from) => {
             console.error('You are not logged in to wallet')
             return navigateTo('/login')
         }
+        // For registration, no authentication check needed - let them access registration form
     }
 
-    if(['wallet'].includes(APP_ENV)){
-        return;
+    // For wallet system, root path should show wallet index (no redirect needed)
+    if (APP_ENV == 'wallet' && (to.path === '/' || to.path === '')) {
+        return; // Let it show the wallet index page
+    }
+
+    // For registration system, allow access to registration pages without authentication
+    if (APP_ENV == 'registration') {
+        return; // Let them access registration pages
     }
 
     var customer = localStorage.getItem('customer') ?? ''
     //console.log('fullPath', to.fullPath);
-    if(customer != 'admin' && (to.path.startsWith('/admin') || to.fullPath == '/')){
-        customer = customer?.slice(1);
-        return navigateTo(`/my/${customer}/transaction`)
+    if(customer && customer != 'admin' && (to.path.startsWith('/admin') || to.fullPath == '/')){
+        return navigateTo(`/my/${customer}/transactions`)
+    } else if (!customer && (to.path.startsWith('/admin') || to.fullPath == '/')) {
+        return navigateTo('/login')
     }
 
 

@@ -1,5 +1,11 @@
 <template>
     <div class="flex flex-col p-4 gap-4 overflow-hidden">
+        <!-- Greeting Section -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 text-white shadow-lg">
+            <h1 class="text-2xl font-bold mb-2">Welcome Back, {{ userNickname }}!</h1>
+            <p class="text-blue-100">Here's your wallet overview</p>
+        </div>
+        
         <!-- Filter buttons in a scrollable container on mobile -->
         <div class="flex justify-between flex-wrap gap-2">
             <WalletUtilitySelector v-model="filterOptions" @update="console.log"/>
@@ -113,7 +119,7 @@ definePageMeta({
     layout: 'wallet'
 })
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { BarChart } from '@/components/ui/chart-bar'
 
 const walletBalance = ref(null)
@@ -122,6 +128,7 @@ const activeMeters = ref(0)
 const totalMeters = ref(0)
 const totalTransactions = ref(0)
 const meterStats = ref([])
+const userNickname = ref('User')
 const filterOptions = ref([
     { key: "all", value: "All Transactions" },
     { key: "elect", value: "Electricity" },
@@ -144,9 +151,25 @@ function navigateToMeter(meter) {
     navigateTo(`/wallet/meters/${meter.meterNumber}`)
 }
 
+async function fetchUserData() {
+    try {
+        const userResponse = await useWalletAuthFetch(`${WALLET_API_URL}/user/profile`)
+        const nickname = userResponse.nickname || 'User'
+        userNickname.value = nickname
+        // Store in localStorage for settings access
+        localStorage.setItem('user-nickname', nickname)
+    } catch (error) {
+        console.error('Error fetching user data:', error)
+        userNickname.value = 'User'
+    }
+}
+
 async function fetchDashboardData() {
     isLoading.value = true
     try {
+        // Fetch user data
+        await fetchUserData()
+        
         // Fetch meters data
         const metersResponse = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
         totalMeters.value = metersResponse.meters.length
@@ -193,6 +216,18 @@ async function fetchDashboardData() {
         isLoading.value = false
     }
 }
+
+// Listen for nickname updates from settings
+window.addEventListener('nickname-updated', (e) => {
+    userNickname.value = e.detail.nickname
+})
+
+// Also listen for storage events (when nickname is updated in settings)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'user-nickname' && e.newValue) {
+        userNickname.value = e.newValue
+    }
+})
 
 onMounted(() => {
     fetchDashboardData()

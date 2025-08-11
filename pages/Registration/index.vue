@@ -1,13 +1,30 @@
 <template>
-    <div v-if="isRegistrationEnabled" class="min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
+    <div class="min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50 relative overflow-hidden">
+        <!-- Watermark Background -->
+        <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+            <img 
+                src="/UVendlogo-Better.png" 
+                alt="UVEND Logo Watermark" 
+                class="w-96 h-96 object-contain"
+            />
+        </div>
+
+        <!-- UVEND Logo and Registration Icon - Top Left Corner -->
+        <div class="absolute top-6 left-6 z-20">
+            <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-bold text-blue-700">UVEND</h1>
+                <Icon name="lucide:user-plus" class="h-6 w-6 text-blue-600" />
+            </div>
+        </div>
+
         <!-- Mobile Header -->
         <div class="md:hidden bg-white/90 backdrop-blur-sm px-4 py-3 border-b border-blue-300 fixed top-0 left-0 right-0 z-10 shadow-sm">
             <h1 class="text-lg font-semibold text-center text-gray-800">Registration</h1>
         </div>
 
-        <div class="max-w-4xl mx-auto px-4 md:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
             <!-- Progress Steps - Hidden on mobile -->
-            <div class="hidden md:block py-12">
+            <div class="hidden md:block py-8">
                 <div class="relative flex justify-between">
                     <!-- Progress Line -->
                     <div class="absolute top-1/2 left-0 right-0 h-1 -translate-y-1/2 bg-gradient-to-r from-blue-400 to-orange-200 rounded-full">
@@ -49,7 +66,7 @@
             </div>
 
             <!-- Form Container -->
-            <div class="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl mt-16 md:mt-0 mb-24 md:mb-12 border border-blue-200">
+            <div class="bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl mt-8 md:mt-0 mb-24 md:mb-12 border border-blue-200">
                 <form id="registrationForm" @submit.prevent="handleStepComplete">
                     <KeepAlive>
                         <component
@@ -73,15 +90,6 @@
                 :loading="loading"
                 @prev="prevStep"
             />
-        </div>
-    </div>
-    <div v-else class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
-        <div class="text-center px-4 bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-blue-200">
-            <h2 class="text-2xl font-bold text-gray-900">Registration Not Available</h2>
-            <p class="mt-2 text-gray-600">Registration is currently not enabled in this environment.</p>
-            <NuxtLink to="/" class="mt-4 inline-block text-blue-700 hover:text-blue-800 font-medium transition-colors">
-                Return to Home
-            </NuxtLink>
         </div>
     </div>
 </template>

@@ -8,6 +8,7 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - APP_ENV=registration
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
     volumes:

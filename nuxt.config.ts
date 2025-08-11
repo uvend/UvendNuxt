@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-const pagesDir = process.env.APP_ENV != '' 
-  ? `pages/${process.env.APP_ENV}` 
+const pagesDir = process.env.APP_ENV && process.env.APP_ENV !== '' 
+  ? `pages/${process.env.APP_ENV === 'registration' ? 'Registration' : process.env.APP_ENV}` 
   : 'pages'
 
 export default defineNuxtConfig({
@@ -67,7 +67,7 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
-    '/registration/**': { middleware: ['registration-access'] }
+    '/registration/**': { appMiddleware: ['registration-access'] }
   },
   router: {
     options: {
