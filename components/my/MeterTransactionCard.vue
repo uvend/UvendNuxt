@@ -2,50 +2,52 @@
     <Card class="w-full p-2 my-2" :class="statement ? 'statement-card' : 'transaction-card'" @click="getTransaction()">
         <div class="flex flex-col justify-center">
             <p class="font-bold">
-                {{ transaction.meterNumber }}
+                {{ transaction.meternumber }}
             </p>
             <p class="text-sm font-light">
-                {{ transaction.complexName }}
+                {{ transaction.complexDescription }}
             </p>
         </div>
         <div v-if="statement || transactionType == 'VendingToken'" :class="statement || transactionType == 'VendingToken' ? 'credit-token' : ''">
         <div>
             <p class="font-bold">
-                {{ transaction.freeUnits }}
-            </p>
-            <p class="text-sm font-light">Free</p>
-        </div>
-        <div>
-            <p class="font-bold">
-                {{ transaction.totalUnitsIssued }}
-            </p>
-            <p class="text-sm font-light">Purchase</p>
-
-        </div>
-        <div>
-            <p class="font-bold">
-                {{ transaction.totalUnitsIssued }}
-            </p>
-            <div v-if="transaction.utilityType == 'Water'" class="flex">
-                <p class="text-sm font-light">KL</p>
-            </div>
-            <div v-if="transaction.utilityType == 'Electricity'" class="flex">
-                <p class="text-sm font-light">KWh</p>
-            </div>
-        </div>
-        <div>
-            <p class="font-bold">
-                {{ transaction.managedTenderAmount }}
+                {{ transaction.tenderedamountexvat }}
             </p>
             <p class="text-sm font-light">Amount</p>
         </div>
         <div>
             <p class="font-bold">
-                {{ transaction.commissionAmountEx }}
+                {{ transaction.surchargeAmount }}
             </p>
-            <p class="text-sm font-light">Service Fee<br>(ex VAT)</p>
+            <p class="text-sm font-light">Surcharge</p>
+            <p class="text-sm font-light">
+                {{ transaction.surcharge }} %
+            </p>
         </div>
         <div>
+            <p class="font-bold">
+                {{ transaction.vendamountexvat }}
+            </p>
+            <p class="text-sm font-light">Tendered</p>
+            <p class="text-sm font-light">
+                {{ transaction.totalunitsissued }} {{ transaction.utilitytype == 1 ? 'KWh' : 'KL' }}
+            </p>
+
+        </div>
+        <div>
+            <div>
+                <p class="font-bold">
+                    {{ transaction.vendfeeAmount }} <span class="text-sm font-light">(ex VAT)</span>
+                </p>
+                <p class="text-sm font-light">Service Fee</p>
+            </div>
+            <div>
+                <p class="text-sm font-light">
+                {{ transaction.vendfee }} %
+            </p>
+            </div>
+        </div>
+        <!-- <div>
             <p class="font-bold">
                 {{ transaction.commissionAmount }}
             </p>
@@ -53,17 +55,17 @@
         </div>
         <div>
             <p class="font-bold">
-                {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2)}}
+                {{ refund }}
             </p>
             <p class="text-sm font-light">Refund</p>
-        </div>
+        </div> -->
         </div>
         <div v-if="!statement && transactionType != 'VendingToken'">
             <p class="font-bold">{{ transactionType }}</p>
         </div>
         <div class="text-center" v-if="!statement">
-            {{ formattedTime(transaction.transactionDate) }}<br>
-            {{ formatedDate(transaction.transactionDate) }}
+            {{ formattedTime(transaction.row_creation_date) }}<br>
+            {{ formatedDate(transaction.row_creation_date) }}
         </div>
     </Card>
     <Dialog v-model:open="ticketOpen">
@@ -168,7 +170,16 @@ export default{
     },
     computed:{
         transactionType(){
-            return this.transaction.meterTokenType;
+            if(this.transaction.metertokentype == 16385){
+                return 'VendingToken';
+            }
+            return 'Unknown';
+        },
+        refund: {
+            get(){
+                var refund = this.transaction.refund || 0
+                return refund
+            }
         }
     }
 }
@@ -180,12 +191,12 @@ export default{
 }
 .transaction-card{
     display: grid;
-    grid-template-columns: 1fr 3fr 0.5fr;
+    grid-template-columns: 1.5fr 3fr 0.5fr;
     cursor: pointer;
 }
 .credit-token{
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 .formatted-text {
   white-space: pre; /* Preserves formatting exactly as in the string */

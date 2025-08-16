@@ -97,7 +97,7 @@ export default{
     methods:{
         async getAdminTransactions(){
             this.isLoading = true;
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`,{
+            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivity`,{
                 method: "GET",
                 params:{
                     IncludeMetersWithNoActivity : false,
@@ -109,9 +109,9 @@ export default{
                     UtilityType: this.selectedUtility
                 }
             })
-            this.transactions = result.responseData.transactionData
+            console.log(result)
+            this.transactions = result.data
             await this.getMeterComplex()
-            //console.log(result)
             this.isLoading = false;
         },
         async getVendTransactions(){
