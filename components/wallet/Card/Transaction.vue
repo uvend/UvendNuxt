@@ -6,14 +6,8 @@
                 <p class="font-medium">{{ data.meterNumber }}</p>
             </div>
             <div class="space-y-1">
-                <p class="text-sm text-muted-foreground">Token</p>
-                <p v-for="token in data.vendResponse.listOfTokenTransactions">
-                    <div v-for="tokens in token.tokens">
-                        <span v-for="keys in tokens.tokenKeys">
-                            <span class="font-medium">{{ keys }} &nbsp;</span>
-                        </span>
-                    </div>
-                </p>
+                <p class="text-base font-semibold">Token</p>
+                <p class="font-black text-lg">{{ vendToken }}</p>
             </div>
             <div class="text-right space-y-1">
                 <p class="text-sm text-muted-foreground">Amount</p>
@@ -76,6 +70,17 @@ export default{
         },
         togglePopup(){
             this.isOpen = !this.isOpen;
+        }
+    },
+    computed:{
+        vendToken(){
+            if(this.data.vendResponse){
+                console.log(this.data.vendResponse)
+                var vendResponse = JSON.parse(this.data.vendResponse)
+                var tokenKeys = vendResponse.listOfTokenTransactions[0].tokens[0].tokenKeys
+                return tokenKeys.join('-')
+            }
+            return 'Unknown'
         }
     }
 }
