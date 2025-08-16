@@ -138,7 +138,7 @@
         this.graphTransactions = Array.from(transactionsByDate.values())
           .sort((a, b) => new Date(a.date) - new Date(b.date))
 
-        this.meterTransactions = response.transactions
+        this.meterTransactions = response.transactions.reverse()
       },
       async getMeterInfo(){
         const meterNumber = this.selectedMeter.meterNumber;

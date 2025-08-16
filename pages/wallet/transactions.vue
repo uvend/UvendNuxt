@@ -159,6 +159,7 @@ definePageMeta({
           startDate.setDate(endDate.getDate() - 265);
         }
         this.startDate = this.formatDate(startDate);
+        endDate.setDate(endDate.getDate() + 1);
         this.endDate = this.formatDate(endDate);
       }
     },
