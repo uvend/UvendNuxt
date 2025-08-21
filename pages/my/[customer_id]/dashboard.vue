@@ -2,10 +2,10 @@
     <div class="flex min-h-screen">
         <!-- Main Content Area -->
         <div class="flex-1 p-6 flex flex-col">
-                         <!-- Header -->
-             <!-- <div class="mb-6">
-                 <h1 class="text-3xl font-bold text-gray-900">Transactions</h1>
-             </div> -->
+            <!-- Header -->
+             <div class="mb-6">
+                 <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+             </div>
 
              <!-- Search Bar and View Toggle -->
              <div class="mb-6 flex items-center gap-4">
@@ -29,8 +29,8 @@
                  </Button>
              </div>
 
-             <!-- KPI Cards -->
-             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <!-- Water Spending -->
                 <Card class="relative">
                     <CardHeader class="pb-2">
@@ -120,7 +120,7 @@
                          <div class="text-2xl font-bold text-blue-500">{{ electricityVended }} KWh</div>
                      </CardContent>
                 </Card>
-                         </div>
+            </div>
 
                                       <!-- Charts View -->
              <div v-if="showCharts && !isLoading && originalTransactions && originalTransactions.length > 0" class="flex-1 flex flex-col">
@@ -198,7 +198,7 @@
                          </div>
                      </CardHeader>
                      <CardContent>
-                         <div class="relative">
+                <div class="relative">
                              <!-- Chart Container -->
                              <div class="w-full h-64 relative">
                                  <svg class="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid meet">
@@ -271,11 +271,11 @@
                                  <span v-for="(label, index) in xAxisLabels" :key="index" class="text-center">
                                      {{ label }}
                                  </span>
-                             </div>
+                </div>
                          </div>
                      </CardContent>
                  </Card>
-             </div>
+            </div>
 
              <!-- Transaction Table View -->
              <Card v-if="!showCharts" class="flex flex-col">
@@ -333,7 +333,7 @@
             </Card>
         </div>
 
-                 <!-- Right Sidebar -->
+        <!-- Right Sidebar -->
          <div class="max-w-96 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
             <!-- Filters Section -->
             <div v-if="!showTransactionDetails" class="mb-8">
@@ -574,9 +574,9 @@ export default{
                 this.currentPage = page;
             }
         },
-                 toggleSearch(){
-             this.searchActive = !this.searchActive
-             this.search = null
+        toggleSearch(){
+            this.searchActive = !this.searchActive
+            this.search = null
          },
          toggleView(){
              this.showCharts = !this.showCharts
@@ -630,7 +630,7 @@ export default{
                  console.error('Error in groupTransactionsByPeriod:', error);
                  return {};
              }
-         },
+        },
                           getMeterComplex(){
              // Use a Set to automatically handle duplicates
              const complexSet = new Set();
@@ -803,10 +803,10 @@ export default{
                  if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
                      return '0.0';
                  }
-                 return this.originalTransactions
+             return this.originalTransactions
                      .filter(t => t && t.utilityType === 'Water')
-                     .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                     .toFixed(1);
+                 .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
+                 .toFixed(1);
              } catch (error) {
                  console.error('Error in klVended:', error);
                  return '0.0';
@@ -818,10 +818,10 @@ export default{
                  if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
                      return '0.0';
                  }
-                 return this.originalTransactions
+             return this.originalTransactions
                      .filter(t => t && t.utilityType === 'Electricity')
-                     .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                     .toFixed(1);
+                 .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
+                 .toFixed(1);
              } catch (error) {
                  console.error('Error in electricityVended:', error);
                  return '0.0';
@@ -990,7 +990,7 @@ export default{
              }
          },
 
-     },
+    },
          watch:{
          // Watch for date range changes to refresh data
          dateRange: {
