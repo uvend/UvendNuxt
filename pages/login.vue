@@ -7,9 +7,9 @@
     </div>
     
     <!-- Main Card Container -->
-    <div class="relative z-10 flex w-[900px] h-[500px] bg-white rounded-xl shadow-2xl overflow-hidden">
+    <div class="relative z-10 flex w-[1000px] h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden">
         <!-- Left Panel - Branding/Features -->
-        <div class="w-2/5 bg-gray-800 p-8 flex flex-col justify-center">
+        <div class="w-3/5 bg-gray-800 p-8 flex flex-col justify-center">
             <!-- Logo -->
             <div class="flex flex-col items-center mb-8">
                 <div class="relative mb-4">
