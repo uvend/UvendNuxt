@@ -1,6 +1,6 @@
 <template>
     <div class="main-grid">
-        <div :style="{ backgroundColor: bgColor }" class="bg-dynamic">
+        <div class="bg-image">
             <MyLogo />
         </div>
         <div class="profile-grid flex h-full">
@@ -70,9 +70,7 @@ export default {
         }
     },
     computed: {
-        bgColor() {
-            return `#${APP_BG_1?.replace('#', '') || '172554'}`
-        }
+        // bgColor computed property removed since we're using the image
     },
     watch: {
         search: {
@@ -87,8 +85,12 @@ export default {
 }
 </script>
 <style scoped>
-.bg-dynamic {
-    transition: background-color 0.3s;
+.bg-image {
+    background-image: url('/assets/css/login/Background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s;
 }
 .main-grid {
     display: grid;
