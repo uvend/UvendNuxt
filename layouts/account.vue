@@ -3,6 +3,16 @@
         <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
             <nav>
                 <MyLogo />
+                <!-- Back to Last Customer Button -->
+                <div class="menu-item cursor-pointer" @click="goToLastCustomer">
+                    <Icon name="lucide:arrow-left" class="mr-2 h-5 w-5" />
+                    <p class="">Back to Customer</p>
+                </div>
+                <!-- Customer Selection Button -->
+                <div class="menu-item cursor-pointer" @click="goToCustomerSelection">
+                    <Icon name="lucide:users" class="mr-2 h-5 w-5" />
+                    <p class="">Customer Selection</p>
+                </div>
                 <NuxtLink class="menu-item">
                     <Icon name="lucide:shield" class="mr-2 h-5 w-5" />
                     <p class="">Accounts</p>
@@ -56,6 +66,21 @@ export default{
     mounted(){
         if(MPESA_URL != ""){
             this.mpesaUrl = true;
+        }
+    },
+    methods: {
+        goToLastCustomer() {
+            // Get the last customer from localStorage or go to customer selection
+            const lastCustomer = localStorage.getItem('lastCustomerId')
+            if (lastCustomer) {
+                this.$router.push(`/my/${lastCustomer}/dashboard`)
+            } else {
+                this.$router.push('/')
+            }
+        },
+        goToCustomerSelection() {
+            // Navigate to customer selection page
+            this.$router.push('/')
         }
     },
     computed:{

@@ -72,6 +72,17 @@
                     <Icon name="lucide:chart-bar-big" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
                     <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Statement</p>
                 </NuxtLink>
+                
+                <!-- Admin Navigation - Only show for admin users -->
+                <div 
+                    v-if="isAdmin"
+                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium transition-all cursor-pointer" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                    @click="goToAdmin"
+                >
+                    <Icon name="lucide:shield" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
+                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Admin</p>
+                </div>
             </nav>
             <ul>
             </ul>
@@ -120,6 +131,14 @@ export default{
                 }
             }
             console.log('Sidebar expanded:', this.sidebarExpanded);
+        },
+        goToAdmin() {
+            // Store the current customer ID before navigating to admin
+            const currentCustomerId = this.$route.params.customer_id;
+            if (currentCustomerId) {
+                localStorage.setItem('lastCustomerId', currentCustomerId);
+            }
+            this.$router.push('/admin/account');
         }
     },
     computed:{
@@ -135,6 +154,13 @@ export default{
         },
         fontColor(){
             return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`
+        },
+        isAdmin(){
+            if (process.client) {
+                const customer = localStorage.getItem('customer')
+                return customer === 'admin'
+            }
+            return false
         }
     },
     

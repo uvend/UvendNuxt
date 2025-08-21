@@ -1,14 +1,36 @@
 <template>
-    <div class="flex h-full">
+    <div class="flex min-h-screen">
         <!-- Main Content Area -->
-        <div class="flex-1 p-6 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <!-- <div class="mb-6">
-                <h1 class="text-3xl font-bold text-gray-900">Transactions</h1>
-            </div> -->
+        <div class="flex-1 p-6 flex flex-col">
+                         <!-- Header -->
+             <!-- <div class="mb-6">
+                 <h1 class="text-3xl font-bold text-gray-900">Transactions</h1>
+             </div> -->
 
-            <!-- KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+             <!-- Search Bar and View Toggle -->
+             <div class="mb-6 flex items-center gap-4">
+                 <div class="relative flex-1">
+                     <Icon name="lucide:search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                     <Input 
+                         type="text" 
+                         placeholder="Search transactions..." 
+                         class="pl-10"
+                         v-model="search"
+                         @input="debouncedSearch"
+                     />
+                 </div>
+                 <Button 
+                     @click="toggleView" 
+                     variant="outline"
+                     class="flex items-center gap-2"
+                 >
+                     <Icon :name="showCharts ? 'lucide:list' : 'lucide:pie-chart'" class="w-4 h-4" />
+                     {{ showCharts ? 'View Transactions' : 'View Charts' }}
+                 </Button>
+             </div>
+
+             <!-- KPI Cards -->
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <!-- Water Spending -->
                 <Card class="relative">
                     <CardHeader class="pb-2">
@@ -98,29 +120,170 @@
                          <div class="text-2xl font-bold text-blue-500">{{ electricityVended }} KWh</div>
                      </CardContent>
                 </Card>
-            </div>
+                         </div>
 
-            <!-- Search Bar -->
-            <div class="mb-6">
-                <div class="relative">
-                    <Icon name="lucide:search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input 
-                        type="text" 
-                        placeholder="Search transactions..." 
-                        class="pl-10"
-                        v-model="search"
-                        @input="debouncedSearch"
-                    />
-                </div>
-            </div>
+                                      <!-- Charts View -->
+             <div v-if="showCharts && !isLoading && originalTransactions && originalTransactions.length > 0" class="flex-1 flex flex-col">
+                 <!-- Utilities Pie Chart -->
+                 <Card class="mb-6">
+                     <CardHeader>
+                         <CardTitle class="flex items-center gap-2">
+                             <Icon name="lucide:pie-chart" class="w-5 h-5" />
+                             Utilities Vended Distribution
+                         </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                         <div class="flex items-center justify-center">
+                             <div class="w-64 h-64 relative">
+                                 <!-- Simple CSS Pie Chart -->
+                                                                   <div class="relative w-full h-full">
+                                      <svg class="w-full h-full" viewBox="0 0 100 100">
+                                          <!-- Electricity segment -->
+                                          <path
+                                              :d="electricityPath"
+                                              fill="#f97316"
+                                          />
+                                          <!-- Water segment -->
+                                          <path
+                                              :d="waterPath"
+                                              fill="#3b82f6"
+                                          />
+                                      </svg>
+                                     <div class="absolute inset-0 flex items-center justify-center">
+                                         <div class="text-center">
+                                             <div class="text-lg font-bold text-gray-700">{{ totalSpending }}</div>
+                                             <div class="text-xs text-gray-500">Total Spent</div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="flex justify-center gap-8 mt-4">
+                             <div class="flex items-center gap-2">
+                                 <div class="w-4 h-4 bg-orange-500 rounded-full"></div>
+                                 <span class="text-sm text-gray-600">Electricity: R {{ electricitySpending }}</span>
+                             </div>
+                             <div class="flex items-center gap-2">
+                                 <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                                 <span class="text-sm text-gray-600">Water: R {{ waterSpending }}</span>
+                             </div>
+                         </div>
+                     </CardContent>
+                 </Card>
 
-                         <!-- Transaction Table -->
-             <Card class="flex-1 flex flex-col">
+                 <!-- Transaction Trends Chart -->
+                 <Card class="mb-6">
+                     <CardHeader>
+                         <div class="flex items-center justify-between">
+                             <CardTitle class="flex items-center gap-2">
+                                 <Icon name="lucide:trending-up" class="w-5 h-5" />
+                                 Transaction Trends
+                             </CardTitle>
+                             <div class="flex items-center gap-2">
+                                 <Button 
+                                     @click="setTrendPeriod('weekly')" 
+                                     :variant="trendPeriod === 'weekly' ? 'default' : 'outline'"
+                                     size="sm"
+                                 >
+                                     Weekly
+                                 </Button>
+                                 <Button 
+                                     @click="setTrendPeriod('monthly')" 
+                                     :variant="trendPeriod === 'monthly' ? 'default' : 'outline'"
+                                     size="sm"
+                                 >
+                                     Monthly
+                                 </Button>
+                             </div>
+                         </div>
+                     </CardHeader>
+                     <CardContent>
+                         <div class="relative">
+                             <!-- Chart Container -->
+                             <div class="w-full h-64 relative">
+                                 <svg class="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid meet">
+                                     <!-- Grid Lines -->
+                                     <defs>
+                                         <pattern id="grid" width="100" height="40" patternUnits="userSpaceOnUse">
+                                             <path d="M 100 0 L 0 0 0 40" fill="none" stroke="#f1f5f9" stroke-width="1"/>
+                                         </pattern>
+                                     </defs>
+                                     <rect width="100%" height="100%" fill="url(#grid)" />
+                                     
+                                     <!-- Trend Line -->
+                                     <path
+                                         :d="trendLinePath"
+                                         fill="none"
+                                         stroke="#3b82f6"
+                                         stroke-width="3"
+                                         stroke-linecap="round"
+                                         stroke-linejoin="round"
+                                     />
+                                     
+                                     <!-- Data Points -->
+                                     <g v-for="(point, index) in trendData" :key="index">
+                                         <circle
+                                             :cx="point.x"
+                                             :cy="point.y"
+                                             r="4"
+                                             fill="#3b82f6"
+                                             class="cursor-pointer hover:r-6 transition-all"
+                                             @mouseenter="showTooltip(index, $event)"
+                                             @mouseleave="hideTooltip"
+                                         />
+                                         <!-- Highlighted Point (last point) -->
+                                         <circle
+                                             v-if="index === trendData.length - 1"
+                                             :cx="point.x"
+                                             :cy="point.y"
+                                             r="8"
+                                             fill="rgba(59, 130, 246, 0.2)"
+                                         />
+                                     </g>
+                                     
+                                     <!-- Tooltip -->
+                                     <g v-if="tooltipVisible" :transform="`translate(${tooltipX}, ${tooltipY})`">
+                                         <rect
+                                             x="-40"
+                                             y="-30"
+                                             width="80"
+                                             height="25"
+                                             rx="4"
+                                             fill="#1f2937"
+                                             opacity="0.9"
+                                         />
+                                         <text
+                                             x="0"
+                                             y="-10"
+                                             text-anchor="middle"
+                                             fill="white"
+                                             font-size="12"
+                                             font-weight="bold"
+                                         >
+                                             R {{ tooltipValue }}
+                                         </text>
+                                     </g>
+                                 </svg>
+                             </div>
+                             
+                             <!-- X-axis Labels -->
+                             <div class="flex justify-between mt-2 text-xs text-gray-500">
+                                 <span v-for="(label, index) in xAxisLabels" :key="index" class="text-center">
+                                     {{ label }}
+                                 </span>
+                             </div>
+                         </div>
+                     </CardContent>
+                 </Card>
+             </div>
+
+             <!-- Transaction Table View -->
+             <Card v-if="!showCharts" class="flex flex-col">
                  <CardHeader>
                      <CardTitle>Recent Transactions</CardTitle>
                  </CardHeader>
-                                                                       <CardContent class="p-0 flex-1 flex flex-col">
-                      <div class="flex-1 overflow-auto custom-scrollbar" style="max-height: calc(100vh - 400px);">
+                                                                                                                                               <CardContent class="p-0 flex flex-col">
+                     <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
                           <table class="w-full">
                               <thead class="sticky top-0 bg-white z-10">
                                   <tr class="border-b">
@@ -170,8 +333,8 @@
             </Card>
         </div>
 
-        <!-- Right Sidebar -->
-        <div class="max-w-96 bg-white border-l border-gray-200 p-6 overflow-auto custom-scrollbar">
+                 <!-- Right Sidebar -->
+         <div class="max-w-96 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
             <!-- Filters Section -->
             <div v-if="!showTransactionDetails" class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
@@ -346,7 +509,13 @@ export default{
                  selectedMeterComplex: null,
                           dateRange: null,
                  selectedTransaction: null,
-                 showTransactionDetails: false
+                 showTransactionDetails: false,
+                 showCharts: false, // Toggle between charts and transactions view
+                 trendPeriod: 'weekly', // 'weekly' or 'monthly'
+                 tooltipVisible: false,
+                 tooltipX: 0,
+                 tooltipY: 0,
+                 tooltipValue: '0.00'
              }
          },
     methods:{
@@ -405,10 +574,63 @@ export default{
                 this.currentPage = page;
             }
         },
-        toggleSearch(){
-            this.searchActive = !this.searchActive
-            this.search = null
-        },
+                 toggleSearch(){
+             this.searchActive = !this.searchActive
+             this.search = null
+         },
+         toggleView(){
+             this.showCharts = !this.showCharts
+         },
+         setTrendPeriod(period){
+             this.trendPeriod = period;
+         },
+         showTooltip(index, event){
+             const point = this.trendData[index];
+             this.tooltipValue = point.value;
+             this.tooltipX = point.x;
+             this.tooltipY = point.y - 40;
+             this.tooltipVisible = true;
+         },
+         hideTooltip(){
+             this.tooltipVisible = false;
+         },
+         groupTransactionsByPeriod() {
+             try {
+                 const grouped = {};
+                 
+                 this.originalTransactions.forEach(transaction => {
+                     const date = new Date(transaction.transactionDate);
+                     let periodKey;
+                     
+                     if (this.trendPeriod === 'weekly') {
+                         // Get the start of the week (Monday)
+                         const dayOfWeek = date.getDay();
+                         const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                         const startOfWeek = new Date(date.setDate(diff));
+                         startOfWeek.setHours(0, 0, 0, 0);
+                         periodKey = startOfWeek.toISOString();
+                     } else {
+                         // Get the start of the month
+                         const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+                         periodKey = startOfMonth.toISOString();
+                     }
+                     
+                     if (!grouped[periodKey]) {
+                         grouped[periodKey] = 0;
+                     }
+                     
+                     grouped[periodKey] += parseFloat(transaction.managedTenderAmount) || 0;
+                 });
+                 
+                 // Sort by date and return
+                 return Object.fromEntries(
+                     Object.entries(grouped).sort(([a], [b]) => new Date(a) - new Date(b))
+                 );
+             } catch (error) {
+                 console.error('Error in groupTransactionsByPeriod:', error);
+                 return {};
+             }
+         },
                           getMeterComplex(){
              // Use a Set to automatically handle duplicates
              const complexSet = new Set();
@@ -577,19 +799,198 @@ export default{
          },
          klVended() {
              // Always use full dataset for KPI calculations
-             return this.originalTransactions
-                 .filter(t => t.utilityType === 'Water')
-                 .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                 .toFixed(1);
+             try {
+                 if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                     return '0.0';
+                 }
+                 return this.originalTransactions
+                     .filter(t => t && t.utilityType === 'Water')
+                     .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
+                     .toFixed(1);
+             } catch (error) {
+                 console.error('Error in klVended:', error);
+                 return '0.0';
+             }
          },
          electricityVended() {
              // Always use full dataset for KPI calculations
-             return this.originalTransactions
-                 .filter(t => t.utilityType === 'Electricity')
-                 .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                 .toFixed(1);
-         }
-    },
+             try {
+                 if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                     return '0.0';
+                 }
+                 return this.originalTransactions
+                     .filter(t => t && t.utilityType === 'Electricity')
+                     .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
+                     .toFixed(1);
+             } catch (error) {
+                 console.error('Error in electricityVended:', error);
+                 return '0.0';
+             }
+         },
+         electricityPercentage() {
+             try {
+                 const electricityTotal = parseFloat(this.electricitySpending) || 0;
+                 const waterTotal = parseFloat(this.waterSpending) || 0;
+                 const total = electricityTotal + waterTotal;
+                 
+                 if (total === 0) return 50; // Equal segments if no data
+                 return (electricityTotal / total) * 100;
+             } catch (error) {
+                 console.error('Error in electricityPercentage:', error);
+                 return 50;
+             }
+         },
+         waterPercentage() {
+             try {
+                 const electricityTotal = parseFloat(this.electricitySpending) || 0;
+                 const waterTotal = parseFloat(this.waterSpending) || 0;
+                 const total = electricityTotal + waterTotal;
+                 
+                 if (total === 0) return 50; // Equal segments if no data
+                 return (waterTotal / total) * 100;
+             } catch (error) {
+                 console.error('Error in waterPercentage:', error);
+                 return 50;
+             }
+         },
+         totalSpending() {
+             try {
+                 const electricityTotal = parseFloat(this.electricitySpending) || 0;
+                 const waterTotal = parseFloat(this.waterSpending) || 0;
+                 const total = electricityTotal + waterTotal;
+                 
+                 if (total === 0) return 'R 0.00';
+                 return `R ${total.toFixed(2)}`;
+             } catch (error) {
+                 console.error('Error in totalSpending:', error);
+                 return 'R 0.00';
+             }
+         },
+         electricityPath() {
+             try {
+                 const percentage = this.electricityPercentage;
+                 if (percentage === 0) return '';
+                 
+                 const centerX = 50;
+                 const centerY = 50;
+                 const radius = 40;
+                 const startAngle = 0;
+                 const endAngle = (percentage / 100) * 2 * Math.PI;
+                 
+                 const x1 = centerX + radius * Math.cos(startAngle);
+                 const y1 = centerY + radius * Math.sin(startAngle);
+                 const x2 = centerX + radius * Math.cos(endAngle);
+                 const y2 = centerY + radius * Math.sin(endAngle);
+                 
+                 const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+                 
+                 return `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+             } catch (error) {
+                 console.error('Error in electricityPath:', error);
+                 return '';
+             }
+         },
+         waterPath() {
+             try {
+                 const electricityPercentage = this.electricityPercentage;
+                 const waterPercentage = this.waterPercentage;
+                 
+                 if (waterPercentage === 0) return '';
+                 
+                 const centerX = 50;
+                 const centerY = 50;
+                 const radius = 40;
+                 const startAngle = (electricityPercentage / 100) * 2 * Math.PI;
+                 const endAngle = 2 * Math.PI;
+                 
+                 const x1 = centerX + radius * Math.cos(startAngle);
+                 const y1 = centerY + radius * Math.sin(startAngle);
+                 const x2 = centerX + radius * Math.cos(endAngle);
+                 const y2 = centerY + radius * Math.sin(endAngle);
+                 
+                 const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+                 
+                 return `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+             } catch (error) {
+                 console.error('Error in waterPath:', error);
+                 return '';
+             }
+                  },
+         trendData() {
+             try {
+                 if (!this.originalTransactions || this.originalTransactions.length === 0) {
+                     return [];
+                 }
+                 
+                 // Group transactions by period (weekly or monthly)
+                 const groupedData = this.groupTransactionsByPeriod();
+                 
+                 // Convert to chart data points
+                 const chartWidth = 800;
+                 const chartHeight = 200;
+                 const padding = 40;
+                 const usableWidth = chartWidth - (padding * 2);
+                 const usableHeight = chartHeight - (padding * 2);
+                 
+                 const dataPoints = Object.entries(groupedData).map(([period, amount], index, array) => {
+                     const x = padding + (index / (array.length - 1)) * usableWidth;
+                     const maxAmount = Math.max(...Object.values(groupedData));
+                     const y = chartHeight - padding - (amount / maxAmount) * usableHeight;
+                     
+                     return {
+                         x: x,
+                         y: y,
+                         value: amount.toFixed(2),
+                         period: period
+                     };
+                 });
+                 
+                 return dataPoints;
+             } catch (error) {
+                 console.error('Error in trendData:', error);
+                 return [];
+             }
+         },
+         trendLinePath() {
+             try {
+                 if (this.trendData.length === 0) return '';
+                 
+                 const pathData = this.trendData.map((point, index) => {
+                     if (index === 0) {
+                         return `M ${point.x} ${point.y}`;
+                     } else {
+                         return `L ${point.x} ${point.y}`;
+                     }
+                 });
+                 
+                 return pathData.join(' ');
+             } catch (error) {
+                 console.error('Error in trendLinePath:', error);
+                 return '';
+             }
+         },
+         xAxisLabels() {
+             try {
+                 if (this.trendData.length === 0) return [];
+                 
+                 return this.trendData.map(point => {
+                     if (this.trendPeriod === 'weekly') {
+                         // Format as "Week of Jan 1"
+                         const date = new Date(point.period);
+                         return `Week of ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                     } else {
+                         // Format as "Jan 2024"
+                         const date = new Date(point.period);
+                         return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                     }
+                 });
+             } catch (error) {
+                 console.error('Error in xAxisLabels:', error);
+                 return [];
+             }
+         },
+
+     },
          watch:{
          // Watch for date range changes to refresh data
          dateRange: {

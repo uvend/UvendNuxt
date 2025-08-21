@@ -39,7 +39,20 @@ export default {
     methods: {
         async getCustomers() {
             try {
-                const result = await useAuthFetch(`${CUSTOMER_API}/customer`, {
+                // Fix malformed CUSTOMER_API URL
+                let baseUrl = CUSTOMER_API || 'https://customer-api.uatvend.co.za'
+                
+                // If the URL contains two domains concatenated, extract the first one
+                if (baseUrl.includes('https://') && baseUrl.indexOf('https://', 8) !== -1) {
+                    baseUrl = baseUrl.substring(0, baseUrl.indexOf('https://', 8))
+                }
+                
+                // Ensure it ends with a slash if needed
+                if (!baseUrl.endsWith('/')) {
+                    baseUrl += '/'
+                }
+                
+                const result = await useAuthFetch(`${baseUrl}customer`, {
                     method: "GET",
                     query: {
                         page: 1,
