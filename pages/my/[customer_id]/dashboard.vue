@@ -461,6 +461,11 @@
                                     </span>
                                 </div>
                             </div>
+                            <div >
+                                <Button @click="navigateTo(`/my/${$route.params.customer_id}/meters/${selectedTransaction.installationUniqueId}`)"  class="flex-1 bg-blue-600 hover:bg-blue-">
+                                    View meter
+                                </Button>
+                            </div>
                         </div>
                         <div v-else class="text-center text-gray-500 py-8">
                             <p>Select a transaction to view details</p>
@@ -725,6 +730,7 @@ export default{
             this.currentPage = 1;
             this.performFiltering();
         },
+        
         formatedDate(dateString){
             return new Date(dateString).toLocaleDateString('en-ZA', {
                 day: '2-digit',
