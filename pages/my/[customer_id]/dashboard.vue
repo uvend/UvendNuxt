@@ -4,30 +4,10 @@
         <div class="flex-1 p-6 flex flex-col">
             <!-- Header -->
              <div class="mb-6">
-                 <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+                 <!-- <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1> -->
              </div>
 
-             <!-- Search Bar and View Toggle -->
-             <div class="mb-6 flex items-center gap-4">
-                 <div class="relative flex-1">
-                     <Icon name="lucide:search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                     <Input 
-                         type="text" 
-                         placeholder="Search transactions..." 
-                         class="pl-10"
-                         v-model="search"
-                         @input="debouncedSearch"
-                     />
-                 </div>
-                 <Button 
-                     @click="toggleView" 
-                     variant="outline"
-                     class="flex items-center gap-2"
-                 >
-                     <Icon :name="showCharts ? 'lucide:list' : 'lucide:pie-chart'" class="w-4 h-4" />
-                     {{ showCharts ? 'View Transactions' : 'View Charts' }}
-                 </Button>
-             </div>
+
 
             <!-- KPI Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -39,9 +19,7 @@
                                 <Icon name="lucide:droplets" class="w-5 h-5 text-blue-500" />
                                 <CardTitle class="text-sm font-medium text-gray-600">Water Spending</CardTitle>
                             </div>
-                            <Button variant="ghost" size="sm" class="h-6 w-6 p-0">
-                                <Icon name="lucide:expand" class="w-4 h-4" />
-                            </Button>
+
                         </div>
                     </CardHeader>
                                          <CardContent>
@@ -57,9 +35,7 @@
                                 <Icon name="lucide:zap" class="w-5 h-5 text-yellow-500" />
                                 <CardTitle class="text-sm font-medium text-gray-600">Electricity Spending</CardTitle>
                             </div>
-                            <Button variant="ghost" size="sm" class="h-6 w-6 p-0">
-                                <Icon name="lucide:expand" class="w-4 h-4" />
-                            </Button>
+
                         </div>
                     </CardHeader>
                                          <CardContent>
@@ -75,9 +51,7 @@
                                 <Icon name="lucide:refresh-cw" class="w-5 h-5 text-orange-500" />
                                 <CardTitle class="text-sm font-medium text-gray-600">Total Refunds</CardTitle>
                             </div>
-                            <Button variant="ghost" size="sm" class="h-6 w-6 p-0">
-                                <Icon name="lucide:expand" class="w-4 h-4" />
-                            </Button>
+
                         </div>
                     </CardHeader>
                                          <CardContent>
@@ -93,9 +67,7 @@
                                 <Icon name="lucide:droplets" class="w-5 h-5 text-blue-500" />
                                 <CardTitle class="text-sm font-medium text-gray-600">KL Vended</CardTitle>
                             </div>
-                            <Button variant="ghost" size="sm" class="h-6 w-6 p-0">
-                                <Icon name="lucide:expand" class="w-4 h-4" />
-                            </Button>
+
                         </div>
                     </CardHeader>
                                          <CardContent>
@@ -111,9 +83,7 @@
                                 <Icon name="lucide:zap" class="w-5 h-5 text-yellow-500" />
                                 <CardTitle class="text-sm font-medium text-gray-600">Electricity Vended</CardTitle>
                             </div>
-                            <Button variant="ghost" size="sm" class="h-6 w-6 p-0">
-                                <Icon name="lucide:expand" class="w-4 h-4" />
-                            </Button>
+
                         </div>
                     </CardHeader>
                                          <CardContent>
@@ -122,357 +92,9 @@
                 </Card>
             </div>
 
-                                      <!-- Charts View -->
-             <div v-if="showCharts && !isLoading && originalTransactions && originalTransactions.length > 0" class="flex-1 flex flex-col">
-                 <!-- Utilities Pie Chart -->
-                 <Card class="mb-6">
-                     <CardHeader>
-                         <CardTitle class="flex items-center gap-2">
-                             <Icon name="lucide:pie-chart" class="w-5 h-5" />
-                             Utilities Vended Distribution
-                         </CardTitle>
-                     </CardHeader>
-                     <CardContent>
-                         <div class="flex items-center justify-center">
-                             <div class="w-64 h-64 relative">
-                                 <!-- Simple CSS Pie Chart -->
-                                                                   <div class="relative w-full h-full">
-                                      <svg class="w-full h-full" viewBox="0 0 100 100">
-                                          <!-- Electricity segment -->
-                                          <path
-                                              :d="electricityPath"
-                                              fill="#f97316"
-                                          />
-                                          <!-- Water segment -->
-                                          <path
-                                              :d="waterPath"
-                                              fill="#3b82f6"
-                                          />
-                                      </svg>
-                                     <div class="absolute inset-0 flex items-center justify-center">
-                                         <div class="text-center">
-                                             <div class="text-lg font-bold text-gray-700">{{ totalSpending }}</div>
-                                             <div class="text-xs text-gray-500">Total Spent</div>
-                                         </div>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>
-                         <div class="flex justify-center gap-8 mt-4">
-                             <div class="flex items-center gap-2">
-                                 <div class="w-4 h-4 bg-orange-500 rounded-full"></div>
-                                 <span class="text-sm text-gray-600">Electricity: R {{ electricitySpending }}</span>
-                             </div>
-                             <div class="flex items-center gap-2">
-                                 <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
-                                 <span class="text-sm text-gray-600">Water: R {{ waterSpending }}</span>
-                             </div>
-                         </div>
-                     </CardContent>
-                 </Card>
+           
 
-                 <!-- Transaction Trends Chart -->
-                 <Card class="mb-6">
-                     <CardHeader>
-                         <div class="flex items-center justify-between">
-                             <CardTitle class="flex items-center gap-2">
-                                 <Icon name="lucide:trending-up" class="w-5 h-5" />
-                                 Transaction Trends
-                             </CardTitle>
-                             <div class="flex items-center gap-2">
-                                 <Button 
-                                     @click="setTrendPeriod('weekly')" 
-                                     :variant="trendPeriod === 'weekly' ? 'default' : 'outline'"
-                                     size="sm"
-                                 >
-                                     Weekly
-                                 </Button>
-                                 <Button 
-                                     @click="setTrendPeriod('monthly')" 
-                                     :variant="trendPeriod === 'monthly' ? 'default' : 'outline'"
-                                     size="sm"
-                                 >
-                                     Monthly
-                                 </Button>
-                             </div>
-                         </div>
-                     </CardHeader>
-                     <CardContent>
-                <div class="relative">
-                             <!-- Chart Container -->
-                             <div class="w-full h-64 relative">
-                                 <svg class="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid meet">
-                                     <!-- Grid Lines -->
-                                     <defs>
-                                         <pattern id="grid" width="100" height="40" patternUnits="userSpaceOnUse">
-                                             <path d="M 100 0 L 0 0 0 40" fill="none" stroke="#f1f5f9" stroke-width="1"/>
-                                         </pattern>
-                                     </defs>
-                                     <rect width="100%" height="100%" fill="url(#grid)" />
-                                     
-                                     <!-- Trend Line -->
-                                     <path
-                                         :d="trendLinePath"
-                                         fill="none"
-                                         stroke="#3b82f6"
-                                         stroke-width="3"
-                                         stroke-linecap="round"
-                                         stroke-linejoin="round"
-                                     />
-                                     
-                                     <!-- Data Points -->
-                                     <g v-for="(point, index) in trendData" :key="index">
-                                         <circle
-                                             :cx="point.x"
-                                             :cy="point.y"
-                                             r="4"
-                                             fill="#3b82f6"
-                                             class="cursor-pointer hover:r-6 transition-all"
-                                             @mouseenter="showTooltip(index, $event)"
-                                             @mouseleave="hideTooltip"
-                                         />
-                                         <!-- Highlighted Point (last point) -->
-                                         <circle
-                                             v-if="index === trendData.length - 1"
-                                             :cx="point.x"
-                                             :cy="point.y"
-                                             r="8"
-                                             fill="rgba(59, 130, 246, 0.2)"
-                                         />
-                                     </g>
-                                     
-                                     <!-- Tooltip -->
-                                     <g v-if="tooltipVisible" :transform="`translate(${tooltipX}, ${tooltipY})`">
-                                         <rect
-                                             x="-40"
-                                             y="-30"
-                                             width="80"
-                                             height="25"
-                                             rx="4"
-                                             fill="#1f2937"
-                                             opacity="0.9"
-                                         />
-                                         <text
-                                             x="0"
-                                             y="-10"
-                                             text-anchor="middle"
-                                             fill="white"
-                                             font-size="12"
-                                             font-weight="bold"
-                                         >
-                                             R {{ tooltipValue }}
-                                         </text>
-                                     </g>
-                                 </svg>
-                             </div>
-                             
-                             <!-- X-axis Labels -->
-                             <div class="flex justify-between mt-2 text-xs text-gray-500">
-                                 <span v-for="(label, index) in xAxisLabels" :key="index" class="text-center">
-                                     {{ label }}
-                                 </span>
-                </div>
-                         </div>
-                     </CardContent>
-                 </Card>
-            </div>
 
-             <!-- Transaction Table View -->
-             <Card v-if="!showCharts" class="flex flex-col">
-                 <CardHeader>
-                     <CardTitle>Recent Transactions</CardTitle>
-                 </CardHeader>
-                                                                                                                                               <CardContent class="p-0 flex flex-col">
-                     <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
-                          <table class="w-full">
-                              <thead class="sticky top-0 bg-white z-10">
-                                  <tr class="border-b">
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Meter ID</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Complex</th>
-                                     <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Free</th> -->
-                                     <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Purchase</th> -->
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Units Issued</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Amount</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Service Fee</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Refund</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Time</th>
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                     <tr v-for="transaction in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b hover:bg-gray-50 cursor-pointer transition-colors', selectedTransaction && selectedTransaction.meterNumber === transaction.meterNumber ? 'bg-blue-50 border-blue-200' : '']" @click="selectTransaction(transaction)">
-                                     <td class="py-3 px-4 text-sm">{{ transaction.meterNumber }}</td>
-                                     <td class="py-3 px-4 text-sm">{{ transaction.complexName }}</td>
-                                     <!-- <td class="py-3 px-4 text-sm">{{ transaction.freeUnits }}</td> -->
-                                     <!-- <td class="py-3 px-4 text-sm">{{ transaction.totalUnitsIssued }}</td> -->
-                                     <td class="py-3 px-4 text-sm">
-                                         {{ transaction.totalUnitsIssued }}
-                                         <span v-if="transaction.utilityType === 'Water'">KL</span>
-                                         <span v-else-if="transaction.utilityType === 'Electricity'">KWh</span>
-                                     </td>
-                                     <td class="py-3 px-4 text-sm">R {{ transaction.managedTenderAmount }}</td>
-                                     <td class="py-3 px-4 text-sm">R {{ transaction.commissionAmountEx }}</td>
-                                     <td class="py-3 px-4 text-sm text-orange-500">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
-                                     <td class="py-3 px-4 text-sm">
-                                         {{ formattedTime(transaction.transactionDate) }}<br>
-                                         {{ formatedDate(transaction.transactionDate) }}
-                                     </td>
-                                 </tr>
-                             </tbody>
-                         </table>
-                     </div>
-                     
-                     <!-- Load More Button -->
-                     <div class="p-4 border-t flex-shrink-0">
-                         <div class="flex justify-center">
-                             <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700">
-                                 + Load More
-                             </Button>
-                         </div>
-                     </div>
-                 </CardContent>
-            </Card>
-        </div>
-
-        <!-- Right Sidebar -->
-         <div class="max-w-96 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
-            <!-- Filters Section -->
-            <div v-if="!showTransactionDetails" class="mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
-                
-                <!-- Date Range -->
-                <div class="mb-4">
-                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Date Range</Label>
-                    <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
-                </div>
-
-                <!-- Type -->
-                <div class="mb-4">
-                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Type</Label>
-                    <Select v-model="selectedUtility">
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Electricity & Water" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="utility in utilityType" :key="utility.value" :value="utility.value">
-                                {{ utility.label }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <!-- Complex -->
-                <div class="mb-4">
-                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Complex</Label>
-                    <Select v-model="selectedMeterComplex">
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Select complex" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="complex in meterComplexes" :key="complex" :value="complex">
-                                {{ complex }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <!-- Load More Amount -->
-                <div class="mb-6">
-                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Load More Amount</Label>
-                    <Select v-model="pageSize">
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="25 records" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="size in pageSizeSelect" :key="size" :value="size">
-                                {{ size }} records
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                                 <!-- Action Buttons -->
-                 <div class="flex gap-2">
-                     <Button variant="outline" @click="clearFilters" class="flex-1">
-                         Clear
-                     </Button>
-                     <Button @click="applyFilters" class="flex-1 bg-blue-600 hover:bg-blue-700">
-                         Apply
-                     </Button>
-                 </div>
-                 
-                 <!-- Go to Transaction Button (only when transaction is selected) -->
-                 <div v-if="selectedTransaction" class="mt-2">
-                     <Button 
-                         @click="goToTransaction" 
-                         variant="outline"
-                         class="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300"
-                     >
-                         <Icon name="lucide:arrow-right" class="w-4 h-4" />
-                         <span class="text-sm font-medium">Go to Selected Transaction</span>
-                     </Button>
-                 </div>
-            </div>
-
-                        <!-- Transaction Details Section -->
-            <div v-if="showTransactionDetails">
-                                 <div class="flex items-center mb-4">
-                     <button 
-                         @click="showTransactionDetails = false" 
-                         class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-                     >
-                         <Icon name="lucide:arrow-left" class="w-4 h-4" />
-                         <span class="text-sm font-medium">Back to Filters</span>
-                     </button>
-                 </div>
-                
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction Details</h3>
-                <Card>
-                    <CardContent class="pt-6">
-                        <div class="space-y-3" v-if="selectedTransaction">
-                            <div>
-                                <Label class="text-xs text-gray-500">Meter Number</Label>
-                                <p class="text-sm font-medium">{{ selectedTransaction.meterNumber }}</p>
-                            </div>
-                            <div>
-                                <Label class="text-xs text-gray-500">Transaction Date</Label>
-                                <p class="text-sm">{{ selectedTransaction.transactionDate }}</p>
-                            </div>
-                            <div>
-                                <Label class="text-xs text-gray-500">Vendor</Label>
-                                <p class="text-sm">{{ selectedTransaction.vendorName }}</p>
-                            </div>
-                            <div>
-                                <Label class="text-xs text-gray-500">Utility</Label>
-                                <p class="text-sm">{{ selectedTransaction.utilityType }}</p>
-                            </div>
-                            <div>
-                                <Label class="text-xs text-gray-500">Amount</Label>
-                                <p class="text-sm font-medium">R {{ selectedTransaction.managedTenderAmount }}</p>
-                            </div>
-                            <div>
-                                <Label class="text-xs text-gray-500">Units</Label>
-                                <p class="text-sm">{{ selectedTransaction.totalUnitsIssued }}</p>
-                            </div>
-                            <div v-if="selectedTransaction.tokenNumbers && selectedTransaction.tokenNumbers.length > 0">
-                                <Label class="text-xs text-gray-500">Token</Label>
-                                <div class="bg-gray-100 p-2 rounded text-xs font-mono">
-                                    <span v-for="token in selectedTransaction.tokenNumbers" :key="token">
-                                        {{ addHyphens(token) }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div >
-                                <Button @click="navigateTo(`/my/${$route.params.customer_id}/meters/${selectedTransaction.installationUniqueId}`)"  class="flex-1 bg-blue-600 hover:bg-blue-">
-                                    View meter
-                                </Button>
-                            </div>
-                        </div>
-                        <div v-else class="text-center text-gray-500 py-8">
-                            <p>Select a transaction to view details</p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
         </div>
     </div>
 </template>
