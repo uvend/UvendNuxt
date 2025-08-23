@@ -4,7 +4,7 @@
         <div class="flex-1 p-6 flex flex-col">
             <!-- Header -->
              <div class="mb-6">
-                 <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+                 <h1 class="text-3xl font-bold text-gray-900">Transactions</h1>
              </div>
 
              <!-- Search Bar and View Toggle -->
