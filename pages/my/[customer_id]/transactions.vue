@@ -36,7 +36,8 @@
                           <table class="w-full">
                               <thead class="sticky top-0 bg-white z-10">
                                   <tr class="border-b">
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Meter ID</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">ID</th>
+                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Meter Number</th>
                                      <th class="text-left py-3 px-4 font-medium text-gray-600">Complex</th>
                                      <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Free</th> -->
                                      <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Purchase</th> -->
@@ -48,8 +49,9 @@
                                  </tr>
                              </thead>
                              <tbody>
-                                     <tr v-for="transaction in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b hover:bg-gray-50 cursor-pointer transition-colors', selectedTransaction && selectedTransaction.meterNumber === transaction.meterNumber ? 'bg-blue-50 border-blue-200' : '']" @click="selectTransaction(transaction)">
-                                     <td class="py-3 px-4 text-sm">{{ transaction.meterNumber }}</td>
+                                     <tr v-for="(transaction,index) in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b hover:bg-gray-50 cursor-pointer transition-colors', selectedTransaction && selectedTransaction.meterNumber === transaction.meterNumber ? 'bg-blue-50 border-blue-200' : '']" @click="selectTransaction(transaction)">
+                                     <td class="py-3 px-4 text-sm">{{ transaction.transactionUniqueId }}</td>
+                                        <td class="py-3 px-4 text-sm">{{ transaction.meterNumber }}</td>
                                      <td class="py-3 px-4 text-sm">{{ transaction.complexName }}</td>
                                      <!-- <td class="py-3 px-4 text-sm">{{ transaction.freeUnits }}</td> -->
                                      <!-- <td class="py-3 px-4 text-sm">{{ transaction.totalUnitsIssued }}</td> -->
