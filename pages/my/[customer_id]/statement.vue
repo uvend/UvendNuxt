@@ -1,5 +1,10 @@
 <template>
     <div>
+        <!-- Page Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Statement</h1>
+        </div>
+        
         <div class="flex justify-between">
             <div class="flex gap-1">
                 <div class="flex gap-2">

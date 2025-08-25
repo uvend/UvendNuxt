@@ -30,6 +30,10 @@
                     </span>
                 </div>
                 <Button :disabled="disableBatch" @click="batch()">Batch</Button>
+                <Button variant="outline" @click="printPayments()" class="flex items-center gap-2">
+                    <Icon name="lucide:printer" class="w-4 h-4" />
+                    Print
+                </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
                         <Button variant="ghost" class="rounded-full px-2 py-3">
@@ -278,6 +282,132 @@ export default{
                 month: 'short',
                 year: 'numeric'
             });
+        },
+        async printPayments() {
+            try {
+                // Get the filtered payments (respects current filters and search)
+                const paymentsToPrint = this.filterPayments();
+                
+                // Show loading toast
+                this.$toast({
+                    title: 'Generating PDF',
+                    description: 'Please wait while we create your report...',
+                    variant: "default"
+                });
+                
+                // Generate PDF
+                await this.generatePDF(paymentsToPrint);
+                
+                // Show success toast
+                this.$toast({
+                    title: 'PDF Generated',
+                    description: 'Your payment report has been downloaded',
+                    variant: "success"
+                });
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                this.$toast({
+                    title: 'PDF Error',
+                    description: 'Failed to generate PDF report',
+                    variant: "destructive"
+                });
+            }
+        },
+        async generatePDF(payments) {
+            // Dynamically import jsPDF to avoid SSR issues
+            const { jsPDF } = await import('jspdf');
+            const { autoTable } = await import('jspdf-autotable');
+            
+            const currentDate = new Date().toLocaleDateString('en-ZA', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Calculate totals
+            const totalAmount = payments.reduce((sum, payment) => {
+                return sum + (parseFloat(payment.periodTotals?.payeePayOutAmount) || 0);
+            }, 0).toFixed(2);
+            
+            // Generate filter summary
+            const activeFilters = [];
+            if (this.search) activeFilters.push(`Search: "${this.search}"`);
+            if (this.filters.onRollback) activeFilters.push('Rollback Only');
+            if (this.filters.hasValidBank) activeFilters.push('Valid Bank Only');
+            if (this.filters.hasEmail) activeFilters.push('Email Only');
+            
+            const filterSummary = activeFilters.length > 0 ? `Filters: ${activeFilters.join(', ')}` : 'No filters applied';
+            
+            // Create PDF document
+            const doc = new jsPDF();
+            
+            // Add header
+            doc.setFontSize(20);
+            doc.text('Payment Report', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${currentDate}`, 20, 35);
+            doc.text(`Period: ${this.rangeStart} - ${this.rangeEnd}`, 20, 42);
+            doc.text(filterSummary, 20, 49);
+            
+            // Add summary
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Summary:', 20, 65);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Total Payments: ${payments.length}`, 20, 75);
+            doc.text(`Total Amount: R ${totalAmount}`, 20, 82);
+            
+            // Prepare table data
+            const tableData = payments.map(payment => [
+                payment.payeeInfo?.description || 'N/A',
+                payment.payeeBankingInfo?.hasValidBankDetails ? 'Valid' : 'Invalid',
+                payment.payeeInfo?.isValidEmailAddress ? 'Valid' : 'Invalid',
+                `R ${(parseFloat(payment.periodTotals?.payeePayOutAmount) || 0).toFixed(2)}`,
+                payment.periodTotals?.cancellationComment ? 'Rollback' : 'Active',
+                payment.periodTotals?.cancellationComment || ''
+            ]);
+            
+            // Add total row
+            tableData.push(['', '', 'TOTAL', `R ${totalAmount}`, '', '']);
+            
+            // Add table
+            autoTable(doc, {
+                head: [['Payee', 'Bank Details', 'Email', 'Amount', 'Status', 'Comments']],
+                body: tableData,
+                startY: 90,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 3
+                },
+                headStyles: {
+                    fillColor: [66, 66, 66],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                columnStyles: {
+                    3: { halign: 'right' } // Amount column right-aligned
+                },
+                didParseCell: function(data) {
+                    // Make total row bold
+                    if (data.row.index === tableData.length - 1) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fillColor = [240, 240, 240];
+                    }
+                }
+            });
+            
+            // Generate filename
+            const filename = `payment_report_${new Date().toISOString().split('T')[0]}.pdf`;
+            
+            // Save PDF
+            doc.save(filename);
         },
     },
     async mounted(){

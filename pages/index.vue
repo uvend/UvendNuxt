@@ -1,6 +1,6 @@
 <template>
     <div class="main-grid">
-        <div :style="{ backgroundColor: bgColor }" class="bg-dynamic">
+        <div class="bg-image">
             <MyLogo />
         </div>
         <div class="profile-grid flex h-full">
@@ -39,7 +39,20 @@ export default {
     methods: {
         async getCustomers() {
             try {
-                const result = await useAuthFetch(`${CUSTOMER_API}/customer`, {
+                // Fix malformed CUSTOMER_API URL
+                let baseUrl = CUSTOMER_API || 'https://customer-api.uatvend.co.za'
+                
+                // If the URL contains two domains concatenated, extract the first one
+                if (baseUrl.includes('https://') && baseUrl.indexOf('https://', 8) !== -1) {
+                    baseUrl = baseUrl.substring(0, baseUrl.indexOf('https://', 8))
+                }
+                
+                // Ensure it ends with a slash if needed
+                if (!baseUrl.endsWith('/')) {
+                    baseUrl += '/'
+                }
+                
+                const result = await useAuthFetch(`${baseUrl}customer`, {
                     method: "GET",
                     query: {
                         page: 1,
@@ -57,9 +70,7 @@ export default {
         }
     },
     computed: {
-        bgColor() {
-            return `#${APP_BG_1?.replace('#', '') || '172554'}`
-        }
+        // bgColor computed property removed since we're using the image
     },
     watch: {
         search: {
@@ -74,8 +85,12 @@ export default {
 }
 </script>
 <style scoped>
-.bg-dynamic {
-    transition: background-color 0.3s;
+.bg-image {
+    background-image: url('/assets/css/login/Background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s;
 }
 .main-grid {
     display: grid;

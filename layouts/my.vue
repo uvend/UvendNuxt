@@ -1,13 +1,13 @@
 <template>
     <div class="flex h-screen">
         <aside 
-            class="hidden md:block p-4 bg-blue-500 min-h-screen transition-all duration-300 ease-in-out flex-shrink-0 relative" 
+            class="hidden md:block p-4 bg-blue-500 min-h-screen transition-all duration-300 ease-in-out flex-shrink-0 relative flex flex-col" 
             :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'w-64' : 'w-16'"
             :style="{ backgroundColor: bgColor, color: fontColor }"
             @mouseenter="handleSidebarHover(true)"
             @mouseleave="handleSidebarHover(false)"
         >
-            <nav>
+            <nav class="flex-1">
                 <div class="flex items-center justify-between mb-6">
                     <!-- <MyLogo v-if="(sidebarExpanded || (isHovered && !isPinned))" />
                     <div v-else class="w-8 h-8 bg-white rounded flex items-center justify-center">
@@ -72,9 +72,30 @@
                     <Icon name="lucide:chart-bar-big" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
                     <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Statement</p>
                 </NuxtLink>
+                
+                <!-- Admin Navigation - Only show for admin users -->
+                <div 
+                    v-if="isAdmin"
+                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium transition-all cursor-pointer" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                    @click="goToAdmin"
+                >
+                    <Icon name="lucide:shield" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
+                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Admin</p>
+                </div>
             </nav>
-            <ul>
-            </ul>
+            
+            <!-- Logout Button at Bottom -->
+            <div class="mt-auto pt-4 border-t border-blue-400">
+                <button 
+                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-red-600 font-medium transition-all w-full" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                    @click="logout"
+                >
+                    <Icon name="lucide:log-out" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
+                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Logout</p>
+                </button>
+            </div>
         </aside>
         <main class="flex-1 flex flex-col bg-gray-50">
             <!-- <header class="flex justify-between items-center py-2 px-4 bg-white border-b">
@@ -120,6 +141,20 @@ export default{
                 }
             }
             console.log('Sidebar expanded:', this.sidebarExpanded);
+        },
+        goToAdmin() {
+            // Store the current customer ID before navigating to admin
+            const currentCustomerId = this.$route.params.customer_id;
+            if (currentCustomerId) {
+                localStorage.setItem('lastCustomerId', currentCustomerId);
+            }
+            this.$router.push('/admin/account');
+        },
+        logout() {
+            // Clear customer data and navigate to login
+            localStorage.removeItem('customer');
+            localStorage.removeItem('lastCustomerId');
+            this.$router.push('/login');
         }
     },
     computed:{
@@ -135,6 +170,13 @@ export default{
         },
         fontColor(){
             return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`
+        },
+        isAdmin(){
+            if (process.client) {
+                const customer = localStorage.getItem('customer')
+                return customer === 'admin'
+            }
+            return false
         }
     },
     

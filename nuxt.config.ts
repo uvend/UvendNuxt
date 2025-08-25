@@ -68,11 +68,18 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
-    '/registration/**': { middleware: ['registration-access'] }
+    '/registration/**': { 
+      headers: {
+        'x-middleware-cache': 'no-cache'
+      }
+    }
   },
   router: {
     options: {
       sensitive: false // Make routes case-insensitive
     }
+  },
+  experimental: {
+    payloadExtraction: false
   }
 })
