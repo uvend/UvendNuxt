@@ -36,7 +36,7 @@
                           <table class="w-full">
                               <thead class="sticky top-0 bg-white z-10">
                                   <tr class="border-b">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-600">ID</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600" >ID</th>
                                      <th class="text-left py-3 px-4 font-medium text-gray-600">Meter Number</th>
                                      <th class="text-left py-3 px-4 font-medium text-gray-600">Complex</th>
                                      <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Free</th> -->
@@ -141,6 +141,21 @@
                     </Select>
                 </div>
 
+                <!-- Hide/Show Coloumns -->
+                <div class="mb-6">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Show/Hide Columns</Label>
+                    
+                    <Select v-model="pageSize" multiple>
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="25 records" />
+                        </SelectTrigger>
+                        <SelectContent  >
+                            <SelectItem  v-for="size in pageSizeSelect" :key="size" :value="size">
+                                {{ size }} records
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
                                  <!-- Action Buttons -->
                  <div class="flex gap-2">
                      <Button variant="outline" @click="clearFilters" class="flex-1">
