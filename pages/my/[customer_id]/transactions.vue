@@ -1,71 +1,71 @@
 <template>
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <!-- Main Content Area -->
-        <div class="flex-1 p-6 flex flex-col">
+        <div class="flex-1 p-6 lg:p-8 flex flex-col">
             <!-- Header -->
-             <div class="mb-6">
-                 <h1 class="text-3xl font-bold text-gray-900">Transactions</h1>
+             <div class="mb-8">
+                 <h1 class="text-3xl font-bold text-gray-900 mb-2">Transactions</h1>
+                 <p class="text-gray-600">View and manage your utility transaction history</p>
              </div>
 
              <!-- Search Bar and View Toggle -->
-             <div class="mb-6 flex items-center gap-4">
+             <div class="mb-8 flex items-center gap-4">
                  <div class="relative w-1/2">
-                     <Icon name="lucide:search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                     <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5">
+                         <Icon name="lucide:search" class="w-5 h-5" />
+                     </div>
                      <Input 
                          type="text" 
                          placeholder="Search transactions..." 
-                         class="pl-10"
+                         class="pl-10 bg-white/80 backdrop-blur-sm border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
                          v-model="search"
                          @input="debouncedSearch"
                      />
                  </div>
-                <Button class="flex">
+                <Button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                    <Icon name="lucide:download" class="w-4 h-4" />
                     Download Report
-                    <Icon name="lucide:printer"/>
                 </Button>
              </div>
 
 
              <!-- Transaction Table View -->
-             <Card v-if="!showCharts" class="flex flex-col">
-                 <CardHeader>
-                     <CardTitle>Recent Transactions</CardTitle>
+             <Card v-if="!showCharts" class="flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
+                 <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                     <CardTitle class="text-xl font-semibold text-gray-800">Recent Transactions</CardTitle>
+                     <p class="text-gray-600 text-sm">Your latest utility transactions and payments</p>
                  </CardHeader>
                                                                                                                                                <CardContent class="p-0 flex flex-col">
                      <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
                           <table class="w-full">
-                              <thead class="sticky top-0 bg-white z-10">
-                                  <tr class="border-b">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-600" >ID</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Meter Number</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Complex</th>
-                                     <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Free</th> -->
-                                     <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Purchase</th> -->
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Units Issued</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Amount</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Service Fee</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Refund</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Time</th>
+                              <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
+                                  <tr>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700" >ID</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Units Issued</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Service Fee</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Refund</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Time</th>
                                  </tr>
                              </thead>
                              <tbody>
-                                     <tr v-for="(transaction,index) in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b hover:bg-gray-50 cursor-pointer transition-colors', selectedTransaction && selectedTransaction.meterNumber === transaction.meterNumber ? 'bg-blue-50 border-blue-200' : '']" @click="selectTransaction(transaction)">
-                                     <td class="py-3 px-4 text-sm">{{ transaction.transactionUniqueId }}</td>
-                                        <td class="py-3 px-4 text-sm">{{ transaction.meterNumber }}</td>
-                                     <td class="py-3 px-4 text-sm">{{ transaction.complexName }}</td>
-                                     <!-- <td class="py-3 px-4 text-sm">{{ transaction.freeUnits }}</td> -->
-                                     <!-- <td class="py-3 px-4 text-sm">{{ transaction.totalUnitsIssued }}</td> -->
-                                     <td class="py-3 px-4 text-sm">
-                                         {{ transaction.totalUnitsIssued }}
-                                         <span v-if="transaction.utilityType === 'Water'">KL</span>
-                                         <span v-else-if="transaction.utilityType === 'Electricity'">KWh</span>
+                                     <tr v-for="(transaction,index) in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group', selectedTransaction && selectedTransaction.meterNumber === transaction.meterNumber ? 'bg-blue-100/80 border-blue-200' : '']" @click="selectTransaction(transaction)">
+                                     <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
+                                        <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
+                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
+                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                         <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
+                                         <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
+                                         <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
                                      </td>
-                                     <td class="py-3 px-4 text-sm">R {{ transaction.managedTenderAmount }}</td>
-                                     <td class="py-3 px-4 text-sm">R {{ transaction.commissionAmountEx }}</td>
-                                     <td class="py-3 px-4 text-sm text-orange-500">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
-                                     <td class="py-3 px-4 text-sm">
-                                         {{ formattedTime(transaction.transactionDate) }}<br>
-                                         {{ formatedDate(transaction.transactionDate) }}
+                                     <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
+                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">R {{ transaction.commissionAmountEx }}</td>
+                                     <td class="py-4 px-6 text-sm font-semibold text-orange-600 group-hover:text-orange-700">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
+                                     <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
+                                         <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
+                                         <div class="text-xs text-gray-400">{{ formatedDate(transaction.transactionDate) }}</div>
                                      </td>
                                  </tr>
                              </tbody>
@@ -73,10 +73,11 @@
                      </div>
                      
                      <!-- Load More Button -->
-                     <div class="p-4 border-t flex-shrink-0">
+                     <div class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
                          <div class="flex justify-center">
-                             <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700">
-                                 + Load More
+                             <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
+                                 <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                                 Load More
                              </Button>
                          </div>
                      </div>
@@ -85,7 +86,7 @@
         </div>
 
         <!-- Right Sidebar -->
-         <div class="max-w-96 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
+         <div class="max-w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
             <!-- Filters Section -->
             <div v-if="!showTransactionDetails" class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
