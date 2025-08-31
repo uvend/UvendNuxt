@@ -175,7 +175,7 @@
                                                         <div class="flex justify-end pt-2">
                                                             <Button 
                                                                 size="sm" 
-                                                                @click.stop="viewMeter(transaction.installationUniqueId)"
+                                                                @click.stop="viewMeter(transaction.meterNumber)"
                                                                 class="text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
                                                             >
                                                                 <Icon name="lucide:eye" class="w-3 h-3 mr-1" />
@@ -229,7 +229,7 @@ export default {
     },
     methods: {
         async getAdminTransactions() {
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`, {
+            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
                 method: "GET",
                 params: {
                     IncludeMetersWithNoActivity: false,
@@ -241,7 +241,27 @@ export default {
                     UtilityType: -1
                 }
             })
-            this.originalTransactions = result.responseData.transactionData
+            
+            // Clear existing transactions
+            this.originalTransactions = []
+            
+            // Extract all transactions from all meters
+            for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+                if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                    meterData.transactions.forEach(transaction => {
+                        this.originalTransactions.push({
+                            ...transaction,
+                            meterNumber: transaction.meternumber || meterNumber,
+                            complexName: transaction.complexDescription || 'Unknown',
+                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            managedTenderAmount: transaction.tenderedamount || 0,
+                            totalUnitsIssued: transaction.totalunitsissued || 0,
+                            transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                            transactionID: transaction.uniqueidentification || Date.now()
+                        })
+                    })
+                }
+            }
         },
         async getVendTransactions() {
             const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`, {
@@ -305,7 +325,7 @@ export default {
         },
         totalRefunds() {
             return this.originalTransactions
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) - parseFloat(t.commissionAmount) || 0), 0)
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
                 .toFixed(2);
         },
         klVended() {

@@ -408,7 +408,6 @@ export default{
                     VendTransactionReportType: 1
                 }
             });
-            //console.log(result)
             await this.hydrateStatementData(result)
             this.isLoading = false;
         },

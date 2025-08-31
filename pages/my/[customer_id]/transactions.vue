@@ -32,8 +32,17 @@
              <!-- Transaction Table View -->
              <Card v-if="!showCharts" class="flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
                  <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
-                     <CardTitle class="text-xl font-semibold text-gray-800">Recent Transactions</CardTitle>
-                     <p class="text-gray-600 text-sm">Your latest utility transactions and payments</p>
+                     <div class="flex justify-between items-center">
+                         <div>
+                             <CardTitle class="text-xl font-semibold text-gray-800">Recent Transactions</CardTitle>
+                             <p class="text-gray-600 text-sm">Your latest utility transactions and payments</p>
+                         </div>
+                                                   <div class="text-right">
+                              <div class="text-sm text-gray-600">Total Records</div>
+                              <div class="text-2xl font-bold text-blue-600">{{ filteredTransactions.length }}</div>
+                              <div class="text-xs text-gray-500 mt-1">Currently Shown: {{ paginated.length }}</div>
+                          </div>
+                     </div>
                  </CardHeader>
                                                                                                                                                <CardContent class="p-0 flex flex-col">
                      <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
@@ -293,7 +302,7 @@ export default{
     methods:{
                  async getAdminTransactions(){
              this.isLoading = true;
-             const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`,{
+             const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                  method: "GET",
                  params:{
                      IncludeMetersWithNoActivity : false,
@@ -305,11 +314,36 @@ export default{
                      UtilityType: this.selectedUtility
                  }
              })
-             this.transactions = result.responseData.transactionData
-             this.originalTransactions = JSON.parse(JSON.stringify(result.responseData.transactionData)); // Store original data with deep copy
+             
+             // Clear existing transactions
+             this.transactions = []
+             this.originalTransactions = []
+             
+             // Extract all transactions from all meters
+             for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+                 if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                     meterData.transactions.forEach(transaction => {
+                         const flattenedTransaction = {
+                             ...transaction,
+                             meterNumber: transaction.meternumber || meterNumber,
+                             complexName: transaction.complexDescription || 'Unknown',
+                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                             managedTenderAmount: transaction.tenderedamount || 0,
+                             totalUnitsIssued: transaction.totalunitsissued || 0,
+                             transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                             transactionID: transaction.uniqueidentification || Date.now(),
+                             transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                             commissionAmount: transaction.vendCommissionAmount || 0,
+                             commissionAmountEx: transaction.vendCommissionAmount || 0
+                         }
+                         this.transactions.push(flattenedTransaction)
+                         this.originalTransactions.push(flattenedTransaction)
+                     })
+                 }
+             }
+             
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
              await this.getMeterComplex()
-             //console.log(result)
              this.isLoading = false;
          },
                  async getVendTransactions(){
@@ -317,20 +351,42 @@ export default{
              const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
                  method: "GET",
                  params:{
-                     //IncludeMetersWithNoActivity : false,
                      StartDate : this.dateRange.start,
                      EndDate: this.dateRange.end,
                      VendTransactionReportType: 0,  // customer
-                     //ResponseFormatType: 0,
-                     //ParentUniqueID: this.$route.params.customer_id,
                      UtilityType: this.selectedUtility
                  }
              })
-             this.transactions = result.responseData.transactionData
-             this.originalTransactions = JSON.parse(JSON.stringify(result.responseData.transactionData)); // Store original data with deep copy
+             
+             // Clear existing transactions
+             this.transactions = []
+             this.originalTransactions = []
+             
+             // Extract all transactions from all meters
+             for (const [meterNumber, meterData] of Object.entries(result.responseData.transactionData)) {
+                 if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                     meterData.transactions.forEach(transaction => {
+                         const flattenedTransaction = {
+                             ...transaction,
+                             meterNumber: transaction.meternumber || meterNumber,
+                             complexName: transaction.complexDescription || 'Unknown',
+                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                             managedTenderAmount: transaction.tenderedamount || 0,
+                             totalUnitsIssued: transaction.totalunitsissued || 0,
+                             transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                             transactionID: transaction.uniqueidentification || Date.now(),
+                             transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                             commissionAmount: transaction.vendCommissionAmount || 0,
+                             commissionAmountEx: transaction.vendCommissionAmount || 0
+                         }
+                         this.transactions.push(flattenedTransaction)
+                         this.originalTransactions.push(flattenedTransaction)
+                     })
+                 }
+             }
+             
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
              await this.getMeterComplex()
-             //console.log(result)
              this.isLoading = false;
          },
         getTransactions(){
@@ -473,16 +529,21 @@ export default{
                  });
              }
 
-             // If search phrase is provided, filter by meter number or address
-             if (this.search && this.search.trim() !== '') {
-                 filteredTransactions = filteredTransactions.filter(transaction => {
-                     const searchLower = this.search.toLowerCase();
-                     const meterNumber = transaction.meterNumber ? transaction.meterNumber.toLowerCase() : '';
-                     const address = transaction.installationAdress && transaction.installationAdress[0] ? transaction.installationAdress[0].toLowerCase() : '';
-                     
-                     return meterNumber.includes(searchLower) || address.includes(searchLower);
-                 });
-             }
+                           // If search phrase is provided, filter by transaction ID, meter number, complex name, or address
+              if (this.search && this.search.trim() !== '') {
+                  filteredTransactions = filteredTransactions.filter(transaction => {
+                      const searchLower = this.search.toLowerCase();
+                      const transactionId = transaction.transactionUniqueId ? transaction.transactionUniqueId.toString().toLowerCase() : '';
+                      const meterNumber = transaction.meterNumber ? transaction.meterNumber.toLowerCase() : '';
+                      const complexName = transaction.complexName ? transaction.complexName.toLowerCase() : '';
+                      const address = transaction.installationAdress && transaction.installationAdress[0] ? transaction.installationAdress[0].toLowerCase() : '';
+                      
+                      return transactionId.includes(searchLower) || 
+                             meterNumber.includes(searchLower) || 
+                             complexName.includes(searchLower) || 
+                             address.includes(searchLower);
+                  });
+              }
              
              // Completely replace the filtered transactions array with a fresh copy
              this.filteredTransactions = [];

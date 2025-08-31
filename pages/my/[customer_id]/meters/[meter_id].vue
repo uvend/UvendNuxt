@@ -289,7 +289,7 @@ const showCharts = ref(false)
 const getAdminMeterActivity = async () => {
     try {
         isLoading.value = true
-        const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`, {
+        const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
             method: "GET",
             params: {
                 StartDate: dateRange.value.start,
@@ -300,11 +300,37 @@ const getAdminMeterActivity = async () => {
                 UtilityType: selectedUtility.value
             }
         })
-        meterTransactions.value = result.responseData.transactionData
-        originalTransactions.value = JSON.parse(JSON.stringify(result.responseData.transactionData))
+        
+        // Clear existing transactions
+        meterTransactions.value = []
+        originalTransactions.value = []
+        
+        // Extract all transactions from all meters
+        for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+            if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                meterData.transactions.forEach(transaction => {
+                    const flattenedTransaction = {
+                        ...transaction,
+                        meterNumber: transaction.meternumber || meterNumber,
+                        complexName: transaction.complexDescription || 'Unknown',
+                        utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                        managedTenderAmount: transaction.tenderedamount || 0,
+                        totalUnitsIssued: transaction.totalunitsissued || 0,
+                        transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                        transactionID: transaction.uniqueidentification || Date.now(),
+                        transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                        commissionAmount: transaction.vendCommissionAmount || 0,
+                        commissionAmountEx: transaction.vendCommissionAmount || 0
+                    }
+                    meterTransactions.value.push(flattenedTransaction)
+                    originalTransactions.value.push(flattenedTransaction)
+                })
+            }
+        }
+        
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
         console.log('Admin meter transactions:', result)
-        meterNumber.value = result.responseData.transactionData[0]?.meterNumber ?? ''
+        meterNumber.value = meterTransactions.value[0]?.meterNumber ?? ''
         await getMeterComplex()
         isLoading.value = false
     } catch (error) {
@@ -332,8 +358,34 @@ const getVendMeterActivity = async () => {
                 UtilityType: selectedUtility.value
             }
         })
-        meterTransactions.value = result.responseData.transactionData
-        originalTransactions.value = JSON.parse(JSON.stringify(result.responseData.transactionData))
+        
+        // Clear existing transactions
+        meterTransactions.value = []
+        originalTransactions.value = []
+        
+        // Extract all transactions from all meters
+        for (const [meterNumber, meterData] of Object.entries(result.responseData.transactionData)) {
+            if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                meterData.transactions.forEach(transaction => {
+                    const flattenedTransaction = {
+                        ...transaction,
+                        meterNumber: transaction.meternumber || meterNumber,
+                        complexName: transaction.complexDescription || 'Unknown',
+                        utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                        managedTenderAmount: transaction.tenderedamount || 0,
+                        totalUnitsIssued: transaction.totalunitsissued || 0,
+                        transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                        transactionID: transaction.uniqueidentification || Date.now(),
+                        transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                        commissionAmount: transaction.vendCommissionAmount || 0,
+                        commissionAmountEx: transaction.vendCommissionAmount || 0
+                    }
+                    meterTransactions.value.push(flattenedTransaction)
+                    originalTransactions.value.push(flattenedTransaction)
+                })
+            }
+        }
+        
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
         await getMeterComplex()
         isLoading.value = false

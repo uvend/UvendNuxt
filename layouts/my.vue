@@ -52,7 +52,7 @@
                     @click="navigateTo(`/my/${$route.params.customer_id}/dashboard`)"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:layout-dashboard" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-3 h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:layout-dashboard" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Dashboard</span>
@@ -67,7 +67,7 @@
                     @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:receipt" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-3 h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:receipt" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Transactions</span>
@@ -75,7 +75,7 @@
                     </div>
                 </NuxtLink>
                 
-                <!-- Meters -->
+                <!-- Meters
                 <NuxtLink 
                     class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
@@ -88,7 +88,7 @@
                         <span class="text-sm font-medium">Meters</span>
                         <span class="text-xs text-blue-200">Manage Devices</span>
                     </div>
-                </NuxtLink>
+                </NuxtLink> -->
                 
                 <!-- Statement -->
                 <NuxtLink 
@@ -97,7 +97,7 @@
                     @click="navigateTo(`/my/${$route.params.customer_id}/statement`)"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:bar-chart-3" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-3 h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:bar-chart-3" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Statement</span>
@@ -113,7 +113,7 @@
                     @click="goToAdmin"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:shield-check" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-3 h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:shield-check" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Admin</span>
@@ -127,7 +127,7 @@
                 <!-- User Info (when expanded) -->
                 <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="mb-3 p-3 bg-white/5 rounded-lg">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                        <div class="w-8 h-8 bg-white/20 rounded-full flex justify-center items-center">
                             <Icon name="lucide:user" class="h-4 w-4 text-white" />
                         </div>
                         <div class="flex-1 min-w-0">
