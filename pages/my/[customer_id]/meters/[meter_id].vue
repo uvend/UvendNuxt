@@ -1,340 +1,245 @@
 <template>
-    <div>
-        <!-- Page Header with Back Button -->
-        <div class="mb-6 flex items-center justify-between">
-            <div class="flex items-center gap-4">
+    <div class="flex min-h-screen">
+        <!-- Main Content Area -->
+        <div class="flex-1 p-6 flex flex-col">
+            <!-- Header -->
+             <div class="mb-6">
                 <Button 
-                    variant="outline" 
-                    @click="navigateTo(`/my/${$route.params.customer_id}/meters`)"
-                    class="flex items-center gap-2"
+                    @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)"
+                    class=" bg-blue-600 hover:bg-blue-700 mb-3"
                 >
-                    <Icon name="lucide:arrow-left" class="w-4 h-4" />
-                    Back to Meters
+                    <Icon name="lucide:arrow-left" class="w-3 h-4" />
+                    Back 
                 </Button>
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Meter Details</h1>
-                    <p class="text-gray-600" v-if="meterNumber">Meter: {{ meterNumber }}</p>
-                </div>
+                 <h1 class="text-3xl font-bold text-gray-900 my-3">Meter Details</h1>
+                 <p class="text-gray-600 " v-if="meterNumber">Meter: {{ meterNumber }}</p>
             </div>
-            
-            <!-- Date Range Picker -->
-            <div class="flex items-center gap-2">
-                <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange" />
-            </div>
-        </div>
 
-        <!-- Loading State -->
-        <MySkeletenCardList v-if="isLoading" :columns="4"/>
-        
-        <div v-else>
-            <!-- Meter Information Card -->
-            <Card class="mb-6" v-if="meterInfo">
-                <CardHeader>
-                    <CardTitle class="flex items-center gap-2">
-                        <Icon 
-                            :name="meterInfo.vendMeterParameters?.utilityType === 'Water' ? 'lucide:droplet' : 'lucide:zap'" 
-                            :class="meterInfo.vendMeterParameters?.utilityType === 'Water' ? 'w-6 h-6 text-blue-500' : 'w-6 h-6 text-yellow-500'"
-                        />
-                        Meter Information
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-gray-500">Utility Type</label>
-                            <p class="text-lg font-semibold">{{ meterInfo.vendMeterParameters?.utilityType || 'Unknown' }}</p>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-gray-500">Tariff Name</label>
-                            <p class="text-lg font-semibold">{{ meterInfo.vendAccountParameters?.tariffName || 'Unknown' }}</p>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-gray-500">Meter Status</label>
-                            <div class="flex items-center gap-2">
-                                <Badge :variant="meterStatus === 'Ok' ? 'default' : 'destructive'">
-                                    {{ meterStatus || 'Unknown' }}
-                                </Badge>
-                                <Button 
-                                    v-if="meterStatus === 'Ok'" 
-                                    variant="outline" 
-                                    size="sm"
-                                    @click="blockMeter(true)"
-                                >
-                                    <Icon name="lucide:lock-open" class="w-4 h-4" />
-                                </Button>
-                                <Button 
-                                    v-else 
-                                    variant="outline" 
-                                    size="sm"
-                                    @click="blockMeter(false)"
-                                >
-                                    <Icon name="lucide:lock" class="w-4 h-4" />
-                                </Button>
-                                <Button variant="outline" size="sm" @click="resetTamper">
-                                    Reset
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+             <!-- Search Bar and View Toggle -->
+             <div class="mb-6 flex items-center gap-4">
+                 <div class="relative w-1/2">
+                     <Icon name="lucide:search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                     <Input 
+                         type="text" 
+                         placeholder="Search transactions..." 
+                         class="pl-10"
+                         v-model="search"
+                         @input="debouncedSearch"
+                     />
+                 </div>
+                <Button class="flex">
+                    Download Report
+                    <Icon name="lucide:printer"/>
+                </Button>
+             </div>
 
-            <!-- Vending Patterns Chart -->
-            <Card class="mb-6" v-if="chartData.length > 0 && maxAmount > 0">
-                <CardHeader>
-                    <CardTitle class="flex items-center gap-2">
-                        <Icon name="lucide:bar-chart-3" class="w-5 h-5 text-emerald-500" />
-                        Vending Patterns
-                    </CardTitle>
-                    <CardDescription>Transaction activity over time</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div class="h-96 relative bg-white rounded-xl border border-gray-100 shadow-sm p-8">
-                        <!-- Chart Container -->
-                        <svg class="w-full h-full" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet">
-                            <!-- Definitions -->
-                            <defs>
-                                <!-- Gradient for the line -->
-                                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" style="stop-color:#10b981" />
-                                    <stop offset="50%" style="stop-color:#059669" />
-                                    <stop offset="100%" style="stop-color:#047857" />
-                                </linearGradient>
-                                
-                                <!-- Gradient for area fill -->
-                                <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.2" />
-                                    <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.05" />
-                                </linearGradient>
-                                
-                                <!-- Drop shadow filter -->
-                                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.1"/>
-                                </filter>
-                                
-                                <!-- Glow effect -->
-                                <filter id="glow">
-                                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                                    <feMerge> 
-                                        <feMergeNode in="coloredBlur"/>
-                                        <feMergeNode in="SourceGraphic"/>
-                                    </feMerge>
-                                </filter>
-                            </defs>
-                            
-                            <!-- Background -->
-                            <rect width="100%" height="100%" fill="#fafafa" rx="12" />
-                            
-                            <!-- Subtle background pattern -->
-                            <defs>
-                                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#f1f5f9" stroke-width="1"/>
-                                </pattern>
-                            </defs>
-                            <rect width="100%" height="100%" fill="url(#grid)" rx="12" />
-                            
-                            <!-- Chart area background -->
-                            <rect x="100" y="60" width="700" height="280" fill="white" rx="8" stroke="#e2e8f0" stroke-width="1" />
-                            
-                            <!-- Grid lines -->
-                            <g stroke="#f1f5f9" stroke-width="1">
-                                <!-- Horizontal grid lines -->
-                                <line x1="100" y1="120" x2="800" y2="120" />
-                                <line x1="100" y1="180" x2="800" y2="180" />
-                                <line x1="100" y1="240" x2="800" y2="240" />
-                                <line x1="100" y1="300" x2="800" y2="300" />
-                                <!-- Vertical grid lines -->
-                                <line x1="200" y1="60" x2="200" y2="340" />
-                                <line x1="300" y1="60" x2="300" y2="340" />
-                                <line x1="400" y1="60" x2="400" y2="340" />
-                                <line x1="500" y1="60" x2="500" y2="340" />
-                                <line x1="600" y1="60" x2="600" y2="340" />
-                                <line x1="700" y1="60" x2="700" y2="340" />
-                            </g>
-                            
-                            <!-- Y-Axis -->
-                            <line x1="100" y1="60" x2="100" y2="340" stroke="#64748b" stroke-width="2" />
-                            <text x="50" y="200" text-anchor="middle" fill="#64748b" font-size="16" font-weight="600" transform="rotate(-90, 50, 200)">
-                                Amount (R)
-                            </text>
-                            
-                            <!-- Y-Axis Labels -->
-                            <text x="95" y="340" text-anchor="end" fill="#64748b" font-size="12" font-weight="500">R0</text>
-                            <text x="95" y="300" text-anchor="end" fill="#64748b" font-size="12" font-weight="500">R{{ (maxAmount / 4).toFixed(0) }}</text>
-                            <text x="95" y="240" text-anchor="end" fill="#64748b" font-size="12" font-weight="500">R{{ (maxAmount / 2).toFixed(0) }}</text>
-                            <text x="95" y="180" text-anchor="end" fill="#64748b" font-size="12" font-weight="500">R{{ (maxAmount * 3 / 4).toFixed(0) }}</text>
-                            <text x="95" y="120" text-anchor="end" fill="#64748b" font-size="12" font-weight="500">R{{ maxAmount.toFixed(0) }}</text>
-                            
-                            <!-- X-Axis -->
-                            <line x1="100" y1="340" x2="800" y2="340" stroke="#64748b" stroke-width="2" />
-                            <text x="450" y="380" text-anchor="middle" fill="#64748b" font-size="16" font-weight="600">
-                                Time Period
-                            </text>
-                            
-                            <!-- X-Axis Labels -->
-                            <text 
-                                v-for="(point, index) in chartPoints" 
-                                :key="`x-label-${index}`"
-                                :x="point.x" 
-                                y="360" 
-                                text-anchor="middle" 
-                                fill="#64748b" 
-                                font-size="11"
-                                font-weight="500"
-                                :transform="`rotate(-45, ${point.x}, 360)`"
-                            >
-                                {{ formatDateLabel(point.date) }}
-                            </text>
-                            
-                            <!-- Area fill under the line -->
-                            <path 
-                                :d="areaPath" 
-                                fill="url(#areaGradient)" 
-                                opacity="0.8"
-                            />
-                            
-                            <!-- Main chart line -->
-                            <path 
-                                :d="chartPath" 
-                                fill="none" 
-                                stroke="url(#lineGradient)" 
-                                stroke-width="4"
-                                filter="url(#shadow)"
-                                class="transition-all duration-500"
-                            />
-                            
-                            <!-- Data points with enhanced styling -->
-                            <circle 
-                                v-for="(point, index) in chartPoints" 
-                                :key="index"
-                                :cx="point.x" 
-                                :cy="point.y" 
-                                r="8" 
-                                fill="white"
-                                stroke="url(#lineGradient)"
-                                stroke-width="3"
-                                filter="url(#shadow)"
-                                class="cursor-pointer hover:r-12 transition-all duration-300"
-                                @mouseenter="showTooltip(point, $event)"
-                                @mouseleave="hideTooltip"
-                            />
-                            
-                            <!-- Enhanced tooltip -->
-                            <g v-if="tooltipVisible" :transform="`translate(${tooltipX}, ${tooltipY})`">
-                                <!-- Tooltip background -->
-                                <rect 
-                                    x="-70" 
-                                    y="-40" 
-                                    width="140" 
-                                    height="35" 
-                                    fill="#1f2937" 
-                                    rx="8"
-                                    opacity="0.95"
-                                    filter="url(#shadow)"
-                                />
-                                <!-- Tooltip arrow -->
-                                <polygon points="0,0 -8,-8 8,-8" fill="#1f2937" opacity="0.95" transform="translate(0, -40)" />
-                                <!-- Tooltip text -->
-                                <text x="0" y="-20" text-anchor="middle" fill="white" font-size="13" font-weight="600">
-                                    {{ tooltipValue }}
-                                </text>
-                            </g>
-                        </svg>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <!-- No Chart Data Message -->
-            <Card class="mb-6" v-else>
-                <CardHeader>
-                    <CardTitle>Vending Patterns</CardTitle>
-                    <CardDescription>Transaction activity over time</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div class="text-center py-8">
-                        <Icon name="lucide:bar-chart-3" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p class="text-gray-600 mb-2">No transaction data available for charting.</p>
-                        <p class="text-sm text-gray-500">
-                            {{ meterTransactions.length > 0 ? 'Transactions found but no valid amounts to display.' : 'No transactions found for this period.' }}
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <!-- Transactions Section -->
-            <Card>
-                <CardHeader>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <CardTitle>Recent Transactions</CardTitle>
-                            <CardDescription>{{ meterTransactions.length }} transactions found</CardDescription>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <Select v-model="pageSize">
-                                <SelectTrigger class="w-20">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="size in pageSizeSelect" :value="size">
-                                        {{ size }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <div class="flex gap-1">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    @click="changePage(currentPage-1)"
-                                    :disabled="currentPage <= 1"
-                                >
-                                    <Icon name="lucide:chevron-left" class="w-4 h-4"/>
-                                </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    @click="changePage(currentPage+1)"
-                                    :disabled="currentPage >= totalPages"
-                                >
-                                    <Icon name="lucide:chevron-right" class="w-4 h-4"/>
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div v-if="paginated.length === 0" class="text-center py-8">
-                        <Icon name="lucide:receipt" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p class="text-gray-600">No transactions found for this period.</p>
-                    </div>
-                    <div v-else class="space-y-2">
-                        <MyMeterTransactionCard 
-                            v-for="transaction in paginated" 
-                            :key="transaction.transactionId || transaction.id"
-                            :transaction="transaction" 
-                        />
-                    </div>
-                </CardContent>
+             <!-- Transaction Table View -->
+             <Card v-if="!showCharts" class="flex flex-col">
+                 <CardHeader>
+                     <CardTitle>Recent Transactions</CardTitle>
+                 </CardHeader>
+                 <CardContent class="p-0 flex flex-col">
+                     <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                          <table class="w-full">
+                              <thead class="sticky top-0 bg-white z-10">
+                                  <tr class="border-b">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">ID</th>
+                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Meter Number</th>
+                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Complex</th>
+                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Units Issued</th>
+                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Amount</th>
+                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Service Fee</th>
+                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Refund</th>
+                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Time</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                     <tr v-for="(transaction,index) in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b hover:bg-gray-50 cursor-pointer transition-colors', selectedTransaction && selectedTransaction.transactionUniqueId === transaction.transactionUniqueId ? 'bg-blue-50 border-blue-200' : '']" @click="selectTransaction(transaction)">
+                                     <td class="py-3 px-4 text-sm">{{ transaction.transactionUniqueId }}</td>
+                                        <td class="py-3 px-4 text-sm">{{ transaction.meterNumber }}</td>
+                                     <td class="py-3 px-4 text-sm">{{ transaction.complexName }}</td>
+                                     <td class="py-3 px-4 text-sm">
+                                         {{ transaction.totalUnitsIssued }}
+                                         <span v-if="transaction.utilityType === 'Water'">KL</span>
+                                         <span v-else-if="transaction.utilityType === 'Electricity'">KWh</span>
+                                     </td>
+                                     <td class="py-3 px-4 text-sm">R {{ transaction.managedTenderAmount }}</td>
+                                     <td class="py-3 px-4 text-sm">R {{ transaction.commissionAmountEx }}</td>
+                                     <td class="py-3 px-4 text-sm text-orange-500">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
+                                     <td class="py-3 px-4 text-sm">
+                                         {{ formattedTime(transaction.transactionDate) }}<br>
+                                         {{ formatedDate(transaction.transactionDate) }}
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
+                     
+                     <!-- Load More Button -->
+                     <div class="p-4 border-t flex-shrink-0">
+                         <div class="flex justify-center">
+                             <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700">
+                                 + Load More
+                             </Button>
+                         </div>
+                     </div>
+                 </CardContent>
             </Card>
         </div>
 
-        <!-- Print Job Dialog -->
-        <Dialog :open="isOpen" @update:open="isOpen = $event">
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Reset Token</DialogTitle>
-                    <DialogDescription>Copy the token below to reset the meter</DialogDescription>
-                </DialogHeader>
-                <div class="bg-gray-100 p-4 rounded-md">
-                    <pre class="text-center font-mono text-sm">{{ printJob }}</pre>
+        <!-- Right Sidebar -->
+         <div class="max-w-96 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
+            <!-- Filters Section -->
+            <div v-if="!showTransactionDetails" class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
+                
+                <!-- Date Range -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Date Range</Label>
+                    <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
                 </div>
-                <DialogFooter>
-                    <Button @click="copy" class="w-full">
-                        <Icon name="lucide:copy" class="w-4 h-4 mr-2" />
-                        Copy to Clipboard
+
+                <!-- Type -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Type</Label>
+                    <Select v-model="selectedUtility">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Electricity & Water" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="utility in utilityType" :key="utility.value" :value="utility.value">
+                                {{ utility.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- Complex -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Complex</Label>
+                    <Select v-model="selectedMeterComplex">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select complex" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="complex in meterComplexes" :key="complex" :value="complex">
+                                {{ complex }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- Load More Amount -->
+                <div class="mb-6">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Load More Amount</Label>
+                    <Select v-model="pageSize">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="25 records" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="size in pageSizeSelect" :key="size" :value="size">
+                                {{ size }} records
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- Block Meter Button -->
+                <div class="mb-6">
+                    <Button 
+                        @click="blockMeter(!meterStatus)" 
+                        :variant="meterStatus ? 'destructive' : 'default'"
+                        class="w-full"
+                    >
+                        <Icon :name="meterStatus ? 'lucide:unlock' : 'lucide:lock'" class="w-4 h-4 mr-2" />
+                        {{ meterStatus ? 'Unblock Meter' : 'Block Meter' }}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </div>
+
+                <!-- Action Buttons -->
+                 <div class="flex gap-2">
+                     <Button variant="outline" @click="clearFilters" class="flex-1">
+                         Clear
+                     </Button>
+                     <Button @click="applyFilters" class="flex-1 bg-blue-600 hover:bg-blue-700">
+                         Apply
+                     </Button>
+                 </div>
+                 
+                 <!-- Go to Transaction Button (only when transaction is selected) -->
+                 <div v-if="selectedTransaction" class="mt-2">
+                     <Button 
+                         @click="goToTransaction" 
+                         variant="outline"
+                         class="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300"
+                     >
+                         <Icon name="lucide:arrow-right" class="w-4 h-4" />
+                         <span class="text-sm font-medium">Go to Selected Transaction</span>
+                     </Button>
+                 </div>
+            </div>
+
+            <!-- Transaction Details Section -->
+            <div v-if="showTransactionDetails">
+                <div class="flex items-center mb-4">
+                    <button 
+                        @click="showTransactionDetails = false" 
+                        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    >
+                        <Icon name="lucide:arrow-left" class="w-4 h-4" />
+                        <span class="text-sm font-medium">Back to Filters</span>
+                    </button>
+                </div>
+                
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction Details</h3>
+                <Card>
+                    <CardContent class="pt-6">
+                        <div class="space-y-3" v-if="selectedTransaction">
+                            <div>
+                                <Label class="text-xs text-gray-500">Vendor</Label>
+                                <p class="text-sm font-medium">{{ selectedTransaction.vendorName || 'N/A' }}</p>
+                            </div>
+                            <div>
+                                <Label class="text-xs text-gray-500">Utility Type</Label>
+                                <p class="text-sm">{{ selectedTransaction.utilityType }}</p>
+                            </div>
+                            <div>
+                                <Label class="text-xs text-gray-500">Amount</Label>
+                                <p class="text-sm font-medium">R {{ selectedTransaction.managedTenderAmount }}</p>
+                            </div>
+                            <div>
+                                <Label class="text-xs text-gray-500">Units</Label>
+                                <p class="text-sm">{{ selectedTransaction.totalUnitsIssued }}</p>
+                            </div>
+                            <div>
+                                <Label class="text-xs text-gray-500">Free Units</Label>
+                                <p class="text-sm">{{ selectedTransaction.freeUnits || '0' }}</p>
+                            </div>
+                            <div>
+                                <Label class="text-xs text-gray-500">Other</Label>
+                                <p class="text-sm">R {{ selectedTransaction.commissionAmountEx || '0.00' }}</p>
+                            </div>
+                            <div class="border-t pt-3">
+                                <Label class="text-xs text-gray-500 font-semibold">Total</Label>
+                                <p class="text-sm font-bold">R {{ selectedTransaction.managedTenderAmount }}</p>
+                            </div>
+                            <div v-if="selectedTransaction.tokenNumbers && selectedTransaction.tokenNumbers.length > 0">
+                                <Label class="text-xs text-gray-500">Token</Label>
+                                <div class="bg-gray-100 p-2 rounded text-xs font-mono">
+                                    <span v-for="token in selectedTransaction.tokenNumbers" :key="token">
+                                        {{ addHyphens(token) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div v-else class="text-center text-gray-500 py-8">
+                            <p>Select a transaction to view details</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -351,9 +256,11 @@ const { $toast } = useNuxtApp()
 // Reactive data
 const isLoading = ref(true)
 const meterTransactions = ref([])
+const originalTransactions = ref([])
+const filteredTransactions = ref([])
 const dateRange = ref(null)
-const pageSize = ref(10)
-const pageSizeSelect = ref([10, 50, 100, 200])
+const pageSize = ref(25)
+const pageSizeSelect = ref([10, 25, 50, 100])
 const currentPage = ref(1)
 const meterNumber = ref(null)
 const meterInfo = ref(null)
@@ -364,28 +271,70 @@ const tooltipVisible = ref(false)
 const tooltipX = ref(0)
 const tooltipY = ref(0)
 const tooltipValue = ref('')
+const search = ref('')
+const searchActive = ref(false)
+const selectedUtility = ref(-1)
+const utilityType = ref([
+    { label: "Any", value: -1 },
+    { label: "Electricity", value: 0 },
+    { label: "Water", value: 1 }
+])
+const meterComplexes = ref([])
+const selectedMeterComplex = ref(null)
+const selectedTransaction = ref(null)
+const showTransactionDetails = ref(false)
+const showCharts = ref(false)
 
 // Methods
 const getAdminMeterActivity = async () => {
     try {
         isLoading.value = true
-        const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`, {
+        const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
             method: "GET",
             params: {
                 StartDate: dateRange.value.start,
                 EndDate: dateRange.value.end,
                 ResponseFormatType: 0,
                 ReportParentType: 7, //specific meter
-                ParentUniqueID: route.params.meter_id
+                ParentUniqueID: route.params.meter_id,
+                UtilityType: selectedUtility.value
             }
         })
-        meterTransactions.value = result.responseData.transactionData
+        
+        // Clear existing transactions
+        meterTransactions.value = []
+        originalTransactions.value = []
+        
+        // Extract all transactions from all meters
+        for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+            if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                meterData.transactions.forEach(transaction => {
+                    const flattenedTransaction = {
+                        ...transaction,
+                        meterNumber: transaction.meternumber || meterNumber,
+                        complexName: transaction.complexDescription || 'Unknown',
+                        utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                        managedTenderAmount: transaction.tenderedamount || 0,
+                        totalUnitsIssued: transaction.totalunitsissued || 0,
+                        transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                        transactionID: transaction.uniqueidentification || Date.now(),
+                        transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                        commissionAmount: transaction.vendCommissionAmount || 0,
+                        commissionAmountEx: transaction.vendCommissionAmount || 0
+                    }
+                    meterTransactions.value.push(flattenedTransaction)
+                    originalTransactions.value.push(flattenedTransaction)
+                })
+            }
+        }
+        
+        filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
         console.log('Admin meter transactions:', result)
-        meterNumber.value = result.responseData.transactionData[0]?.meterNumber ?? ''
+        meterNumber.value = meterTransactions.value[0]?.meterNumber ?? ''
+        await getMeterComplex()
         isLoading.value = false
     } catch (error) {
         console.error('Error fetching admin meter activity:', error)
-        // Show user-friendly error message
         $toast({
             title: 'API Error',
             description: 'Unable to fetch meter data. Please try again later.',
@@ -405,10 +354,40 @@ const getVendMeterActivity = async () => {
                 StartDate: dateRange.value.start,
                 EndDate: dateRange.value.end,
                 HasMeterIdentifier: true,
-                SpecificMeterIdentifier: route.params.meter_id
+                SpecificMeterIdentifier: route.params.meter_id,
+                UtilityType: selectedUtility.value
             }
         })
-        meterTransactions.value = result.responseData.transactionData
+        
+        // Clear existing transactions
+        meterTransactions.value = []
+        originalTransactions.value = []
+        
+        // Extract all transactions from all meters
+        for (const [meterNumber, meterData] of Object.entries(result.responseData.transactionData)) {
+            if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                meterData.transactions.forEach(transaction => {
+                    const flattenedTransaction = {
+                        ...transaction,
+                        meterNumber: transaction.meternumber || meterNumber,
+                        complexName: transaction.complexDescription || 'Unknown',
+                        utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                        managedTenderAmount: transaction.tenderedamount || 0,
+                        totalUnitsIssued: transaction.totalunitsissued || 0,
+                        transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                        transactionID: transaction.uniqueidentification || Date.now(),
+                        transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                        commissionAmount: transaction.vendCommissionAmount || 0,
+                        commissionAmountEx: transaction.vendCommissionAmount || 0
+                    }
+                    meterTransactions.value.push(flattenedTransaction)
+                    originalTransactions.value.push(flattenedTransaction)
+                })
+            }
+        }
+        
+        filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+        await getMeterComplex()
         isLoading.value = false
     } catch (error) {
         console.error('Error fetching vend meter activity:', error)
@@ -426,7 +405,6 @@ const getMeterActivity = async () => {
 
 const getMeterInfo = async () => {
     try {
-        // Only try to get meter info if we have a meter number and we're not in admin mode
         if (!meterNumber.value || localStorage.getItem('customer') === 'admin') {
             return
         }
@@ -445,7 +423,6 @@ const getMeterInfo = async () => {
         meterStatus.value = result.requestedMeterState
     } catch (error) {
         console.error('Error fetching meter info:', error)
-        // Don't show error toast for CORS issues, just log it
     }
 }
 
@@ -462,8 +439,18 @@ const blockMeter = async (state = true) => {
             }
         })
         meterStatus.value = response.requestedMeterState
+        $toast({
+            title: 'Success',
+            description: `Meter ${state ? 'blocked' : 'unblocked'} successfully`,
+            variant: "success"
+        })
     } catch (error) {
         console.error('Error blocking meter:', error)
+        $toast({
+            title: 'Error',
+            description: 'Failed to update meter status',
+            variant: "destructive"
+        })
     }
 }
 
@@ -521,16 +508,129 @@ const hideTooltip = () => {
     tooltipVisible.value = false
 }
 
+const loadMore = () => {
+    currentPage.value += 1
+}
+
+const clearFilters = () => {
+    selectedUtility.value = -1
+    selectedMeterComplex.value = null
+    search.value = ''
+    currentPage.value = 1
+    filteredTransactions.value = []
+    nextTick(() => {
+        filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+    })
+    meterTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+}
+
+const applyFilters = () => {
+    currentPage.value = 1
+    filteredTransactions.value = []
+    nextTick(() => {
+        performFiltering()
+    })
+}
+
+const performFiltering = () => {
+    console.log('Performing filtering:', {
+        total: originalTransactions.value.length,
+        selectedUtility: selectedUtility.value,
+        selectedMeterComplex: selectedMeterComplex.value,
+        search: search.value
+    })
+    
+    let filteredData = JSON.parse(JSON.stringify(originalTransactions.value))
+
+    if (selectedMeterComplex.value) {
+        filteredData = filteredData.filter(transaction => {
+            return transaction.complexName === selectedMeterComplex.value
+        })
+    }
+
+    if (selectedUtility.value !== -1) {
+        filteredData = filteredData.filter(transaction => {
+            if (selectedUtility.value === 0) {
+                return transaction.utilityType === 'Electricity'
+            } else if (selectedUtility.value === 1) {
+                return transaction.utilityType === 'Water'
+            }
+            return true
+        })
+    }
+
+    if (search.value && search.value.trim() !== '') {
+        filteredData = filteredData.filter(transaction => {
+            const searchLower = search.value.toLowerCase()
+            const meterNumber = transaction.meterNumber ? transaction.meterNumber.toLowerCase() : ''
+            const address = transaction.installationAdress && transaction.installationAdress[0] ? transaction.installationAdress[0].toLowerCase() : ''
+            
+            return meterNumber.includes(searchLower) || address.includes(searchLower)
+        })
+    }
+    
+    filteredTransactions.value = []
+    nextTick(() => {
+        filteredTransactions.value = JSON.parse(JSON.stringify(filteredData))
+        console.log('Filtered results:', filteredTransactions.value.length)
+    })
+}
+
+const debouncedSearch = () => {
+    currentPage.value = 1
+    performFiltering()
+}
+
+const selectTransaction = (transaction) => {
+    selectedTransaction.value = transaction
+    showTransactionDetails.value = true
+}
+
+const goToTransaction = () => {
+    showTransactionDetails.value = true
+}
+
+const addHyphens = (str) => {
+    return str.replace(/(.{4})/g, '$1-').slice(0, -1)
+}
+
+const getMeterComplex = () => {
+    const complexSet = new Set()
+    if (originalTransactions.value && originalTransactions.value.length > 0) {
+        originalTransactions.value.forEach((meter) => {
+            const complexName = meter.complexName
+            if (complexName) {
+                complexSet.add(complexName)
+            }
+        })
+    }
+    meterComplexes.value = Array.from(complexSet).sort()
+}
+
+const formattedTime = (dateString) => {
+    const date = new Date(dateString)
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
+}
+
+const formatedDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-ZA', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    })
+}
+
 // Computed properties
 const totalPages = computed(() => {
-    return Math.ceil(meterTransactions.value.length / pageSize.value)
+    return Math.ceil(filteredTransactions.value.length / pageSize.value)
 })
 
 const paginated = computed(() => {
-    const filtered = meterTransactions.value
     const startIndex = (currentPage.value - 1) * pageSize.value
     const endIndex = startIndex + pageSize.value
-    return filtered.slice(startIndex, endIndex)
+    return filteredTransactions.value.slice(startIndex, endIndex)
 })
 
 const chartData = computed(() => {
@@ -705,3 +805,40 @@ watch(meterNumber, () => {
     getMeterInfo()
 })
 </script>
+
+<style scoped>
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Firefox scrollbar styles */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Hide scrollbar when not needed */
+.custom-scrollbar::-webkit-scrollbar-thumb:vertical {
+    min-height: 40px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:horizontal {
+    min-width: 40px;
+}
+</style>
