@@ -123,9 +123,9 @@
                                         <tr>
                                             <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-16 lg:w-20">Meter</th>
                                             <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700">Complex</th>
-                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-20 lg:w-24 hidden 2xl::table-cell">Amount</th>
-                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-16 lg:w-20 ">Units</th>
-                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-14 lg:w-16 hidden 2xl::table-cell">Time</th>
+                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-20 lg:w-24 ">Amount</th>
+                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-16 lg:w-20 hidden 2xl::table-cell">Units</th>
+                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-14 lg:w-16 ">Time</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -145,9 +145,9 @@
                                                         {{ transaction.complexName }}
                                                     </div>
                                                 </td>
-                                                <td class="py-2 px-1 lg:px-2 font-semibold text-green-600 whitespace-nowrap hidden 2xl::table-cell">R {{ parseFloat(transaction.managedTenderAmount).toFixed(2) }}</td>
-                                                <td class="py-2 px-1 lg:px-2 text-gray-600 whitespace-nowrap ">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</td>
-                                                <td class="py-2 px-1 lg:px-2 text-gray-500 whitespace-nowrap hidden 2xl::table-cell">{{ formattedTime(transaction.transactionDate) }}</td>
+                                                <td class="py-2 px-1 lg:px-2 font-semibold text-green-600 whitespace-nowrap ">R {{ parseFloat(transaction.managedTenderAmount).toFixed(2) }}</td>
+                                                <td class="py-2 px-1 lg:px-2 text-gray-600 whitespace-nowrap hidden 2xl::table-cell">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</td>
+                                                <td class="py-2 px-1 lg:px-2 text-gray-500 whitespace-nowrap ">{{ formattedTime(transaction.transactionDate) }}</td>
                                             </tr>
                                             
                                             <!-- Expanded Details Row -->
