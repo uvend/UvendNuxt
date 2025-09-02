@@ -121,19 +121,11 @@
                                 <table class="w-full text-xs">
                                     <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                                         <tr>
-<<<<<<< HEAD
                                             <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-16 lg:w-20">Meter</th>
                                             <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700">Complex</th>
                                             <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-20 lg:w-24 hidden 2xl::table-cell">Amount</th>
                                             <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-16 lg:w-20 ">Units</th>
                                             <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-14 lg:w-16 hidden 2xl::table-cell">Time</th>
-=======
-                                            <th class="text-left py-3 px-3 font-semibold text-gray-700 w-16 lg:w-20">Meter</th>
-                                            <th class="text-left py-3 px-3 font-semibold text-gray-700">Complex</th>
-                                            <th class="text-left py-3 px-3 font-semibold text-gray-700 w-20 lg:w-24">Amount</th>
-                                            <th class="text-left py-3 px-3 font-semibold text-gray-700 w-16 lg:w-20 hidden lg:table-cell">Units</th>
-                                            <th class="text-left py-3 px-3 font-semibold text-gray-700 w-14 lg:w-16 hidden lg:table-cell">Time</th>
->>>>>>> zaid/feature/statementpage
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -153,15 +145,9 @@
                                                         {{ transaction.complexName }}
                                                     </div>
                                                 </td>
-<<<<<<< HEAD
                                                 <td class="py-2 px-1 lg:px-2 font-semibold text-green-600 whitespace-nowrap hidden 2xl::table-cell">R {{ parseFloat(transaction.managedTenderAmount).toFixed(2) }}</td>
                                                 <td class="py-2 px-1 lg:px-2 text-gray-600 whitespace-nowrap ">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</td>
                                                 <td class="py-2 px-1 lg:px-2 text-gray-500 whitespace-nowrap hidden 2xl::table-cell">{{ formattedTime(transaction.transactionDate) }}</td>
-=======
-                                                <td class="py-3 px-3 font-semibold text-green-600 whitespace-nowrap group-hover:text-green-700">R {{ parseFloat(transaction.managedTenderAmount).toFixed(2) }}</td>
-                                                <td class="py-3 px-3 text-gray-600 whitespace-nowrap hidden lg:table-cell group-hover:text-gray-700">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</td>
-                                                <td class="py-3 px-3 text-gray-500 whitespace-nowrap hidden lg:table-cell group-hover:text-gray-600">{{ formattedTime(transaction.transactionDate) }}</td>
->>>>>>> zaid/feature/statementpage
                                             </tr>
                                             
                                             <!-- Expanded Details Row -->
