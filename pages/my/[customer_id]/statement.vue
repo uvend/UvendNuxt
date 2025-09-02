@@ -24,7 +24,7 @@
                 </div>
                 <Button @click="getStatementPDF()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                     <Icon name="lucide:download" class="w-4 h-4" />
-                    Download PDF
+                    Print Statement
                 </Button>
                 <Button 
                     @click="toggleStatementSummary" 
@@ -79,7 +79,7 @@
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Tenant Fee</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.surchargeAmount }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ Math.round(statement.surchargeAmount) }}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Total Tendered Amount</span>
@@ -95,7 +95,7 @@
                                 <div v-for="stat in statement.stats" :key="stat.utilityType" class="bg-white rounded-lg p-3 border border-gray-200">
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm font-medium text-gray-700">{{ stat.utilityType }}</span>
-                                        <span class="text-sm font-semibold text-gray-900">R {{ stat.totalPaidValue }}</span>
+                                        <span class="text-sm font-semibold text-gray-900">R {{ stat.tenderedamount }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -115,6 +115,7 @@
                         <table class="w-full">
                             <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
                                 <tr>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">ID</th>
                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Utility Type</th>
@@ -125,6 +126,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="transaction in paginated" :key="transaction.transactionUniqueId" class="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group">
+                                    <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
                                     <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
@@ -161,7 +163,7 @@
         </div>
 
         <!-- Right Sidebar -->
-        <div class="max-w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
+        <div class="w-72 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
             <!-- Filters Section -->
             <div class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
@@ -294,6 +296,8 @@ export default{
     data(){
         return {
             transactions: [],
+            originalTransactions: [],
+            filteredTransactions: [],
             statement: {
                 name: null,
                 startDate: null,
@@ -351,6 +355,7 @@ export default{
             yearArr: [],
             dateRange: null,
             customerStatementPeriod: 0,
+            customer:null,
             searchActive: true,
             search: null,
             response: null,
@@ -363,7 +368,7 @@ export default{
         },
         async getAdminTransactions(){
             this.isLoading = true;
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetSummarisedMeterActivity`,{
+            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                 method: "GET",
                 params:{
                     IncludeMetersWithNoActivity : true,
@@ -375,27 +380,69 @@ export default{
                     UtilityType: this.selectedUtility
                 },
             })
-            this.transactionResponseData = result.responseData
-            this.transactions = result.responseData.transactionData
-            if(this.search && this.search != ''){
-                // filter this.transactions on meter number
-                this.transactions = this.transactions.filter( transaction => {
-                    return transaction.meterNumber.toLowerCase().includes(this.search.toLowerCase()) || transaction.complexName.toLowerCase().includes(this.search.toLowerCase())
-                })
+            
+            // Store the complete API response
+            this.transactionResponseData = result.data
+            this.summary = result.data.summary
+            
+            // Clear existing transactions
+            this.transactions = []
+            this.originalTransactions = []
+            
+            // Extract all transactions from all meters (same pattern as transactions.vue)
+            for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+                if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                    meterData.transactions.forEach(transaction => {
+                        const flattenedTransaction = {
+                            ...transaction,
+                            meterNumber: transaction.meternumber || meterNumber,
+                            complexName: transaction.complexDescription || 'Unknown',
+                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            managedTenderAmount: transaction.tenderedamount || 0,
+                            totalUnitsIssued: transaction.totalunitsissued || 0,
+                            transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                            transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                            commissionAmount: transaction.vendCommissionAmount || 0,
+                            commissionAmountEx: transaction.vendCommissionAmount || 0
+                        }
+                        this.transactions.push(flattenedTransaction)
+                        this.originalTransactions.push(flattenedTransaction)
+                    })
+                }
             }
-            this.statement.name = this.transactionResponseData.reportParentName
-            this.statement.startDate = this.transactionResponseData.startDate,
-            this.statement.endDate = this.transactionResponseData.endDate
-            this.statement.totalValue = this.transactionResponseData.totalAmountTendered
-            this.statement.managedAmount = this.transactionResponseData.managedTenderAmount
-            this.statement.nonManagedAmount = this.transactionResponseData.nonManagedTenderAmount
-            this.statement.commissionPerc = this.transactionResponseData.commissionPercentage
-            this.statement.commissionAmount = this.transactionResponseData.commissionAmount
-            this.statement.surchargePerc = this.transactionResponseData.surchargeToCustomer
-            this.statement.surchargeAmount = this.transactionResponseData.surchargeToServiceProvider
-            this.statement.refund = this.transactionResponseData.amountPayableToCustomer
-            this.statement.stats = this.transactionResponseData.tokenStatistics
+            
+            // Initialize filtered transactions with deep copy
+            this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+            
+            // Apply search filter if exists
+            if(this.search && this.search != ''){
+                this.performFiltering()
+            }
+            
+            // TODO: CUSTOM STATEMENT DATA - Add your custom fields here
+            // You can access the raw API data through this.transactionResponseData
+            // Example:
+            // this.statement.customField = this.transactionResponseData.someField
+            // this.statement.anotherField = this.transactionResponseData.anotherField
+            this.statement.managedAmount = this.summary.managedTenredAmount
+            this.statement.nonManagedAmount = this.summary.nonManagedTenredAmount
+            this.statement.totalValue = this.summary.tenderedamount
+            this.statement.surchargeAmount = this.summary.surcharge0AmountInclVat
+            this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
+            this.statement.commissionPerc = this.summary.vendCommission.percentage
+            this.statement.startDate = this.dateRange.start
+            this.statement.endDate = this.dateRange.end
+            this.statement.name = this.customer
 
+            for (const [utilityType,data] of Object.entries(this.summary.utilities)) {
+                let newSet = {...data}
+                newSet.utilityType = utilityType
+                this.statement.stats.push(newSet)
+            }
+            
+
+
+            // Get meter complexes for filtering
             this.getMeterComplex();
             this.isLoading = false;
         },
@@ -422,12 +469,35 @@ export default{
         async hydrateStatementData(result){
             console.log('hydrate')
             this.transactionResponseData = result.responseData
-            this.transactions = result.responseData.transactionData
+
+            // Flatten vend transactions to match admin structure
+            this.transactions = []
+            this.originalTransactions = []
+            for (const [meterNumber, meterData] of Object.entries(result.responseData.transactionData)) {
+                if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                    meterData.transactions.forEach(transaction => {
+                        const flattenedTransaction = {
+                            ...transaction,
+                            meterNumber: transaction.meternumber || meterNumber,
+                            complexName: transaction.complexDescription || 'Unknown',
+                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            managedTenderAmount: transaction.tenderedamount || 0,
+                            totalUnitsIssued: transaction.totalunitsissued || 0,
+                            transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                            transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                            commissionAmount: transaction.vendCommissionAmount || 0,
+                            commissionAmountEx: transaction.vendCommissionAmount || 0
+                        }
+                        this.transactions.push(flattenedTransaction)
+                        this.originalTransactions.push(flattenedTransaction)
+                    })
+                }
+            }
+
+            // Initialize filtered list
+            this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
             if(this.search && this.search != ''){
-                // filter this.transactions on meter number
-                this.transactions = this.transactions.filter( transaction => {
-                    return transaction.meterNumber.toLowerCase().includes(this.search.toLowerCase()) || transaction.complexName.toLowerCase().includes(this.search.toLowerCase())
-                })
+                this.performFiltering()
             }
             this.statement.name = this.transactionResponseData.reportParentName
             this.statement.startDate = this.transactionResponseData.startDate,
@@ -455,11 +525,23 @@ export default{
                     Authorization : `Basic ${ADMIN_AUTH}`
                 }
             })
+            this.customer =  result.customer.description
             this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
             //console.log(this.customerStatementPeriod);
         },
         filteredTransactions(){
+            try {
+                const term = (this.search || '').toString().trim().toLowerCase()
+                if (!term) return this.transactions
+                return this.transactions.filter(t => {
+                    const meter = (t.meterNumber || '').toString().toLowerCase()
+                    const complex = (t.complexName || '').toString().toLowerCase()
+                    const id = (t.transactionUniqueId || t.transactionID || '').toString().toLowerCase()
+                    return meter.includes(term) || complex.includes(term) || id.includes(term)
+                })
+            } catch (e) {
             return this.transactions
+            }
         },
         loadMore(){
             this.currentPage += 1;
@@ -515,39 +597,41 @@ export default{
             return formattedDate.replace(/\//g, '-');
         },
         async getStatementPDF(){
-            console.log(`${JSREPORT_URL}`)
-            const username = "admin";
-            const password = "@Ezintsha0!$";
-            const basicAuth = btoa(`${username}:${password}`);
-            const response = await fetch(`${JSREPORT_URL}`,{
-                headers: {
-                    'Authorization': `Basic ${basicAuth}`,
-                    'Content-Type': 'application/json'
-                },
-                method: "POST",
-                body: JSON.stringify({
-                    "template": {
-                        "name": "vendease-pdf"
-                    },
-                    "data": this.transactionResponseData,
-                    "options": {
-                        "reports": { "save": true },
-                        "Content-Disposition": "attachment; filename=myreport.pdf"
-                    },
+            try {
+                const payload = {
+                    data: this.transactionResponseData
+                }
+                // Request PDF as a blob
+                const blob = await useAuthFetch(`${STATEMENT_API}/export/pdf?template=statement`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    responseType: 'blob',
+                    body: JSON.stringify(payload)
                 })
-            })
-            //console.log(response)
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
-            } else {
-                console.error('Failed to generate report');
+
+                // In case server returned JSON error instead of PDF
+                if (blob instanceof Blob === false) {
+                    console.error('Unexpected response type');
+                    return;
+                }
+
+                // Create a blob URL and trigger download
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.pdf`
+                document.body.appendChild(link)
+                link.click()
+                link.remove()
+                URL.revokeObjectURL(url)
+            } catch (err) {
+                console.error('Failed to generate report', err)
             }
         },
         getMeterComplex(){
             if(this.selectedMeterComplex != null) return
-            this.transactions.forEach(meter=>{
+            const source = this.originalTransactions && this.originalTransactions.length > 0 ? this.originalTransactions : this.transactions
+            source.forEach(meter=>{
                 const complex = {
                     complexName : meter.complexName,
                     complexUniqueId: meter.complexUniqueId
@@ -571,18 +655,25 @@ export default{
         yearUpdated(value) {
             this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod, this.selectedMonth, value);
         },
-        debouncedSearch: debounce(async function () {
-            this.getTransactions()
-        }, 500), // Delay of 500ms after the user stops typing
+        debouncedSearch: debounce(function () {
+            this.currentPage = 1
+            this.performFiltering()
+        }, 300), // Client-side debounce
         clearFilters() {
             this.selectedUtility = -1;
             this.selectedMeterComplex = null;
             this.search = '';
             this.currentPage = 1;
+            // Reset filtered transactions to show all original transactions with deep copy
+            this.filteredTransactions = []
+            this.$nextTick(() => {
+                this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+            })
         },
         applyFilters() {
             this.currentPage = 1;
-            this.getTransactions();
+            // Re-run filtering locally matching transactions.vue behavior
+            this.performFiltering();
         },
         formattedTime(dateString) {
             const date = new Date(dateString);
@@ -600,6 +691,42 @@ export default{
         toggleStatementSummary() {
             this.showStatementSummary = !this.showStatementSummary;
         },
+        performFiltering() {
+            // Start with deep copy of originals
+            let filtered = JSON.parse(JSON.stringify(this.originalTransactions || []))
+
+            // Filter by complex
+            if (this.selectedMeterComplex) {
+                filtered = filtered.filter(t => t.complexUniqueId === this.selectedMeterComplex || t.complexName === this.selectedMeterComplex)
+            }
+
+            // Filter by utility type
+            if (this.selectedUtility !== -1) {
+                filtered = filtered.filter(t => {
+                    if (this.selectedUtility === 0) return t.utilityType === 'Electricity'
+                    if (this.selectedUtility === 1) return t.utilityType === 'Water'
+                    return true
+                })
+            }
+
+            // Search phrase across id, meter, complex, address
+            if (this.search && this.search.trim() !== '') {
+                const term = this.search.toLowerCase()
+                filtered = filtered.filter(t => {
+                    const id = (t.transactionUniqueId || t.transactionID || '').toString().toLowerCase()
+                    const meter = (t.meterNumber || '').toString().toLowerCase()
+                    const complex = (t.complexName || '').toString().toLowerCase()
+                    const address = t.installationAdress && t.installationAdress[0] ? t.installationAdress[0].toLowerCase() : ''
+                    return id.includes(term) || meter.includes(term) || complex.includes(term) || address.includes(term)
+                })
+            }
+
+            // Replace filtered list
+            this.filteredTransactions = []
+            this.$nextTick(() => {
+                this.filteredTransactions = JSON.parse(JSON.stringify(filtered))
+            })
+        }
     },
     async mounted(){
         this.generateYearArr();
@@ -609,7 +736,7 @@ export default{
     },
     computed:{
         paginated(){
-            const filtered = this.filteredTransactions()
+            const filtered = this.filteredTransactions
             const endIndex = this.currentPage * this.pageSize;
             return filtered.slice(0, endIndex); 
         },

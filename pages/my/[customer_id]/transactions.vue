@@ -22,10 +22,10 @@
                          @input="debouncedSearch"
                      />
                  </div>
-                <Button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                <!-- <Button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                     <Icon name="lucide:download" class="w-4 h-4" />
                     Download Report
-                </Button>
+                </Button> -->
              </div>
 
 
@@ -34,8 +34,8 @@
                  <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
                      <div class="flex justify-between items-center">
                          <div>
-                             <CardTitle class="text-xl font-semibold text-gray-800">Recent Transactions</CardTitle>
-                             <p class="text-gray-600 text-sm">Your latest utility transactions and payments</p>
+                     <CardTitle class="text-xl font-semibold text-gray-800">Recent Transactions</CardTitle>
+                     <p class="text-gray-600 text-sm">Your latest utility transactions and payments</p>
                          </div>
                                                    <div class="text-right">
                               <div class="text-sm text-gray-600">Total Records</div>
@@ -151,21 +151,7 @@
                     </Select>
                 </div>
 
-                <!-- Hide/Show Coloumns -->
-                <div class="mb-6">
-                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Show/Hide Columns</Label>
-                    
-                    <Select v-model="pageSize" multiple>
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="25 records" />
-                        </SelectTrigger>
-                        <SelectContent  >
-                            <SelectItem  v-for="size in pageSizeSelect" :key="size" :value="size">
-                                {{ size }} records
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+              
                                  <!-- Action Buttons -->
                  <div class="flex gap-2">
                      <Button variant="outline" @click="clearFilters" class="flex-1">
@@ -530,20 +516,20 @@ export default{
              }
 
                            // If search phrase is provided, filter by transaction ID, meter number, complex name, or address
-              if (this.search && this.search.trim() !== '') {
-                  filteredTransactions = filteredTransactions.filter(transaction => {
-                      const searchLower = this.search.toLowerCase();
+             if (this.search && this.search.trim() !== '') {
+                 filteredTransactions = filteredTransactions.filter(transaction => {
+                     const searchLower = this.search.toLowerCase();
                       const transactionId = transaction.transactionUniqueId ? transaction.transactionUniqueId.toString().toLowerCase() : '';
-                      const meterNumber = transaction.meterNumber ? transaction.meterNumber.toLowerCase() : '';
+                     const meterNumber = transaction.meterNumber ? transaction.meterNumber.toLowerCase() : '';
                       const complexName = transaction.complexName ? transaction.complexName.toLowerCase() : '';
-                      const address = transaction.installationAdress && transaction.installationAdress[0] ? transaction.installationAdress[0].toLowerCase() : '';
-                      
+                     const address = transaction.installationAdress && transaction.installationAdress[0] ? transaction.installationAdress[0].toLowerCase() : '';
+                     
                       return transactionId.includes(searchLower) || 
                              meterNumber.includes(searchLower) || 
                              complexName.includes(searchLower) || 
                              address.includes(searchLower);
-                  });
-              }
+                 });
+             }
              
              // Completely replace the filtered transactions array with a fresh copy
              this.filteredTransactions = [];
