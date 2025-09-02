@@ -1,113 +1,159 @@
 <template>
     <div class="flex h-screen">
         <aside 
-            class="hidden md:block p-4 bg-blue-500 min-h-screen transition-all duration-300 ease-in-out flex-shrink-0 relative flex flex-col" 
-            :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'w-64' : 'w-16'"
+            class="hidden md:block bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen transition-all duration-300 ease-in-out flex-shrink-0 relative flex flex-col shadow-xl" 
+            :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'w-72' : 'w-20'"
             :style="{ backgroundColor: bgColor, color: fontColor }"
             @mouseenter="handleSidebarHover(true)"
             @mouseleave="handleSidebarHover(false)"
         >
-            <nav class="flex-1">
-                <div class="flex items-center justify-between mb-6">
-                    <!-- <MyLogo v-if="(sidebarExpanded || (isHovered && !isPinned))" />
-                    <div v-else class="w-8 h-8 bg-white rounded flex items-center justify-center">
-                        <span class="text-blue-500 font-bold text-sm">U</span>
-                    </div> -->
-                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex items-center gap-1">
-                        <button 
-                            @click="togglePin"
-                            class="text-white hover:bg-blue-600 p-1 rounded transition-colors"
-                            :title="isPinned ? 'Unpin sidebar' : 'Pin sidebar'"
-                        >
-                            <Icon 
-                                :name="isPinned ? 'lucide:pin' : 'lucide:pin-off'" 
-                                class="h-4 w-4"
-                            />
-                        </button>
-                        <!-- <button 
-                            @click="toggleSidebar" 
-                            class="text-white hover:bg-blue-600 p-1 rounded transition-colors"
-                            :title="sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
-                        >
-                            <Icon 
-                                :name="sidebarExpanded ? 'lucide:chevron-left' : 'lucide:chevron-right'" 
-                                class="h-4 w-4"
-                            />
-                        </button> -->
+            <!-- Logo Section -->
+            <div class="flex items-center justify-between p-6 border-b border-blue-500/30">
+                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex items-center gap-4">
+                    <!-- U-Vend Logo Text -->
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-white font-bold text-xl leading-tight tracking-wide" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                            U-Vend
+                        </h1>
+                        <div class="text-orange-400 font-semibold text-xs leading-tight tracking-wider">
+                            <div>PREPAID</div>
+                            <div>UTILITIES</div>
+                            <div>MANAGEMENT</div>
+                        </div>
                     </div>
                 </div>
+                <div v-else class="flex flex-col items-center mx-auto">
+                    <h1 class="text-white font-bold text-lg leading-tight tracking-wide" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        U-Vend
+                    </h1>
+                </div>
                 
+                <!-- Pin/Unpin Button -->
+                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex items-center">
+                    <button 
+                        @click="togglePin"
+                        class="text-blue-100 hover:text-white hover:bg-blue-500/50 p-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                        :title="isPinned ? 'Unpin sidebar' : 'Pin sidebar'"
+                    >
+                        <Icon 
+                            :name="isPinned ? 'lucide:pin' : 'lucide:pin-off'" 
+                            class="h-4 w-4"
+                        />
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="flex-1 p-4 space-y-2">
+                <!-- Dashboard -->
                 <NuxtLink 
-                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium transition-all" 
+                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
                     @click="navigateTo(`/my/${$route.params.customer_id}/dashboard`)"
                 >
-                    <Icon name="lucide:layout-dashboard" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
-                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Dashboard</p>
+                    <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                        <Icon name="lucide:layout-dashboard" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                    </div>
+                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                        <span class="text-sm font-medium">Dashboard</span>
+                        <span class="text-xs text-blue-200">Overview</span>
+                    </div>
                 </NuxtLink>
                 
+                <!-- Transactions -->
                 <NuxtLink 
-                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium transition-all" 
+                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
                     @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)"
                 >
-                    <Icon name="lucide:credit-card" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
-                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Transactions</p>
+                    <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                        <Icon name="lucide:receipt" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                    </div>
+                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                        <span class="text-sm font-medium">Transactions</span>
+                        <span class="text-xs text-blue-200">Payment History</span>
+                    </div>
                 </NuxtLink>
                 
-                <!-- <NuxtLink 
-                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium transition-all" 
+                <!-- Meters
+                <NuxtLink 
+                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
                     @click="navigateTo(`/my/${$route.params.customer_id}/meters`)"
                 >
-                    <Icon name="lucide:gauge" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
-                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Meters</p>
+                    <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                        <Icon name="lucide:gauge" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-3 h-5 w-5' : 'h-5 w-5'"/>
+                    </div>
+                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                        <span class="text-sm font-medium">Meters</span>
+                        <span class="text-xs text-blue-200">Manage Devices</span>
+                    </div>
                 </NuxtLink> -->
                 
+                <!-- Statement -->
                 <NuxtLink 
-                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium transition-all" 
+                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
                     @click="navigateTo(`/my/${$route.params.customer_id}/statement`)"
                 >
-                    <Icon name="lucide:chart-bar-big" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
-                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Statement</p>
+                    <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                        <Icon name="lucide:bar-chart-3" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                    </div>
+                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                        <span class="text-sm font-medium">Statement</span>
+                        <span class="text-xs text-blue-200">Reports & Analytics</span>
+                    </div>
                 </NuxtLink>
                 
                 <!-- Admin Navigation - Only show for admin users -->
                 <div 
                     v-if="isAdmin"
-                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium transition-all cursor-pointer" 
+                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200 cursor-pointer" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
                     @click="goToAdmin"
                 >
-                    <Icon name="lucide:shield" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
-                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Admin</p>
+                    <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                        <Icon name="lucide:shield-check" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                    </div>
+                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                        <span class="text-sm font-medium">Admin</span>
+                        <span class="text-xs text-blue-200">System Management</span>
+                    </div>
                 </div>
             </nav>
             
-            <!-- Logout Button at Bottom -->
-            <div class="mt-auto pt-4 border-t border-blue-400">
+            <!-- User Section at Bottom -->
+            <div class="p-4 border-t border-blue-500/30">
+                <!-- User Info (when expanded) -->
+                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="mb-3 p-3 bg-white/5 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-white/20 rounded-full flex justify-center items-center">
+                            <Icon name="lucide:user" class="h-4 w-4 text-white" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white truncate">Customer Portal</p>
+                            <p class="text-xs text-blue-200 truncate">Utility Management</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Logout Button -->
                 <button 
-                    class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-red-600 font-medium transition-all w-full" 
+                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-red-500/20 hover:shadow-lg font-medium transition-all duration-200 w-full" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
                     @click="logout"
                 >
-                    <Icon name="lucide:log-out" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-2 h-5 w-5' : 'h-5 w-5'"/>
-                    <p v-if="(sidebarExpanded || (isHovered && !isPinned))" class="whitespace-nowrap">Logout</p>
+                    <div class="flex items-center justify-center w-8 h-8 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
+                        <Icon name="lucide:log-out" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                    </div>
+                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                        <span class="text-sm font-medium">Logout</span>
+                        <span class="text-xs text-blue-200">Sign out</span>
+                    </div>
                 </button>
             </div>
         </aside>
         <main class="flex-1 flex flex-col bg-gray-50">
-            <!-- <header class="flex justify-between items-center py-2 px-4 bg-white border-b">
-                <div>
-                    <div>
-                        <p class="title font-bold">
-                            {{ title }}
-                        </p>
-                    </div>
-                </div>
-                <MyUserMenu />
-            </header> -->
             <div class="flex-1 overflow-auto">
                 <slot />
             </div>
@@ -188,15 +234,71 @@ export default{
 .title{
     text-transform: capitalize;
 }
+
 .menu-item{
     width: 100%;
-    border-radius: 0.25rem;
-    padding: 8px 10px;
     cursor: pointer;
     align-items: center;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
+
+.menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    transition: width 0.2s ease;
+}
+
+.menu-item:hover::before {
+    width: 100%;
+}
+
 .menu-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(2px);
+}
+
+/* Active state for current page */
+.menu-item.router-link-active {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item.router-link-active::before {
+    width: 100%;
+}
+
+/* Smooth transitions for sidebar expansion */
+aside {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Custom scrollbar for nav if needed */
+nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 </style>

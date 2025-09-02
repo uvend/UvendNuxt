@@ -27,6 +27,7 @@ export default defineNuxtConfig({
       API_URL: JSON.stringify(process.env.API_URL || ''),
       VEND_URL: JSON.stringify(process.env.VEND_URL || ''),
       WALLET_API_URL : JSON.stringify(process.env.WALLET_API_URL || ''),
+      STATEMENT_API: JSON.stringify(process.env.STATEMENT_API || ''),
       JSREPORT_URL: JSON.stringify(process.env.JSREPORT_URL || ''),
       MPESA_URL: JSON.stringify(process.env.MPESA_URL || ''),
       ADMIN_AUTH: JSON.stringify(process.env.ADMIN_AUTH || ''),

@@ -1,158 +1,289 @@
 <template>
-    <div>
-        <!-- Page Header -->
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Statement</h1>
-        </div>
-        
-        <div class="flex justify-between">
-            <div class="flex gap-1">
-                <div class="flex gap-2">
-                <Select v-model="selectedStatementType">
-                    <SelectTrigger class="w-[150px]">
-                        <SelectValue placeholder="Month" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="type in statementType" :value="type.value">
-                            {{ type.label }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-                <MyDateRangePicker
-                    v-if="selectedStatementType"
-                    v-model="dateRange"
-                    :months="2"
-                    :selected-month.sync="selectedMonth"
-                    :selected-year.sync="selectedYear"
-                />
-                <div v-else class="flex gap-1">
-                    <Select v-model="selectedMonth" @update:model-value="monthUpdated">
-                        <SelectTrigger class="w-[150px]">
-                            <SelectValue placeholder="Month" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="month in monthArr" :value="monthArr.indexOf(month)">
-                                {{ month }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select v-model="selectedYear" @update:model-value="yearUpdated">
-                        <SelectTrigger class="w-[100px]">
-                            <SelectValue placeholder="Year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="year in yearArr" :value="parseInt(year)">
-                                {{ year }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+    <div class="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <!-- Main Content Area -->
+        <div class="flex-1 p-6 lg:p-8 flex flex-col">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Statement</h1>
+                <p class="text-gray-600">View and manage your utility statements and reports</p>
+            </div>
+
+            <!-- Search Bar and Controls -->
+            <div class="mb-6 flex items-center gap-4">
+                <div class="relative w-1/2">
+                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5">
+                        <Icon name="lucide:search" class="w-5 h-5" />
+                    </div>
+                    <Input 
+                        type="text" 
+                        placeholder="Search statements..." 
+                        class="pl-10 bg-white/80 backdrop-blur-sm border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                        v-model="search"
+                        @input="debouncedSearch"
+                    />
                 </div>
-                <Button @click="getStatementPDF()" variant="secondary">
-                    <Icon name="lucide:printer" />
+                <Button @click="getStatementPDF()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                    <Icon name="lucide:download" class="w-4 h-4" />
+                    Print Statement
+                </Button>
+                <Button 
+                    @click="toggleStatementSummary" 
+                    variant="outline" 
+                    class="flex items-center gap-2 rounded-xl"
+                >
+                    <Icon :name="showStatementSummary ? 'lucide:eye-off' : 'lucide:eye'" class="w-4 h-4" />
+                    {{ showStatementSummary ? 'Hide' : 'Show' }} Summary
                 </Button>
             </div>
-            <div>
-                <Select  v-model="selectedUtility">
-                    <SelectTrigger class="w-[180px]">
-                        <SelectValue placeholder="Utility type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="utility in utilityType" :value="utility.value">
-                            {{ utility.label }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+
+            <!-- Statement Summary Card -->
+            <Card v-if="transactions.length > 0 && showStatementSummary" class="mb-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
+                <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                    <CardTitle class="text-xl font-semibold text-gray-800">Statement Summary</CardTitle>
+                    <p class="text-gray-600 text-sm">{{ statement.name }} - {{ statement.startDate }} to {{ statement.endDate }}</p>
+                </CardHeader>
+                <CardContent class="p-6">
+                    <!-- Detailed Statement Information -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Statement Details</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Left Column -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">Statement</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ statement.name }}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">Statement Period</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ statement.startDate }} - {{ statement.endDate }}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">Managed Tendered Amount</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.managedAmount }}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">Non Managed Tendered Amount</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.nonManagedAmount }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">Service Percentage</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ statement.commissionPerc }}%</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">Service Fee</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.commissionAmount }}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">Tenant Fee</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ Math.round(statement.surchargeAmount) }}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">Total Tendered Amount</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.totalValue }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Utility Statistics -->
+                        <div v-if="statement.stats && statement.stats.length > 0" class="mt-6">
+                            <h5 class="text-md font-semibold text-gray-800 mb-3">Utility Breakdown</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div v-for="stat in statement.stats" :key="stat.utilityType" class="bg-white rounded-lg p-3 border border-gray-200">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-700">{{ stat.utilityType }}</span>
+                                        <span class="text-sm font-semibold text-gray-900">R {{ stat.tenderedamount }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Statement Table View -->
+            <Card v-if="!showStatementSummary" class="flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden flex-1">
+                <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                    <CardTitle class="text-xl font-semibold text-gray-800">Statement Details</CardTitle>
+                    <p class="text-gray-600 text-sm">Detailed breakdown of your utility transactions</p>
+                </CardHeader>
+                <CardContent class="p-0 flex flex-col">
+                    <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                        <table class="w-full">
+                            <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
+                                <tr>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">ID</th>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Utility Type</th>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Units</th>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="transaction in paginated" :key="transaction.transactionUniqueId" class="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group">
+                                    <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
+                                    <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
+                                    <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
+                                    <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                        <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
+                                        <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
+                                        <span v-else class="text-gray-600">{{ transaction.utilityType }}</span>
+                                    </td>
+                                    <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                        <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
+                                        <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
+                                        <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                    </td>
+                                    <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
+                                    <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
+                                        <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
+                                        <div class="text-xs text-gray-400">{{ formattedDate(transaction.transactionDate) }}</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Load More Button -->
+                    <div class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
+                        <div class="flex justify-center">
+                            <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
+                                <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                                Load More
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
-            <div class="flex flex-row w-fit gap-1">
-                <div class="flex gap-1">
-                    <Button variant="secondary" v-if="selectedMeterComplex != null" @click="selectedMeterComplex = null">
-                        <Icon name="lucide:x" class="w-5 h-5"/>
-                    </Button>
-                    <Select v-model="selectedMeterComplex">
-                        <SelectTrigger class="w-[180px]">
-                            <SelectValue placeholder="Select complex" />
+
+        <!-- Right Sidebar -->
+        <div class="w-72 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
+            <!-- Filters Section -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
+                
+                <!-- Statement Type -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Statement Type</Label>
+                    <Select v-model="selectedStatementType">
+                        <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
+                            <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem v-for="complex in meterComplexes" :value="complex.complexUniqueId">
-                                {{ complex.complexName }}
+                            <SelectItem v-for="type in statementType" :value="type.value">
+                                {{ type.label }}
                             </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
-                <Select  v-model="pageSize">
-                    <SelectTrigger class="w-[80px]">
-                        <SelectValue placeholder="Page Size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="size in pageSizeSelect" :value="size">
-                            {{ size }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-                <div>
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+
+                <!-- Date Range -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Date Range</Label>
+                    <MyDateRangePicker
+                        v-if="selectedStatementType"
+                        v-model="dateRange"
+                        :months="2"
+                        :selected-month.sync="selectedMonth"
+                        :selected-year.sync="selectedYear"
+                    />
+                    <div v-else class="space-y-2">
+                        <Select v-model="selectedMonth" @update:model-value="monthUpdated">
+                            <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
+                                <SelectValue placeholder="Month" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="month in monthArr" :value="monthArr.indexOf(month)">
+                                    {{ month }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select v-model="selectedYear" @update:model-value="yearUpdated">
+                            <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
+                                <SelectValue placeholder="Year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="year in yearArr" :value="parseInt(year)">
+                                    {{ year }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <!-- Utility Type -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Utility Type</Label>
+                    <Select v-model="selectedUtility">
+                        <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
+                            <SelectValue placeholder="Select utility" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="utility in utilityType" :value="utility.value">
+                                {{ utility.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- Complex -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Complex</Label>
+                    <div class="flex gap-2">
+                        <Button 
+                            v-if="selectedMeterComplex != null" 
+                            @click="selectedMeterComplex = null"
+                            variant="outline" 
+                            size="sm"
+                            class="rounded-lg"
+                        >
+                            <Icon name="lucide:x" class="w-4 h-4"/>
+                        </Button>
+                        <Select v-model="selectedMeterComplex" class="flex-1">
+                            <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
+                                <SelectValue placeholder="Select complex" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="complex in meterComplexes" :value="complex.complexUniqueId">
+                                    {{ complex.complexName }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <!-- Load More Amount -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Load More Amount</Label>
+                    <Select v-model="pageSize">
+                        <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
+                            <SelectValue placeholder="25 records" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="size in pageSizeSelect" :value="size">
+                                {{ size }} records
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                    <Button variant="outline" @click="clearFilters" class="flex-1 rounded-lg">
+                        Clear
+                    </Button>
+                    <Button @click="applyFilters" class="flex-1 bg-blue-600 hover:bg-blue-700 rounded-lg">
+                        Apply
+                    </Button>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="flex pt-2 gap-2 justify-between">
-        <Button @click="toggleSearch()" variant="secondary">
-            <Icon name="lucide:search"/>
-        </Button>
-        <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
-        
-    </div>
-    <MySkeletenCardList v-if="isLoading"/>
-    <div v-else>
-        <div class="my-2" v-if="transactions.length > 0">
-            <div class="flex justify-between">
-                <p>Statement</p>
-                <p>{{ statement.name }}</p>
-            </div>
-            <div class="flex justify-between">
-                <p>Statement Period</p>
-                <p>{{ statement.startDate }} - {{ statement.endDate }}</p>
-            </div>
-            <div class="flex justify-between">
-                <p>Managed Tendered Amount</p>
-                <p>{{ statement.managedAmount }}</p>
-            </div>
-            <div class="flex justify-between">
-                <p>Non Managed Tendered Amount</p>
-                <p>{{ statement.nonManagedAmount }}</p>
-            </div>
-            <hr>
-            <div v-for="stat in statement.stats" :key="stat.utilityType" class="flex justify-between">
-                <p>{{ stat.utilityType }}</p>
-                <p>{{ stat.totalPaidValue }}</p>
-            </div>
-            <hr>
-            <div class="flex justify-between">
-                <p>Total Tendered Amount</p>
-                <p>{{ statement.totalValue }}</p>
-            </div>
-            <hr>
-            <div class="flex justify-between">
-                <p>Service Percentage</p>
-                <p>{{ statement.commissionPerc }}%</p>
-            </div>
-            <div class="flex justify-between">
-                <p>Service Fee</p>
-                <p>{{ statement.commissionAmount }}</p>
-            </div>
-            <div class="flex justify-between">
-                <p>Tenant Fee</p>
-                <p>{{ statement.surchargeAmount }}</p>
-            </div>
-            <hr>
-            <div class="flex justify-between">
-                <p>Refund</p>
-                <p>{{ statement.refund }}</p>
-            </div>
-        </div>
-        <MyMeterTransactionCard v-for="transaction in paginated" :transaction="transaction" :statement="true"/>
     </div>
 </template>
 <script>
@@ -165,6 +296,8 @@ export default{
     data(){
         return {
             transactions: [],
+            originalTransactions: [],
+            filteredTransactions: [],
             statement: {
                 name: null,
                 startDate: null,
@@ -212,7 +345,7 @@ export default{
             currentPage: 1,
             pageSize: 10,
             pageSizeSelect: [
-                10,50,100,200
+                10,25,50,100
             ],
             selectedMonth: 0,
             selectedYear: 0,
@@ -222,9 +355,11 @@ export default{
             yearArr: [],
             dateRange: null,
             customerStatementPeriod: 0,
+            customer:null,
             searchActive: true,
             search: null,
-            response: null
+            response: null,
+            showStatementSummary: true
         }
     },
     methods:{
@@ -233,7 +368,7 @@ export default{
         },
         async getAdminTransactions(){
             this.isLoading = true;
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetSummarisedMeterActivity`,{
+            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                 method: "GET",
                 params:{
                     IncludeMetersWithNoActivity : true,
@@ -245,27 +380,69 @@ export default{
                     UtilityType: this.selectedUtility
                 },
             })
-            this.transactionResponseData = result.responseData
-            this.transactions = result.responseData.transactionData
-            if(this.search && this.search != ''){
-                // filter this.transactions on meter number
-                this.transactions = this.transactions.filter( transaction => {
-                    return transaction.meterNumber.toLowerCase().includes(this.search.toLowerCase()) || transaction.complexName.toLowerCase().includes(this.search.toLowerCase())
-                })
+            
+            // Store the complete API response
+            this.transactionResponseData = result.data
+            this.summary = result.data.summary
+            
+            // Clear existing transactions
+            this.transactions = []
+            this.originalTransactions = []
+            
+            // Extract all transactions from all meters (same pattern as transactions.vue)
+            for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+                if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                    meterData.transactions.forEach(transaction => {
+                        const flattenedTransaction = {
+                            ...transaction,
+                            meterNumber: transaction.meternumber || meterNumber,
+                            complexName: transaction.complexDescription || 'Unknown',
+                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            managedTenderAmount: transaction.tenderedamount || 0,
+                            totalUnitsIssued: transaction.totalunitsissued || 0,
+                            transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                            transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                            commissionAmount: transaction.vendCommissionAmount || 0,
+                            commissionAmountEx: transaction.vendCommissionAmount || 0
+                        }
+                        this.transactions.push(flattenedTransaction)
+                        this.originalTransactions.push(flattenedTransaction)
+                    })
+                }
             }
-            this.statement.name = this.transactionResponseData.reportParentName
-            this.statement.startDate = this.transactionResponseData.startDate,
-            this.statement.endDate = this.transactionResponseData.endDate
-            this.statement.totalValue = this.transactionResponseData.totalAmountTendered
-            this.statement.managedAmount = this.transactionResponseData.managedTenderAmount
-            this.statement.nonManagedAmount = this.transactionResponseData.nonManagedTenderAmount
-            this.statement.commissionPerc = this.transactionResponseData.commissionPercentage
-            this.statement.commissionAmount = this.transactionResponseData.commissionAmount
-            this.statement.surchargePerc = this.transactionResponseData.surchargeToCustomer
-            this.statement.surchargeAmount = this.transactionResponseData.surchargeToServiceProvider
-            this.statement.refund = this.transactionResponseData.amountPayableToCustomer
-            this.statement.stats = this.transactionResponseData.tokenStatistics
+            
+            // Initialize filtered transactions with deep copy
+            this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+            
+            // Apply search filter if exists
+            if(this.search && this.search != ''){
+                this.performFiltering()
+            }
+            
+            // TODO: CUSTOM STATEMENT DATA - Add your custom fields here
+            // You can access the raw API data through this.transactionResponseData
+            // Example:
+            // this.statement.customField = this.transactionResponseData.someField
+            // this.statement.anotherField = this.transactionResponseData.anotherField
+            this.statement.managedAmount = this.summary.managedTenredAmount
+            this.statement.nonManagedAmount = this.summary.nonManagedTenredAmount
+            this.statement.totalValue = this.summary.tenderedamount
+            this.statement.surchargeAmount = this.summary.surcharge0AmountInclVat
+            this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
+            this.statement.commissionPerc = this.summary.vendCommission.percentage
+            this.statement.startDate = this.dateRange.start
+            this.statement.endDate = this.dateRange.end
+            this.statement.name = this.customer
 
+            for (const [utilityType,data] of Object.entries(this.summary.utilities)) {
+                let newSet = {...data}
+                newSet.utilityType = utilityType
+                this.statement.stats.push(newSet)
+            }
+            
+
+
+            // Get meter complexes for filtering
             this.getMeterComplex();
             this.isLoading = false;
         },
@@ -278,7 +455,6 @@ export default{
                     VendTransactionReportType: 1
                 }
             });
-            //console.log(result)
             await this.hydrateStatementData(result)
             this.isLoading = false;
         },
@@ -293,12 +469,35 @@ export default{
         async hydrateStatementData(result){
             console.log('hydrate')
             this.transactionResponseData = result.responseData
-            this.transactions = result.responseData.transactionData
+
+            // Flatten vend transactions to match admin structure
+            this.transactions = []
+            this.originalTransactions = []
+            for (const [meterNumber, meterData] of Object.entries(result.responseData.transactionData)) {
+                if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                    meterData.transactions.forEach(transaction => {
+                        const flattenedTransaction = {
+                            ...transaction,
+                            meterNumber: transaction.meternumber || meterNumber,
+                            complexName: transaction.complexDescription || 'Unknown',
+                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            managedTenderAmount: transaction.tenderedamount || 0,
+                            totalUnitsIssued: transaction.totalunitsissued || 0,
+                            transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                            transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                            commissionAmount: transaction.vendCommissionAmount || 0,
+                            commissionAmountEx: transaction.vendCommissionAmount || 0
+                        }
+                        this.transactions.push(flattenedTransaction)
+                        this.originalTransactions.push(flattenedTransaction)
+                    })
+                }
+            }
+
+            // Initialize filtered list
+            this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
             if(this.search && this.search != ''){
-                // filter this.transactions on meter number
-                this.transactions = this.transactions.filter( transaction => {
-                    return transaction.meterNumber.toLowerCase().includes(this.search.toLowerCase()) || transaction.complexName.toLowerCase().includes(this.search.toLowerCase())
-                })
+                this.performFiltering()
             }
             this.statement.name = this.transactionResponseData.reportParentName
             this.statement.startDate = this.transactionResponseData.startDate,
@@ -326,16 +525,26 @@ export default{
                     Authorization : `Basic ${ADMIN_AUTH}`
                 }
             })
+            this.customer =  result.customer.description
             this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
             //console.log(this.customerStatementPeriod);
         },
         filteredTransactions(){
+            try {
+                const term = (this.search || '').toString().trim().toLowerCase()
+                if (!term) return this.transactions
+                return this.transactions.filter(t => {
+                    const meter = (t.meterNumber || '').toString().toLowerCase()
+                    const complex = (t.complexName || '').toString().toLowerCase()
+                    const id = (t.transactionUniqueId || t.transactionID || '').toString().toLowerCase()
+                    return meter.includes(term) || complex.includes(term) || id.includes(term)
+                })
+            } catch (e) {
             return this.transactions
-        },
-        changePage(page){
-            if (page >= 1 && page <= this.totalPages) {
-                this.currentPage = page;
             }
+        },
+        loadMore(){
+            this.currentPage += 1;
         },
         calculateStatementPeriod(statementDay, statmentMonth = null, statmentYear = null) {
             const today = new Date();
@@ -388,39 +597,41 @@ export default{
             return formattedDate.replace(/\//g, '-');
         },
         async getStatementPDF(){
-            console.log(`${JSREPORT_URL}`)
-            const username = "admin";
-            const password = "@Ezintsha0!$";
-            const basicAuth = btoa(`${username}:${password}`);
-            const response = await fetch(`${JSREPORT_URL}`,{
-                headers: {
-                    'Authorization': `Basic ${basicAuth}`,
-                    'Content-Type': 'application/json'
-                },
-                method: "POST",
-                body: JSON.stringify({
-                    "template": {
-                        "name": "vendease-pdf"
-                    },
-                    "data": this.transactionResponseData,
-                    "options": {
-                        "reports": { "save": true },
-                        "Content-Disposition": "attachment; filename=myreport.pdf"
-                    },
+            try {
+                const payload = {
+                    data: this.transactionResponseData
+                }
+                // Request PDF as a blob
+                const blob = await useAuthFetch(`${STATEMENT_API}/export/pdf?template=statement`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    responseType: 'blob',
+                    body: JSON.stringify(payload)
                 })
-            })
-            //console.log(response)
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
-            } else {
-                console.error('Failed to generate report');
+
+                // In case server returned JSON error instead of PDF
+                if (blob instanceof Blob === false) {
+                    console.error('Unexpected response type');
+                    return;
+                }
+
+                // Create a blob URL and trigger download
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.pdf`
+                document.body.appendChild(link)
+                link.click()
+                link.remove()
+                URL.revokeObjectURL(url)
+            } catch (err) {
+                console.error('Failed to generate report', err)
             }
         },
         getMeterComplex(){
             if(this.selectedMeterComplex != null) return
-            this.transactions.forEach(meter=>{
+            const source = this.originalTransactions && this.originalTransactions.length > 0 ? this.originalTransactions : this.transactions
+            source.forEach(meter=>{
                 const complex = {
                     complexName : meter.complexName,
                     complexUniqueId: meter.complexUniqueId
@@ -444,9 +655,78 @@ export default{
         yearUpdated(value) {
             this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod, this.selectedMonth, value);
         },
-        debouncedSearch: debounce(async function () {
-            this.getTransactions()
-        }, 500), // Delay of 500ms after the user stops typing
+        debouncedSearch: debounce(function () {
+            this.currentPage = 1
+            this.performFiltering()
+        }, 300), // Client-side debounce
+        clearFilters() {
+            this.selectedUtility = -1;
+            this.selectedMeterComplex = null;
+            this.search = '';
+            this.currentPage = 1;
+            // Reset filtered transactions to show all original transactions with deep copy
+            this.filteredTransactions = []
+            this.$nextTick(() => {
+                this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+            })
+        },
+        applyFilters() {
+            this.currentPage = 1;
+            // Re-run filtering locally matching transactions.vue behavior
+            this.performFiltering();
+        },
+        formattedTime(dateString) {
+            const date = new Date(dateString);
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        },
+        formattedDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-ZA', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        },
+        toggleStatementSummary() {
+            this.showStatementSummary = !this.showStatementSummary;
+        },
+        performFiltering() {
+            // Start with deep copy of originals
+            let filtered = JSON.parse(JSON.stringify(this.originalTransactions || []))
+
+            // Filter by complex
+            if (this.selectedMeterComplex) {
+                filtered = filtered.filter(t => t.complexUniqueId === this.selectedMeterComplex || t.complexName === this.selectedMeterComplex)
+            }
+
+            // Filter by utility type
+            if (this.selectedUtility !== -1) {
+                filtered = filtered.filter(t => {
+                    if (this.selectedUtility === 0) return t.utilityType === 'Electricity'
+                    if (this.selectedUtility === 1) return t.utilityType === 'Water'
+                    return true
+                })
+            }
+
+            // Search phrase across id, meter, complex, address
+            if (this.search && this.search.trim() !== '') {
+                const term = this.search.toLowerCase()
+                filtered = filtered.filter(t => {
+                    const id = (t.transactionUniqueId || t.transactionID || '').toString().toLowerCase()
+                    const meter = (t.meterNumber || '').toString().toLowerCase()
+                    const complex = (t.complexName || '').toString().toLowerCase()
+                    const address = t.installationAdress && t.installationAdress[0] ? t.installationAdress[0].toLowerCase() : ''
+                    return id.includes(term) || meter.includes(term) || complex.includes(term) || address.includes(term)
+                })
+            }
+
+            // Replace filtered list
+            this.filteredTransactions = []
+            this.$nextTick(() => {
+                this.filteredTransactions = JSON.parse(JSON.stringify(filtered))
+            })
+        }
     },
     async mounted(){
         this.generateYearArr();
@@ -455,14 +735,10 @@ export default{
         this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod);
     },
     computed:{
-        totalPages() {
-            return Math.ceil(this.filteredTransactions().length / this.pageSize);
-        },
         paginated(){
-            const filtered = this.filteredTransactions()
-            const startIndex = (this.currentPage - 1) * this.pageSize;
-            const endIndex = startIndex + this.pageSize;
-            return filtered.slice(startIndex, endIndex); 
+            const filtered = this.filteredTransactions
+            const endIndex = this.currentPage * this.pageSize;
+            return filtered.slice(0, endIndex); 
         },
     },
     watch:{
@@ -489,3 +765,62 @@ export default{
     }
 }
 </script>
+
+<style scoped>
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.5);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(203, 213, 225, 0.8);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.9);
+}
+
+/* Firefox scrollbar styles */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(203, 213, 225, 0.8) rgba(241, 245, 249, 0.5);
+}
+
+/* Hide scrollbar when not needed */
+.custom-scrollbar::-webkit-scrollbar-thumb:vertical {
+    min-height: 30px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:horizontal {
+    min-width: 30px;
+}
+
+/* Card hover animations */
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+}
+
+/* Table row animations */
+.table-row {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Gradient text effect */
+.gradient-text {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>

@@ -1,71 +1,80 @@
 <template>
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <!-- Main Content Area -->
-        <div class="flex-1 p-6 flex flex-col">
+        <div class="flex-1 p-6 lg:p-8 flex flex-col">
             <!-- Header -->
-             <div class="mb-6">
-                 <h1 class="text-3xl font-bold text-gray-900">Transactions</h1>
+             <div class="mb-8">
+                 <h1 class="text-3xl font-bold text-gray-900 mb-2">Transactions</h1>
+                 <p class="text-gray-600">View and manage your utility transaction history</p>
              </div>
 
              <!-- Search Bar and View Toggle -->
-             <div class="mb-6 flex items-center gap-4">
+             <div class="mb-8 flex items-center gap-4">
                  <div class="relative w-1/2">
-                     <Icon name="lucide:search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                     <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5">
+                         <Icon name="lucide:search" class="w-5 h-5" />
+                     </div>
                      <Input 
                          type="text" 
                          placeholder="Search transactions..." 
-                         class="pl-10"
+                         class="pl-10 bg-white/80 backdrop-blur-sm border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
                          v-model="search"
                          @input="debouncedSearch"
                      />
                  </div>
-                <Button class="flex">
+                <!-- <Button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                    <Icon name="lucide:download" class="w-4 h-4" />
                     Download Report
-                    <Icon name="lucide:printer"/>
-                </Button>
+                </Button> -->
              </div>
 
 
              <!-- Transaction Table View -->
-             <Card v-if="!showCharts" class="flex flex-col">
-                 <CardHeader>
-                     <CardTitle>Recent Transactions</CardTitle>
+             <Card v-if="!showCharts" class="flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
+                 <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                     <div class="flex justify-between items-center">
+                         <div>
+                     <CardTitle class="text-xl font-semibold text-gray-800">Recent Transactions</CardTitle>
+                     <p class="text-gray-600 text-sm">Your latest utility transactions and payments</p>
+                         </div>
+                                                   <div class="text-right">
+                              <div class="text-sm text-gray-600">Total Records</div>
+                              <div class="text-2xl font-bold text-blue-600">{{ filteredTransactions.length }}</div>
+                              <div class="text-xs text-gray-500 mt-1">Currently Shown: {{ paginated.length }}</div>
+                          </div>
+                     </div>
                  </CardHeader>
                                                                                                                                                <CardContent class="p-0 flex flex-col">
                      <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
                           <table class="w-full">
-                              <thead class="sticky top-0 bg-white z-10">
-                                  <tr class="border-b">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-600" >ID</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Meter Number</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Complex</th>
-                                     <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Free</th> -->
-                                     <!-- <th class="text-left py-3 px-4 font-medium text-gray-600">Purchase</th> -->
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Units Issued</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Amount</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Service Fee</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Refund</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Time</th>
+                              <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
+                                  <tr>
+                                    <th class="text-left py-4 px-6 font-semibold text-gray-700" >ID</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Units Issued</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Service Fee</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Refund</th>
+                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Time</th>
                                  </tr>
                              </thead>
                              <tbody>
-                                     <tr v-for="(transaction,index) in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b hover:bg-gray-50 cursor-pointer transition-colors', selectedTransaction && selectedTransaction.meterNumber === transaction.meterNumber ? 'bg-blue-50 border-blue-200' : '']" @click="selectTransaction(transaction)">
-                                     <td class="py-3 px-4 text-sm">{{ transaction.transactionUniqueId }}</td>
-                                        <td class="py-3 px-4 text-sm">{{ transaction.meterNumber }}</td>
-                                     <td class="py-3 px-4 text-sm">{{ transaction.complexName }}</td>
-                                     <!-- <td class="py-3 px-4 text-sm">{{ transaction.freeUnits }}</td> -->
-                                     <!-- <td class="py-3 px-4 text-sm">{{ transaction.totalUnitsIssued }}</td> -->
-                                     <td class="py-3 px-4 text-sm">
-                                         {{ transaction.totalUnitsIssued }}
-                                         <span v-if="transaction.utilityType === 'Water'">KL</span>
-                                         <span v-else-if="transaction.utilityType === 'Electricity'">KWh</span>
+                                     <tr v-for="(transaction,index) in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group', selectedTransaction && selectedTransaction.meterNumber === transaction.meterNumber ? 'bg-blue-100/80 border-blue-200' : '']" @click="selectTransaction(transaction)">
+                                     <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
+                                        <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
+                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
+                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                         <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
+                                         <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
+                                         <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
                                      </td>
-                                     <td class="py-3 px-4 text-sm">R {{ transaction.managedTenderAmount }}</td>
-                                     <td class="py-3 px-4 text-sm">R {{ transaction.commissionAmountEx }}</td>
-                                     <td class="py-3 px-4 text-sm text-orange-500">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
-                                     <td class="py-3 px-4 text-sm">
-                                         {{ formattedTime(transaction.transactionDate) }}<br>
-                                         {{ formatedDate(transaction.transactionDate) }}
+                                     <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
+                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">R {{ transaction.commissionAmountEx }}</td>
+                                     <td class="py-4 px-6 text-sm font-semibold text-orange-600 group-hover:text-orange-700">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
+                                     <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
+                                         <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
+                                         <div class="text-xs text-gray-400">{{ formatedDate(transaction.transactionDate) }}</div>
                                      </td>
                                  </tr>
                              </tbody>
@@ -73,10 +82,11 @@
                      </div>
                      
                      <!-- Load More Button -->
-                     <div class="p-4 border-t flex-shrink-0">
+                     <div class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
                          <div class="flex justify-center">
-                             <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700">
-                                 + Load More
+                             <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
+                                 <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                                 Load More
                              </Button>
                          </div>
                      </div>
@@ -85,7 +95,7 @@
         </div>
 
         <!-- Right Sidebar -->
-         <div class="max-w-96 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
+         <div class="max-w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
             <!-- Filters Section -->
             <div v-if="!showTransactionDetails" class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
@@ -141,21 +151,7 @@
                     </Select>
                 </div>
 
-                <!-- Hide/Show Coloumns -->
-                <div class="mb-6">
-                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Show/Hide Columns</Label>
-                    
-                    <Select v-model="pageSize" multiple>
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="25 records" />
-                        </SelectTrigger>
-                        <SelectContent  >
-                            <SelectItem  v-for="size in pageSizeSelect" :key="size" :value="size">
-                                {{ size }} records
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+              
                                  <!-- Action Buttons -->
                  <div class="flex gap-2">
                      <Button variant="outline" @click="clearFilters" class="flex-1">
@@ -292,7 +288,7 @@ export default{
     methods:{
                  async getAdminTransactions(){
              this.isLoading = true;
-             const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetMeterActivity`,{
+             const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                  method: "GET",
                  params:{
                      IncludeMetersWithNoActivity : false,
@@ -304,11 +300,36 @@ export default{
                      UtilityType: this.selectedUtility
                  }
              })
-             this.transactions = result.responseData.transactionData
-             this.originalTransactions = JSON.parse(JSON.stringify(result.responseData.transactionData)); // Store original data with deep copy
+             
+             // Clear existing transactions
+             this.transactions = []
+             this.originalTransactions = []
+             
+             // Extract all transactions from all meters
+             for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+                 if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                     meterData.transactions.forEach(transaction => {
+                         const flattenedTransaction = {
+                             ...transaction,
+                             meterNumber: transaction.meternumber || meterNumber,
+                             complexName: transaction.complexDescription || 'Unknown',
+                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                             managedTenderAmount: transaction.tenderedamount || 0,
+                             totalUnitsIssued: transaction.totalunitsissued || 0,
+                             transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                             transactionID: transaction.uniqueidentification || Date.now(),
+                             transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                             commissionAmount: transaction.vendCommissionAmount || 0,
+                             commissionAmountEx: transaction.vendCommissionAmount || 0
+                         }
+                         this.transactions.push(flattenedTransaction)
+                         this.originalTransactions.push(flattenedTransaction)
+                     })
+                 }
+             }
+             
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
              await this.getMeterComplex()
-             //console.log(result)
              this.isLoading = false;
          },
                  async getVendTransactions(){
@@ -316,20 +337,42 @@ export default{
              const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
                  method: "GET",
                  params:{
-                     //IncludeMetersWithNoActivity : false,
                      StartDate : this.dateRange.start,
                      EndDate: this.dateRange.end,
                      VendTransactionReportType: 0,  // customer
-                     //ResponseFormatType: 0,
-                     //ParentUniqueID: this.$route.params.customer_id,
                      UtilityType: this.selectedUtility
                  }
              })
-             this.transactions = result.responseData.transactionData
-             this.originalTransactions = JSON.parse(JSON.stringify(result.responseData.transactionData)); // Store original data with deep copy
+             
+             // Clear existing transactions
+             this.transactions = []
+             this.originalTransactions = []
+             
+             // Extract all transactions from all meters
+             for (const [meterNumber, meterData] of Object.entries(result.responseData.transactionData)) {
+                 if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                     meterData.transactions.forEach(transaction => {
+                         const flattenedTransaction = {
+                             ...transaction,
+                             meterNumber: transaction.meternumber || meterNumber,
+                             complexName: transaction.complexDescription || 'Unknown',
+                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                             managedTenderAmount: transaction.tenderedamount || 0,
+                             totalUnitsIssued: transaction.totalunitsissued || 0,
+                             transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                             transactionID: transaction.uniqueidentification || Date.now(),
+                             transactionUniqueId: transaction.uniqueidentification || Date.now(),
+                             commissionAmount: transaction.vendCommissionAmount || 0,
+                             commissionAmountEx: transaction.vendCommissionAmount || 0
+                         }
+                         this.transactions.push(flattenedTransaction)
+                         this.originalTransactions.push(flattenedTransaction)
+                     })
+                 }
+             }
+             
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
              await this.getMeterComplex()
-             //console.log(result)
              this.isLoading = false;
          },
         getTransactions(){
@@ -472,14 +515,19 @@ export default{
                  });
              }
 
-             // If search phrase is provided, filter by meter number or address
+                           // If search phrase is provided, filter by transaction ID, meter number, complex name, or address
              if (this.search && this.search.trim() !== '') {
                  filteredTransactions = filteredTransactions.filter(transaction => {
                      const searchLower = this.search.toLowerCase();
+                      const transactionId = transaction.transactionUniqueId ? transaction.transactionUniqueId.toString().toLowerCase() : '';
                      const meterNumber = transaction.meterNumber ? transaction.meterNumber.toLowerCase() : '';
+                      const complexName = transaction.complexName ? transaction.complexName.toLowerCase() : '';
                      const address = transaction.installationAdress && transaction.installationAdress[0] ? transaction.installationAdress[0].toLowerCase() : '';
                      
-                     return meterNumber.includes(searchLower) || address.includes(searchLower);
+                      return transactionId.includes(searchLower) || 
+                             meterNumber.includes(searchLower) || 
+                             complexName.includes(searchLower) || 
+                             address.includes(searchLower);
                  });
              }
              
