@@ -22,9 +22,14 @@
                         @input="debouncedSearch"
                     />
                 </div>
-                <Button @click="getStatementPDF()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                    <Icon name="lucide:download" class="w-4 h-4" />
-                    Print Statement
+                <Button 
+                    @click="getStatementPDF()" 
+                    :disabled="isGeneratingPDF"
+                    class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <Icon v-if="!isGeneratingPDF" name="lucide:download" class="w-4 h-4" />
+                    <Icon v-else name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                    {{ isGeneratingPDF ? 'Generating PDF...' : 'Print Statement' }}
                 </Button>
                 <Button 
                     @click="toggleStatementSummary" 
@@ -359,7 +364,8 @@ export default{
             searchActive: true,
             search: null,
             response: null,
-            showStatementSummary: true
+            showStatementSummary: true,
+            isGeneratingPDF: false
         }
     },
     methods:{
@@ -597,6 +603,7 @@ export default{
             return formattedDate.replace(/\//g, '-');
         },
         async getStatementPDF(){
+            this.isGeneratingPDF = true;
             try {
                 const payload = {
                     data: this.transactionResponseData
@@ -626,6 +633,8 @@ export default{
                 URL.revokeObjectURL(url)
             } catch (err) {
                 console.error('Failed to generate report', err)
+            } finally {
+                this.isGeneratingPDF = false;
             }
         },
         getMeterComplex(){

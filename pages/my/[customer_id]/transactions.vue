@@ -95,7 +95,7 @@
         </div>
 
         <!-- Right Sidebar -->
-         <div class="max-w-96 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
+         <div class="w-80 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
             <!-- Filters Section -->
             <div v-if="!showTransactionDetails" class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
@@ -103,7 +103,41 @@
                 <!-- Date Range -->
                 <div class="mb-4">
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Date Range</Label>
-                    <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
+                    <div class="space-y-2">
+                        <Select v-model="selectedDateRange" @update:model-value="onDateRangeChange">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Select date range" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="lastDay">Last Day</SelectItem>
+                                <SelectItem value="lastWeek">Last Week</SelectItem>
+                                <SelectItem value="lastMonth">Last Month</SelectItem>
+                                <SelectItem value="custom">Custom Range</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        
+                        <!-- Custom Date Inputs (only shown when custom is selected) -->
+                        <div v-if="selectedDateRange === 'custom'" class="space-y-2">
+                            <div>
+                                <Label class="text-xs text-gray-500 mb-1 block">Start Date</Label>
+                                <Input 
+                                    type="date" 
+                                    v-model="startDate"
+                                    class="w-full"
+                                    @change="updateDateRange"
+                                />
+                            </div>
+                            <div>
+                                <Label class="text-xs text-gray-500 mb-1 block">End Date</Label>
+                                <Input 
+                                    type="date" 
+                                    v-model="endDate"
+                                    class="w-full"
+                                    @change="updateDateRange"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Type -->
@@ -275,6 +309,9 @@ export default{
                  meterComplexes: [],
                  selectedMeterComplex: null,
                           dateRange: null,
+                 startDate: null,
+                 endDate: null,
+                 selectedDateRange: 'lastMonth',
                  selectedTransaction: null,
                  showTransactionDetails: false,
                  showCharts: false, // Toggle between charts and transactions view
@@ -467,6 +504,16 @@ export default{
              this.selectedMeterComplex = null;
              this.search = '';
              this.currentPage = 1;
+             
+             // Reset date range dropdown and inputs to last month
+             this.selectedDateRange = 'lastMonth';
+             const today = new Date();
+             const lastMonth = new Date();
+             lastMonth.setDate(today.getDate()-30);
+             this.startDate = lastMonth.toISOString().split('T')[0];
+             this.endDate = today.toISOString().split('T')[0];
+             this.updateDateRange();
+             
              // Reset filtered transactions to show all original transactions with deep copy
              this.filteredTransactions = [];
              this.$nextTick(() => {
@@ -576,12 +623,76 @@ export default{
              this.$nextTick(() => {
                  this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions));
              });
+         },
+         
+         // Date handling methods
+         updateDateRange() {
+             if (this.startDate && this.endDate) {
+                 this.dateRange = {
+                     start: new Date(this.startDate).toISOString(),
+                     end: new Date(this.endDate).toISOString()
+                 };
+             }
+         },
+         
+         onDateRangeChange(value) {
+             const today = new Date();
+             let startDate, endDate;
+             
+             switch (value) {
+                 case 'lastDay':
+                     startDate = new Date(today);
+                     startDate.setDate(today.getDate() - 1);
+                     endDate = new Date(today);
+                     break;
+                     
+                 case 'lastWeek':
+                     startDate = new Date(today);
+                     startDate.setDate(today.getDate() - 7);
+                     endDate = new Date(today);
+                     break;
+                     
+                 case 'lastMonth':
+                     startDate = new Date(today);
+                     startDate.setDate(today.getDate() - 30);
+                     endDate = new Date(today);
+                     break;
+                     
+                 case 'custom':
+                     // Keep existing dates for custom range
+                     return;
+                     
+                 default:
+                     return;
+             }
+             
+             // Update the date inputs
+             this.startDate = startDate.toISOString().split('T')[0];
+             this.endDate = endDate.toISOString().split('T')[0];
+             
+             // Update the date range
+             this.updateDateRange();
+         },
+         
+         setToday() {
+             const today = new Date();
+             const todayStr = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+             
+             this.startDate = todayStr;
+             this.endDate = todayStr;
+             this.updateDateRange();
          }
     },
     async mounted(){
         const today = new Date();
         const lastMonth = new Date();
         lastMonth.setDate(today.getDate()-30)
+        
+        // Initialize date inputs
+        this.startDate = lastMonth.toISOString().split('T')[0];
+        this.endDate = today.toISOString().split('T')[0];
+        
+        // Set initial date range (lastMonth is already set as default in data)
         this.dateRange = {
             start : lastMonth.toISOString(),
             end : today.toISOString()

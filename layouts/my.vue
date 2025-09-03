@@ -122,10 +122,31 @@
                 </div>
             </nav>
             
+                         <!-- Customer Support Section -->
+             <div class="p-4 border-t border-blue-500/30">
+                 <NuxtLink 
+                     href="https://wa.me/27833147484" 
+                     target="_blank" 
+                     rel="noopener"
+                     class="menu-item group flex items-center px-4 py-3 rounded-xl text-white bg-green-600/20 hover:bg-green-500/30 hover:shadow-lg font-medium transition-all duration-200 w-full" 
+                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                 >
+                     <div class="flex items-center justify-center w-8 h-8 bg-green-500/30 rounded-lg group-hover:bg-green-400/40 transition-colors">
+                         <Icon name="lucide:message-circle" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                     </div>
+                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                         <span class="text-sm font-medium">Customer Support</span>
+                         <span class="text-xs text-green-200">WhatsApp Chat</span>
+                     </div>
+                 </NuxtLink>
+             </div>
+            
             <!-- User Section at Bottom -->
-            <div class="p-4 border-t border-blue-500/30">
+            <div v-if="isAdmin" class="p-4 border-t border-blue-500/30">
                 <!-- User Info (when expanded) -->
-                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="mb-3 p-3 bg-white/5 rounded-lg">
+                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="mb-3 p-3 bg-white/5 rounded-lg hover:cursor-pointer"
+                    @click="goToCustomerSelection"
+                >
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-white/20 rounded-full flex justify-center items-center">
                             <Icon name="lucide:user" class="h-4 w-4 text-white" />
@@ -195,6 +216,9 @@ export default{
                 localStorage.setItem('lastCustomerId', currentCustomerId);
             }
             this.$router.push('/admin/account');
+        },
+        goToCustomerSelection(){
+            this.$router.push('/')
         },
         logout() {
             // Clear customer data and navigate to login
