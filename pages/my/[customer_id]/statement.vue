@@ -27,9 +27,9 @@
                     :disabled="isGeneratingPDF"
                     class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <Icon v-if="!isGeneratingPDF" name="lucide:download" class="w-4 h-4" />
+                    <Icon v-if="!isGeneratingPDF" name="lucide:eye" class="w-4 h-4" />
                     <Icon v-else name="lucide:loader-2" class="w-4 h-4 animate-spin" />
-                    {{ isGeneratingPDF ? 'Generating PDF...' : 'Print Statement' }}
+                    {{ isGeneratingPDF ? 'Generating PDF...' : 'Preview Statement' }}
                 </Button>
                 <Button 
                     @click="toggleStatementSummary" 
@@ -622,15 +622,25 @@ export default{
                     return;
                 }
 
-                // Create a blob URL and trigger download
+                // Create a blob URL and open in new tab for preview
                 const url = URL.createObjectURL(blob)
-                const link = document.createElement('a')
-                link.href = url
-                link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.pdf`
-                document.body.appendChild(link)
-                link.click()
-                link.remove()
-                URL.revokeObjectURL(url)
+                const newTab = window.open(url, '_blank')
+                
+                // Clean up the blob URL after a delay to allow the tab to load
+                setTimeout(() => {
+                    URL.revokeObjectURL(url)
+                }, 1000)
+                
+                // If popup was blocked, fallback to download
+                if (!newTab) {
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.pdf`
+                    document.body.appendChild(link)
+                    link.click()
+                    link.remove()
+                    URL.revokeObjectURL(url)
+                }
             } catch (err) {
                 console.error('Failed to generate report', err)
             } finally {

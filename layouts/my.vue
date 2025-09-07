@@ -47,12 +47,12 @@
             <nav class="flex-1 p-4 space-y-2">
                 <!-- Dashboard -->
                 <NuxtLink 
-                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
-                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                    class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
                     @click="navigateTo(`/my/${$route.params.customer_id}/dashboard`)"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:layout-dashboard" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:layout-dashboard" class="h-5 w-5"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Dashboard</span>
@@ -62,12 +62,12 @@
                 
                 <!-- Transactions -->
                 <NuxtLink 
-                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
-                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                    class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
                     @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:receipt" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:receipt" class="h-5 w-5"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Transactions</span>
@@ -92,12 +92,12 @@
                 
                 <!-- Statement -->
                 <NuxtLink 
-                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
-                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                    class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
                     @click="navigateTo(`/my/${$route.params.customer_id}/statement`)"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:bar-chart-3" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:bar-chart-3" class="h-5 w-5"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Statement</span>
@@ -108,12 +108,12 @@
                 <!-- Admin Navigation - Only show for admin users -->
                 <div 
                     v-if="isAdmin"
-                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200 cursor-pointer" 
-                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                    class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200 cursor-pointer" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
                     @click="goToAdmin"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:shield-check" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:shield-check" class="h-5 w-5"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Admin</span>
@@ -128,11 +128,11 @@
                      href="https://wa.me/27833147484" 
                      target="_blank" 
                      rel="noopener"
-                     class="menu-item group flex items-center px-4 py-3 rounded-xl text-white bg-green-600/20 hover:bg-green-500/30 hover:shadow-lg font-medium transition-all duration-200 w-full" 
-                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                     class="menu-item group flex items-center py-3 rounded-xl text-white bg-green-600/20 hover:bg-green-500/30 hover:shadow-lg font-medium transition-all duration-200 w-full" 
+                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
                  >
                      <div class="flex items-center justify-center w-8 h-8 bg-green-500/30 rounded-lg group-hover:bg-green-400/40 transition-colors">
-                         <Icon name="lucide:message-circle" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                         <Icon name="lucide:message-circle" class="h-5 w-5"/>
                      </div>
                      <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                          <span class="text-sm font-medium">Customer Support</span>
@@ -160,12 +160,12 @@
                 
                 <!-- Logout Button -->
                 <button 
-                    class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-red-500/20 hover:shadow-lg font-medium transition-all duration-200 w-full" 
-                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
+                    class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-red-500/20 hover:shadow-lg font-medium transition-all duration-200 w-full" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
                     @click="logout"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
-                        <Icon name="lucide:log-out" :class="(sidebarExpanded || (isHovered && !isPinned)) ? ' h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:log-out" class="h-5 w-5"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Logout</span>
