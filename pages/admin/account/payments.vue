@@ -196,11 +196,11 @@ export default{
             this.currentPage = 1; // Reset to first page when filter changes
         },
         filterPayments() {
-            return this.payments.filter(payment => {
-                // Text search filter
+            let filtered = this.payments.filter(payment => {
+                // Text search filter - show only results that START with the searched letter(s)
                 const matchesSearch = !this.search || 
                     (payment.payeeInfo && payment.payeeInfo.description && 
-                    payment.payeeInfo.description.toLowerCase().includes(this.search.toLowerCase()));
+                    payment.payeeInfo.description.toLowerCase().startsWith(this.search.toLowerCase()));
                 
                 // Apply toggle filters
                 const matchesRollbackFilter = !this.filters.onRollback || 
@@ -214,6 +214,15 @@ export default{
                 
                 return matchesSearch && matchesRollbackFilter && matchesBankFilter && matchesEmailFilter;
             });
+
+            // Always sort alphabetically by payee name
+            filtered.sort((a, b) => {
+                const nameA = (a.payeeInfo?.description || '').toLowerCase();
+                const nameB = (b.payeeInfo?.description || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+
+            return filtered;
         },
         isBatchDisabled(){
             let total = 0;

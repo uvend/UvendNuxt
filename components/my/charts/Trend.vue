@@ -2,35 +2,95 @@
   <div class="w-full h-full flex flex-col">
     <Card class="h-full flex flex-col">
       <CardHeader class="pb-2 flex-shrink-0">
-        <CardTitle class="text-lg font-semibold">{{ title }}</CardTitle>
-        <CardDescription>{{ description }}</CardDescription>
-        <div class="flex gap-2 mt-2">
-          <Button 
-            :variant="selectedUtility === 'Water' ? 'default' : 'outline'" 
-            size="sm"
-            @click="selectedUtility = 'Water'"
-          >
-            Water
-          </Button>
-          <Button 
-            :variant="selectedUtility === 'Electricity' ? 'default' : 'outline'" 
-            size="sm"
-            @click="selectedUtility = 'Electricity'"
-          >
-            Electricity
-          </Button>
-          <Button 
-            :variant="selectedUtility === 'Both' ? 'default' : 'outline'" 
-            size="sm"
-            @click="selectedUtility = 'Both'"
-          >
-            Both
-          </Button>
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <CardTitle class="text-lg font-semibold">{{ title }}</CardTitle>
+            <CardDescription>{{ description }}</CardDescription>
+            
+            <!-- Date Range Selector -->
+            <div class="flex flex-col lg:flex-row gap-4 mt-3">
+              <div class="flex gap-2">
+                <Button 
+                  :variant="selectedUtility === 'Water' ? 'default' : 'outline'" 
+                  size="sm"
+                  @click="selectedUtility = 'Water'"
+                >
+                  Water
+                </Button>
+                <Button 
+                  :variant="selectedUtility === 'Electricity' ? 'default' : 'outline'" 
+                  size="sm"
+                  @click="selectedUtility = 'Electricity'"
+                >
+                  Electricity
+                </Button>
+                <Button 
+                  :variant="selectedUtility === 'Both' ? 'default' : 'outline'" 
+                  size="sm"
+                  @click="selectedUtility = 'Both'"
+                >
+                  Both
+                </Button>
+              </div>
+              
+              <!-- Date Range Controls -->
+              <div class="flex flex-col lg:flex-row gap-2">
+                <Select v-model="selectedDateRange" @update:model-value="onDateRangeChange">
+                  <SelectTrigger class="w-32 bg-white border-gray-200 rounded-lg">
+                    <SelectValue placeholder="Period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lastDay">Last Day</SelectItem>
+                    <SelectItem value="lastWeek">Last Week</SelectItem>
+                    <SelectItem value="lastMonth">Last Month</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <!-- Custom Date Inputs -->
+                <div v-if="selectedDateRange === 'custom'" class="flex gap-2">
+                  <Input 
+                    type="date" 
+                    v-model="startDate"
+                    class="w-32 bg-white border-gray-200 rounded-lg"
+                    @change="updateCustomDateRange"
+                  />
+                  <Input 
+                    type="date" 
+                    v-model="endDate"
+                    class="w-32 bg-white border-gray-200 rounded-lg"
+                    @change="updateCustomDateRange"
+                  />
+                </div>
+                
+                <!-- Current Range Display -->
+                <div class="flex items-center">
+                  <div class="bg-gray-50 rounded-lg px-2 py-1">
+                    <div class="text-xs text-gray-500">{{ formattedDateRange }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Custom Chart Controls -->
+          <div class="flex gap-1 ml-4">
+            <Button
+              variant="outline"
+              size="sm"
+              @click="downloadCSV"
+              title="Download CSV"
+            >
+              <Icon name="lucide:download" class="w-4 h-4" />
+              Export To CSV
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent class="flex-1 min-h-0">
         <div v-if="hasData" class="w-full h-full">
           <apexchart
+            ref="chartRef"
             type="area"
             :options="chartOptions"
             :series="chartSeries"
@@ -49,7 +109,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 
 const props = defineProps({
   transactions: {
@@ -66,7 +126,13 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['dateRangeChanged'])
+
 const selectedUtility = ref('Both')
+const chartRef = ref(null)
+const selectedDateRange = ref('lastMonth')
+const startDate = ref(null)
+const endDate = ref(null)
 
 const chartData = computed(() => {
   console.log('Trend component received transactions:', props.transactions)
@@ -74,10 +140,21 @@ const chartData = computed(() => {
     return { water: [], electricity: [] }
   }
 
+  // Filter transactions by date range
+  const filteredTransactions = props.transactions.filter(transaction => {
+    if (!startDate.value || !endDate.value) return true
+    
+    const transactionDate = new Date(transaction.transactionDate)
+    const start = new Date(startDate.value)
+    const end = new Date(endDate.value)
+    
+    return transactionDate >= start && transactionDate <= end
+  })
+
   const waterGrouped = {}
   const electricityGrouped = {}
   
-  props.transactions.forEach(transaction => {
+  filteredTransactions.forEach(transaction => {
     const date = new Date(transaction.transactionDate)
     // Get the start of the day (midnight)
     const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
@@ -151,23 +228,29 @@ const chartSeries = computed(() => {
 const chartOptions = computed(() => ({
   chart: {
     type: 'area',
+    autoSelected:'pan',
     toolbar: {
       show: true,
-      tools: {
-        download: true,
-        selection: true,
-        zoom: true,
-        zoomin: true,
-        zoomout: true,
-        pan: true,
-        reset: true
+      tools:{
+        pan:true,
+        zoom:false,
+        zoomin:false,
+        zoomout:false,
+        reset:false,
+        download:false
       }
+      
     },
-    zoom: {
+    // zoom: {
+    //   enabled: true,
+    //   type: 'x',
+    //   autoScaleYaxis: true
+    // },
+    pan: {
       enabled: true,
-      type: 'x',
-      autoScaleYaxis: true
+      type: 'x'
     },
+    
     height: '100%'
   },
   stroke: {
@@ -236,4 +319,165 @@ const chartOptions = computed(() => ({
     }
   }
 }))
+
+// Custom chart control methods
+const downloadCSV = () => {
+  if (!hasData.value) return
+  
+  const csvData = []
+  const headers = ['Date', 'Water (R)', 'Electricity (R)', 'Total (R)']
+  csvData.push(headers.join(','))
+  
+  // Get all unique dates
+  const allDates = new Set()
+  chartData.value.water.forEach(item => allDates.add(item.x))
+  chartData.value.electricity.forEach(item => allDates.add(item.x))
+  
+  // Sort dates
+  const sortedDates = Array.from(allDates).sort()
+  
+  // Create CSV rows
+  sortedDates.forEach(date => {
+    const waterAmount = chartData.value.water.find(item => item.x.getTime() === date.getTime())?.y || 0
+    const electricityAmount = chartData.value.electricity.find(item => item.x.getTime() === date.getTime())?.y || 0
+    const total = waterAmount + electricityAmount
+    
+    const row = [
+      date.toISOString().split('T')[0],
+      waterAmount.toFixed(2),
+      electricityAmount.toFixed(2),
+      total.toFixed(2)
+    ]
+    csvData.push(row.join(','))
+  })
+  
+  // Create and download file
+  const csvContent = csvData.join('\n')
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', `trend-data-${new Date().toISOString().split('T')[0]}.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+const zoomIn = () => {
+  if (chartRef.value && chartRef.value.chart) {
+    chartRef.value.chart.zoomX(0.8, 1.2)
+  }
+}
+
+const zoomOut = () => {
+  if (chartRef.value && chartRef.value.chart) {
+    chartRef.value.chart.zoomX(1.2, 0.8)
+  }
+}
+
+const resetZoom = () => {
+  if (chartRef.value && chartRef.value.chart) {
+    chartRef.value.chart.resetSeries()
+  }
+}
+
+// Date range methods
+const onDateRangeChange = (value) => {
+  const today = new Date();
+  let newStartDate, newEndDate;
+  
+  switch (value) {
+    case 'lastDay':
+      newStartDate = new Date(today);
+      newStartDate.setDate(today.getDate() - 1);
+      newEndDate = new Date(today);
+      break;
+      
+    case 'lastWeek':
+      newStartDate = new Date(today);
+      newStartDate.setDate(today.getDate() - 7);
+      newEndDate = new Date(today);
+      break;
+      
+    case 'lastMonth':
+      newStartDate = new Date(today);
+      newStartDate.setDate(today.getDate() - 30);
+      newEndDate = new Date(today);
+      break;
+      
+    case 'custom':
+      // Keep existing dates for custom range
+      return;
+      
+    default:
+      return;
+  }
+  
+  // Update the date inputs
+  startDate.value = newStartDate.toISOString().split('T')[0];
+  endDate.value = newEndDate.toISOString().split('T')[0];
+  
+  // Emit the date range change to parent
+  emit('dateRangeChanged', {
+    start: newStartDate.toISOString(),
+    end: newEndDate.toISOString()
+  });
+}
+
+const updateCustomDateRange = () => {
+  // This method is called when custom date inputs change
+  // The chartData computed property will automatically update
+  
+  // Emit the custom date range change to parent
+  if (startDate.value && endDate.value) {
+    emit('dateRangeChanged', {
+      start: new Date(startDate.value).toISOString(),
+      end: new Date(endDate.value).toISOString()
+    });
+  }
+}
+
+const formattedDateRange = computed(() => {
+  if (!startDate.value || !endDate.value) {
+    return 'No date range selected';
+  }
+  
+  const start = new Date(startDate.value);
+  const end = new Date(endDate.value);
+  
+  // Check if it's the same day
+  if (start.toDateString() === end.toDateString()) {
+    return start.toLocaleDateString('en-ZA', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  }
+  
+  // Check if it's the same month
+  if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+    return `${start.getDate()} - ${end.getDate()} ${start.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' })}`;
+  }
+  
+  // Different months/years
+  return `${start.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short' })} - ${end.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+})
+
+// Initialize date range on component mount
+onMounted(() => {
+  const today = new Date()
+  const lastMonth = new Date()
+  lastMonth.setDate(today.getDate() - 30)
+  
+  startDate.value = lastMonth.toISOString().split('T')[0];
+  endDate.value = today.toISOString().split('T')[0];
+  
+  // Emit initial date range to parent
+  emit('dateRangeChanged', {
+    start: lastMonth.toISOString(),
+    end: today.toISOString()
+  });
+})
+
 </script>

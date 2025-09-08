@@ -30,68 +30,69 @@
 
 
              <!-- Transaction Table View -->
-             <Card v-if="!showCharts" class="flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
-                 <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+             <div v-if="!showCharts" class="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
+                 <!-- Table Header -->
+                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-6">
                      <div class="flex justify-between items-center">
                          <div>
-                     <CardTitle class="text-xl font-semibold text-gray-800">Recent Transactions</CardTitle>
-                     <p class="text-gray-600 text-sm">Your latest utility transactions and payments</p>
+                             <h2 class="text-xl font-semibold text-gray-800">Recent Transactions</h2>
+                             <p class="text-gray-600 text-sm">Your latest utility transactions and payments</p>
                          </div>
-                                                   <div class="text-right">
-                              <div class="text-sm text-gray-600">Total Records</div>
-                              <div class="text-2xl font-bold text-blue-600">{{ filteredTransactions.length }}</div>
-                              <div class="text-xs text-gray-500 mt-1">Currently Shown: {{ paginated.length }}</div>
-                          </div>
-                     </div>
-                 </CardHeader>
-                                                                                                                                               <CardContent class="p-0 flex flex-col">
-                     <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
-                          <table class="w-full">
-                              <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
-                                  <tr>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700" >ID</th>
-                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
-                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
-                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Units Issued</th>
-                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
-                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Service Fee</th>
-                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Refund</th>
-                                     <th class="text-left py-4 px-6 font-semibold text-gray-700">Time</th>
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                     <tr v-for="(transaction,index) in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group', selectedTransaction && selectedTransaction.meterNumber === transaction.meterNumber ? 'bg-blue-100/80 border-blue-200' : '']" @click="selectTransaction(transaction)">
-                                     <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
-                                        <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
-                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
-                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
-                                         <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
-                                         <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
-                                         <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
-                                     </td>
-                                     <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
-                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">R {{ transaction.commissionAmountEx }}</td>
-                                     <td class="py-4 px-6 text-sm font-semibold text-orange-600 group-hover:text-orange-700">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
-                                     <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
-                                         <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
-                                         <div class="text-xs text-gray-400">{{ formatedDate(transaction.transactionDate) }}</div>
-                                     </td>
-                                 </tr>
-                             </tbody>
-                         </table>
-                     </div>
-                     
-                     <!-- Load More Button -->
-                     <div class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
-                         <div class="flex justify-center">
-                             <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
-                                 <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
-                                 Load More
-                             </Button>
+                         <div class="text-right">
+                             <div class="text-sm text-gray-600">Total Records</div>
+                             <div class="text-2xl font-bold text-blue-600">{{ filteredTransactions.length }}</div>
+                             <div class="text-xs text-gray-500 mt-1">Currently Shown: {{ displayedTransactions.length }}</div>
                          </div>
                      </div>
-                 </CardContent>
-            </Card>
+                 </div>
+
+                 <!-- Table Content -->
+                 <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                     <table class="w-full">
+                         <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
+                             <tr>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">ID</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Units Issued</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Service Fee</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Refund</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Time</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             <tr v-for="(transaction,index) in displayedTransactions" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group', selectedTransaction && selectedTransaction.transactionUniqueId === transaction.transactionUniqueId ? 'bg-blue-100/80 border-blue-200' : '']" @click="selectTransaction(transaction)">
+                                 <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
+                                 <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                     <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
+                                     <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
+                                     <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                 </td>
+                                 <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">R {{ transaction.commissionAmountEx }}</td>
+                                 <td class="py-4 px-6 text-sm font-semibold text-orange-600 group-hover:text-orange-700">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
+                                     <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
+                                     <div class="text-xs text-gray-400">{{ formatedDate(transaction.transactionDate) }}</div>
+                                 </td>
+                             </tr>
+                         </tbody>
+                     </table>
+                 </div>
+                 
+                 <!-- Load More Button - Always visible at the end -->
+                 <div v-if="hasMoreTransactions" class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
+                     <div class="flex justify-center">
+                         <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
+                             <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                             Load More ({{ remainingTransactions }} remaining)
+                         </Button>
+                     </div>
+                 </div>
+             </div>
         </div>
 
         <!-- Right Sidebar -->
@@ -258,7 +259,7 @@
                                 </div>
                             </div>
                             <div >
-                                <Button @click="navigateTo(`/my/${$route.params.customer_id}/meters/${selectedTransaction.installationUniqueId}`)"  class="flex-1 bg-blue-600 hover:bg-blue-">
+                                <Button @click="navigateTo(`/my/${$route.params.customer_id}/meters/${selectedTransaction.meterinstallationuniqueid}`)"  class="flex-1 bg-blue-600 hover:bg-blue-">
                                     View meter
                                 </Button>
                             </div>
@@ -283,6 +284,7 @@ export default{
                  transactions: [],
                  originalTransactions: [], // Store original unfiltered data
                  filteredTransactions: [], // Store filtered results separately
+                 displayedTransactions: [], // Store currently displayed transactions
                  isLoading: true,
                  currentPage: 1,
                  pageSize: 25,
@@ -305,7 +307,6 @@ export default{
                      }
                  ],
                  search: null,
-                 searchActive: false,
                  meterComplexes: [],
                  selectedMeterComplex: null,
                           dateRange: null,
@@ -314,12 +315,7 @@ export default{
                  selectedDateRange: 'lastMonth',
                  selectedTransaction: null,
                  showTransactionDetails: false,
-                 showCharts: false, // Toggle between charts and transactions view
-                 trendPeriod: 'weekly', // 'weekly' or 'monthly'
-                 tooltipVisible: false,
-                 tooltipX: 0,
-                 tooltipY: 0,
-                 tooltipValue: '0.00'
+                 showCharts: false // Toggle between charts and transactions view
              }
          },
     methods:{
@@ -366,6 +362,7 @@ export default{
              }
              
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
+             this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Initialize displayed transactions
              await this.getMeterComplex()
              this.isLoading = false;
          },
@@ -409,6 +406,7 @@ export default{
              }
              
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
+             this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Initialize displayed transactions
              await this.getMeterComplex()
              this.isLoading = false;
          },
@@ -425,63 +423,9 @@ export default{
                 this.currentPage = page;
             }
         },
-        toggleSearch(){
-            this.searchActive = !this.searchActive
-            this.search = null
-         },
          toggleView(){
              this.showCharts = !this.showCharts
          },
-         setTrendPeriod(period){
-             this.trendPeriod = period;
-         },
-         showTooltip(index, event){
-             const point = this.trendData[index];
-             this.tooltipValue = point.value;
-             this.tooltipX = point.x;
-             this.tooltipY = point.y - 40;
-             this.tooltipVisible = true;
-         },
-         hideTooltip(){
-             this.tooltipVisible = false;
-         },
-         groupTransactionsByPeriod() {
-             try {
-                 const grouped = {};
-                 
-                 this.originalTransactions.forEach(transaction => {
-                     const date = new Date(transaction.transactionDate);
-                     let periodKey;
-                     
-                     if (this.trendPeriod === 'weekly') {
-                         // Get the start of the week (Monday)
-                         const dayOfWeek = date.getDay();
-                         const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-                         const startOfWeek = new Date(date.setDate(diff));
-                         startOfWeek.setHours(0, 0, 0, 0);
-                         periodKey = startOfWeek.toISOString();
-                     } else {
-                         // Get the start of the month
-                         const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-                         periodKey = startOfMonth.toISOString();
-                     }
-                     
-                     if (!grouped[periodKey]) {
-                         grouped[periodKey] = 0;
-                     }
-                     
-                     grouped[periodKey] += parseFloat(transaction.managedTenderAmount) || 0;
-                 });
-                 
-                 // Sort by date and return
-                 return Object.fromEntries(
-                     Object.entries(grouped).sort(([a], [b]) => new Date(a) - new Date(b))
-                 );
-             } catch (error) {
-                 console.error('Error in groupTransactionsByPeriod:', error);
-                 return {};
-             }
-        },
                           getMeterComplex(){
              // Use a Set to automatically handle duplicates
              const complexSet = new Set();
@@ -497,7 +441,13 @@ export default{
              this.meterComplexes = Array.from(complexSet).sort();
          },
         loadMore(){
-            this.currentPage += 1;
+            // Add more transactions to the displayed list
+            const startIndex = this.displayedTransactions.length;
+            const endIndex = startIndex + this.pageSize;
+            const newTransactions = this.filteredTransactions.slice(startIndex, endIndex);
+            
+            // Append new transactions to the displayed list
+            this.displayedTransactions = [...this.displayedTransactions, ...newTransactions];
         },
                                    clearFilters(){
              this.selectedUtility = -1;
@@ -518,6 +468,7 @@ export default{
              this.filteredTransactions = [];
              this.$nextTick(() => {
                  this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions));
+                 this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Reset displayed transactions
              });
              // Reset transactions to original state as well
              this.transactions = JSON.parse(JSON.stringify(this.originalTransactions));
@@ -582,6 +533,7 @@ export default{
              this.filteredTransactions = [];
              this.$nextTick(() => {
                  this.filteredTransactions = JSON.parse(JSON.stringify(filteredTransactions));
+                 this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Reset displayed transactions
                  console.log('Filtered results:', this.filteredTransactions.length);
                  console.log('Sample filtered transaction:', this.filteredTransactions[0]);
              });
@@ -606,82 +558,82 @@ export default{
             return `${hours}:${minutes}`;
         },
                  selectTransaction(transaction){
-             this.selectedTransaction = transaction;
-             this.showTransactionDetails = true;
-         },
+            this.selectedTransaction = transaction;
+            this.showTransactionDetails = true;
+        },
          goToTransaction(){
              // Switch to transaction details view in the sidebar
              this.showTransactionDetails = true;
          },
                  addHyphens(str){
-             return str.replace(/(.{4})/g, '$1-').slice(0, -1); // Removes last extra hyphen
-         },
-         
-         // Helper method to ensure complete data reset
-         resetFilteredData(){
-             this.filteredTransactions = [];
-             this.$nextTick(() => {
-                 this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions));
-             });
-         },
-         
-         // Date handling methods
-         updateDateRange() {
-             if (this.startDate && this.endDate) {
-                 this.dateRange = {
-                     start: new Date(this.startDate).toISOString(),
-                     end: new Date(this.endDate).toISOString()
-                 };
-             }
-         },
-         
-         onDateRangeChange(value) {
-             const today = new Date();
-             let startDate, endDate;
-             
-             switch (value) {
-                 case 'lastDay':
-                     startDate = new Date(today);
-                     startDate.setDate(today.getDate() - 1);
-                     endDate = new Date(today);
-                     break;
-                     
-                 case 'lastWeek':
-                     startDate = new Date(today);
-                     startDate.setDate(today.getDate() - 7);
-                     endDate = new Date(today);
-                     break;
-                     
-                 case 'lastMonth':
-                     startDate = new Date(today);
-                     startDate.setDate(today.getDate() - 30);
-                     endDate = new Date(today);
-                     break;
-                     
-                 case 'custom':
-                     // Keep existing dates for custom range
-                     return;
-                     
-                 default:
-                     return;
-             }
-             
-             // Update the date inputs
-             this.startDate = startDate.toISOString().split('T')[0];
-             this.endDate = endDate.toISOString().split('T')[0];
-             
-             // Update the date range
-             this.updateDateRange();
-         },
-         
-         setToday() {
-             const today = new Date();
-             const todayStr = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-             
-             this.startDate = todayStr;
-             this.endDate = todayStr;
-             this.updateDateRange();
-         }
+            return str.replace(/(.{4})/g, '$1-').slice(0, -1); // Removes last extra hyphen
+        },
+        
+        // Helper method to ensure complete data reset
+        resetFilteredData(){
+            this.filteredTransactions = [];
+            this.$nextTick(() => {
+                this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions));
+            });
+        },
+        
+        // Date handling methods
+        updateDateRange() {
+            if (this.startDate && this.endDate) {
+                this.dateRange = {
+                    start: new Date(this.startDate).toISOString(),
+                    end: new Date(this.endDate).toISOString()
+                };
+            }
+        },
+        
+        onDateRangeChange(value) {
+            const today = new Date();
+            let startDate, endDate;
+            
+            switch (value) {
+                case 'lastDay':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - 1);
+                    endDate = new Date(today);
+                    break;
+                    
+                case 'lastWeek':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - 7);
+                    endDate = new Date(today);
+                    break;
+                    
+                case 'lastMonth':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - 30);
+                    endDate = new Date(today);
+                    break;
+                    
+                case 'custom':
+                    // Keep existing dates for custom range
+                    return;
+                    
+                default:
+                    return;
+            }
+            
+            // Update the date inputs
+            this.startDate = startDate.toISOString().split('T')[0];
+            this.endDate = endDate.toISOString().split('T')[0];
+            
+            // Update the date range
+            this.updateDateRange();
+        },
+        
+        setToday() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            
+            this.startDate = todayStr;
+            this.endDate = todayStr;
+            this.updateDateRange();
+        }
     },
     async mounted(){
         const today = new Date();
@@ -708,218 +660,12 @@ export default{
              const endIndex = startIndex + this.pageSize;
              return this.filteredTransactions.slice(startIndex, endIndex); // Paginate filtered payments
          },
-                 waterSpending() {
-             // Always use full dataset for KPI calculations
-             return this.originalTransactions
-                 .filter(t => t.utilityType === 'Water')
-                 .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                 .toFixed(2);
+         hasMoreTransactions() {
+             return this.displayedTransactions.length < this.filteredTransactions.length;
          },
-         electricitySpending() {
-             // Always use full dataset for KPI calculations
-             return this.originalTransactions
-                 .filter(t => t.utilityType === 'Electricity')
-                 .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                 .toFixed(2);
-         },
-         totalRefunds() {
-             // Always use full dataset for KPI calculations
-             return this.originalTransactions
-                 .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) - parseFloat(t.commissionAmount) || 0), 0)
-                 .toFixed(2);
-         },
-         klVended() {
-             // Always use full dataset for KPI calculations
-             try {
-                 if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
-                     return '0.0';
-                 }
-             return this.originalTransactions
-                     .filter(t => t && t.utilityType === 'Water')
-                 .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                 .toFixed(1);
-             } catch (error) {
-                 console.error('Error in klVended:', error);
-                 return '0.0';
-             }
-         },
-         electricityVended() {
-             // Always use full dataset for KPI calculations
-             try {
-                 if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
-                     return '0.0';
-                 }
-             return this.originalTransactions
-                     .filter(t => t && t.utilityType === 'Electricity')
-                 .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                 .toFixed(1);
-             } catch (error) {
-                 console.error('Error in electricityVended:', error);
-                 return '0.0';
-             }
-         },
-         electricityPercentage() {
-             try {
-                 const electricityTotal = parseFloat(this.electricitySpending) || 0;
-                 const waterTotal = parseFloat(this.waterSpending) || 0;
-                 const total = electricityTotal + waterTotal;
-                 
-                 if (total === 0) return 50; // Equal segments if no data
-                 return (electricityTotal / total) * 100;
-             } catch (error) {
-                 console.error('Error in electricityPercentage:', error);
-                 return 50;
-             }
-         },
-         waterPercentage() {
-             try {
-                 const electricityTotal = parseFloat(this.electricitySpending) || 0;
-                 const waterTotal = parseFloat(this.waterSpending) || 0;
-                 const total = electricityTotal + waterTotal;
-                 
-                 if (total === 0) return 50; // Equal segments if no data
-                 return (waterTotal / total) * 100;
-             } catch (error) {
-                 console.error('Error in waterPercentage:', error);
-                 return 50;
-             }
-         },
-         totalSpending() {
-             try {
-                 const electricityTotal = parseFloat(this.electricitySpending) || 0;
-                 const waterTotal = parseFloat(this.waterSpending) || 0;
-                 const total = electricityTotal + waterTotal;
-                 
-                 if (total === 0) return 'R 0.00';
-                 return `R ${total.toFixed(2)}`;
-             } catch (error) {
-                 console.error('Error in totalSpending:', error);
-                 return 'R 0.00';
-             }
-         },
-         electricityPath() {
-             try {
-                 const percentage = this.electricityPercentage;
-                 if (percentage === 0) return '';
-                 
-                 const centerX = 50;
-                 const centerY = 50;
-                 const radius = 40;
-                 const startAngle = 0;
-                 const endAngle = (percentage / 100) * 2 * Math.PI;
-                 
-                 const x1 = centerX + radius * Math.cos(startAngle);
-                 const y1 = centerY + radius * Math.sin(startAngle);
-                 const x2 = centerX + radius * Math.cos(endAngle);
-                 const y2 = centerY + radius * Math.sin(endAngle);
-                 
-                 const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
-                 
-                 return `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-             } catch (error) {
-                 console.error('Error in electricityPath:', error);
-                 return '';
-             }
-         },
-         waterPath() {
-             try {
-                 const electricityPercentage = this.electricityPercentage;
-                 const waterPercentage = this.waterPercentage;
-                 
-                 if (waterPercentage === 0) return '';
-                 
-                 const centerX = 50;
-                 const centerY = 50;
-                 const radius = 40;
-                 const startAngle = (electricityPercentage / 100) * 2 * Math.PI;
-                 const endAngle = 2 * Math.PI;
-                 
-                 const x1 = centerX + radius * Math.cos(startAngle);
-                 const y1 = centerY + radius * Math.sin(startAngle);
-                 const x2 = centerX + radius * Math.cos(endAngle);
-                 const y2 = centerY + radius * Math.sin(endAngle);
-                 
-                 const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
-                 
-                 return `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-             } catch (error) {
-                 console.error('Error in waterPath:', error);
-                 return '';
-             }
-                  },
-         trendData() {
-             try {
-                 if (!this.originalTransactions || this.originalTransactions.length === 0) {
-                     return [];
-                 }
-                 
-                 // Group transactions by period (weekly or monthly)
-                 const groupedData = this.groupTransactionsByPeriod();
-                 
-                 // Convert to chart data points
-                 const chartWidth = 800;
-                 const chartHeight = 200;
-                 const padding = 40;
-                 const usableWidth = chartWidth - (padding * 2);
-                 const usableHeight = chartHeight - (padding * 2);
-                 
-                 const dataPoints = Object.entries(groupedData).map(([period, amount], index, array) => {
-                     const x = padding + (index / (array.length - 1)) * usableWidth;
-                     const maxAmount = Math.max(...Object.values(groupedData));
-                     const y = chartHeight - padding - (amount / maxAmount) * usableHeight;
-                     
-                     return {
-                         x: x,
-                         y: y,
-                         value: amount.toFixed(2),
-                         period: period
-                     };
-                 });
-                 
-                 return dataPoints;
-             } catch (error) {
-                 console.error('Error in trendData:', error);
-                 return [];
-             }
-         },
-         trendLinePath() {
-             try {
-                 if (this.trendData.length === 0) return '';
-                 
-                 const pathData = this.trendData.map((point, index) => {
-                     if (index === 0) {
-                         return `M ${point.x} ${point.y}`;
-                     } else {
-                         return `L ${point.x} ${point.y}`;
-                     }
-                 });
-                 
-                 return pathData.join(' ');
-             } catch (error) {
-                 console.error('Error in trendLinePath:', error);
-                 return '';
-             }
-         },
-         xAxisLabels() {
-             try {
-                 if (this.trendData.length === 0) return [];
-                 
-                 return this.trendData.map(point => {
-                     if (this.trendPeriod === 'weekly') {
-                         // Format as "Week of Jan 1"
-                         const date = new Date(point.period);
-                         return `Week of ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-                     } else {
-                         // Format as "Jan 2024"
-                         const date = new Date(point.period);
-                         return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                     }
-                 });
-             } catch (error) {
-                 console.error('Error in xAxisLabels:', error);
-                 return [];
-             }
-         },
+         remainingTransactions() {
+             return this.filteredTransactions.length - this.displayedTransactions.length;
+         }
 
     },
          watch:{

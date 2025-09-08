@@ -3,8 +3,8 @@
         <!-- Main Content Area -->
         <div class="flex-1 p-6 lg:p-8 flex flex-col min-h-0">
             <!-- KPI Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 mb-6 flex-shrink-0">
-                <!-- Water Spending -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 mb-6 flex-shrink-0">
+                <!-- Water Utility -->
                 <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader class="pb-2 relative z-10">
@@ -13,16 +13,23 @@
                                 <div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                                     <Icon name="lucide:droplets" class="w-4 h-4 lg:w-5 lg:h-5 text-blue-600" />
                                 </div>
-                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Water Spending</CardTitle>
+                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Water</CardTitle>
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent class="pt-0 relative z-10">
-                        <div class="text-lg lg:text-2xl font-bold text-gray-900">R {{ waterSpending }}</div>
+                    <CardContent class="pt-0 relative z-10 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Spending:</span>
+                            <span class="text-sm font-semibold text-gray-900">R {{ waterSpending }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Vended:</span>
+                            <span class="text-sm font-semibold text-blue-600">{{ klVended }} KL</span>
+                        </div>
                     </CardContent>
                 </Card>
 
-                <!-- Electricity Spending -->
+                <!-- Electricity Utility -->
                 <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
                     <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-yellow-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader class="pb-2 relative z-10">
@@ -31,12 +38,19 @@
                                 <div class="w-8 h-8 bg-yellow-100 rounded-xl flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
                                     <Icon name="lucide:zap" class="w-4 h-4 lg:w-5 lg:h-5 text-yellow-600" />
                                 </div>
-                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Electricity Spending</CardTitle>
+                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Electricity</CardTitle>
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent class="pt-0 relative z-10">
-                        <div class="text-lg lg:text-2xl font-bold text-gray-900">R {{ electricitySpending }}</div>
+                    <CardContent class="pt-0 relative z-10 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Spending:</span>
+                            <span class="text-sm font-semibold text-gray-900">R {{ electricitySpending }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Vended:</span>
+                            <span class="text-sm font-semibold text-yellow-600">{{ electricityVended }} KWh</span>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -57,42 +71,6 @@
                         <div class="text-lg lg:text-2xl font-bold text-orange-600">R {{ totalRefunds }}</div>
                     </CardContent>
                 </Card>
-
-                <!-- KL Vended -->
-                <Card class="relative hidden md:block bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <CardHeader class="pb-2 relative z-10">
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                    <Icon name="lucide:droplets" class="w-4 h-4 lg:w-5 lg:h-5 text-blue-600" />
-                                </div>
-                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">KL Vended</CardTitle>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pt-0 relative z-10">
-                        <div class="text-lg lg:text-2xl font-bold text-blue-600">{{ klVended }} KL</div>
-                    </CardContent>
-                </Card>
-
-                <!-- Electricity Vended -->
-                <Card class="relative hidden lg:block bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-yellow-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <CardHeader class="pb-2 relative z-10">
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-yellow-100 rounded-xl flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
-                                    <Icon name="lucide:zap" class="w-4 h-4 lg:w-5 lg:h-5 text-yellow-600" />
-                                </div>
-                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Electricity Vended</CardTitle>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pt-0 relative z-10">
-                        <div class="text-lg lg:text-2xl font-bold text-blue-600">{{ electricityVended }} KWh</div>
-                    </CardContent>
-                </Card>
             </div>
 
             <!-- Charts Section -->
@@ -105,6 +83,7 @@
                             :transactions="originalTransactions" 
                             title="Utility Spending Trend"
                             description="Track your water and electricity spending over time"
+                            @dateRangeChanged="onChartDateRangeChanged"
                         />
                     </div>
                 </div>
@@ -175,7 +154,7 @@
                                                         <div class="flex justify-end pt-2">
                                                             <Button 
                                                                 size="sm" 
-                                                                @click.stop="viewMeter(transaction.meterNumber)"
+                                                                @click.stop="viewMeter(transaction.meterinstallationuniqueid)"
                                                                 class="text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
                                                             >
                                                                 <Icon name="lucide:eye" class="w-3 h-3 mr-1" />
@@ -223,6 +202,7 @@ export default {
         return {
             originalTransactions: [], // Store original unfiltered data
             dateRange: null,
+            chartDateRange: null, // Date range from chart component
             selectedTransaction: null,
             expandedRow: null, // Track expanded row index
         }
@@ -245,8 +225,8 @@ export default {
             // Clear existing transactions
             this.originalTransactions = []
             
-            // Extract all transactions from all meters
-            for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+               // Extract all transactions from all meters
+               for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
                 if (meterData.transactions && Array.isArray(meterData.transactions)) {
                     meterData.transactions.forEach(transaction => {
                         this.originalTransactions.push({
@@ -298,12 +278,17 @@ export default {
                 minute: '2-digit',
                 hour12: true 
             })
+        },
+        onChartDateRangeChanged(dateRange) {
+            this.chartDateRange = dateRange;
         }
     },
     async mounted() {
         const today = new Date()
         const lastMonth = new Date()
         lastMonth.setDate(today.getDate() - 30)
+        
+        // Set initial date range for KPI cards (this will be used for initial data load)
         this.dateRange = {
             start: lastMonth.toISOString(),
             end: today.toISOString()
@@ -311,29 +296,42 @@ export default {
         await this.getTransactions()
     },
     computed: {
+        filteredTransactionsForKPI() {
+            if (!this.chartDateRange) {
+                return this.originalTransactions;
+            }
+            
+            const startDate = new Date(this.chartDateRange.start);
+            const endDate = new Date(this.chartDateRange.end);
+            
+            return this.originalTransactions.filter(transaction => {
+                const transactionDate = new Date(transaction.transactionDate);
+                return transactionDate >= startDate && transactionDate <= endDate;
+            });
+        },
         waterSpending() {
-            return this.originalTransactions
+            return this.filteredTransactionsForKPI
                 .filter(t => t.utilityType === 'Water')
                 .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
                 .toFixed(2);
         },
         electricitySpending() {
-            return this.originalTransactions
+            return this.filteredTransactionsForKPI
                 .filter(t => t.utilityType === 'Electricity')
                 .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
                 .toFixed(2);
         },
         totalRefunds() {
-            return this.originalTransactions
+            return this.filteredTransactionsForKPI
                 .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
                 .toFixed(2);
         },
         klVended() {
             try {
-                if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
                     return '0.0';
                 }
-                return this.originalTransactions
+                return this.filteredTransactionsForKPI
                     .filter(t => t && t.utilityType === 'Water')
                     .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
                     .toFixed(1);
@@ -344,10 +342,10 @@ export default {
         },
         electricityVended() {
             try {
-                if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
                     return '0.0';
                 }
-                return this.originalTransactions
+                return this.filteredTransactionsForKPI
                     .filter(t => t && t.utilityType === 'Electricity')
                     .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
                     .toFixed(1);

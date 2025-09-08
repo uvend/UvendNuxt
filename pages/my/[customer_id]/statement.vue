@@ -110,61 +110,71 @@
             </Card>
 
             <!-- Statement Table View -->
-            <Card v-if="!showStatementSummary" class="flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden flex-1">
-                <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
-                    <CardTitle class="text-xl font-semibold text-gray-800">Statement Details</CardTitle>
-                    <p class="text-gray-600 text-sm">Detailed breakdown of your utility transactions</p>
-                </CardHeader>
-                <CardContent class="p-0 flex flex-col">
-                    <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
-                        <table class="w-full">
-                            <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
-                                <tr>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">ID</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Utility Type</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Units</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="transaction in paginated" :key="transaction.transactionUniqueId" class="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group">
-                                    <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
-                                    <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
-                                        <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
-                                        <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
-                                        <span v-else class="text-gray-600">{{ transaction.utilityType }}</span>
-                                    </td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
-                                        <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
-                                        <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
-                                        <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
-                                    </td>
-                                    <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
-                                    <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
-                                        <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
-                                        <div class="text-xs text-gray-400">{{ formattedDate(transaction.transactionDate) }}</div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Load More Button -->
-                    <div class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
-                        <div class="flex justify-center">
-                            <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
-                                <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
-                                Load More
-                            </Button>
+            <div v-if="!showStatementSummary" class="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden flex-1">
+                <!-- Table Header -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-800">Statement Details</h2>
+                            <p class="text-gray-600 text-sm">Detailed breakdown of your utility transactions</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-600">Total Records</div>
+                            <div class="text-2xl font-bold text-blue-600">{{ filteredTransactions.length }}</div>
+                            <div class="text-xs text-gray-500 mt-1">Currently Shown: {{ displayedTransactions.length }}</div>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+
+                <!-- Table Content -->
+                <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                    <table class="w-full">
+                        <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">ID</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Utility Type</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Units</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="transaction in displayedTransactions" :key="transaction.transactionUniqueId" class="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group">
+                                <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
+                                <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
+                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
+                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                    <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
+                                    <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
+                                    <span v-else class="text-gray-600">{{ transaction.utilityType }}</span>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                    <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
+                                    <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
+                                    <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                </td>
+                                <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
+                                <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
+                                    <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
+                                    <div class="text-xs text-gray-400">{{ formattedDate(transaction.transactionDate) }}</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Load More Button - Always visible at the end -->
+                <div v-if="hasMoreTransactions" class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <div class="flex justify-center">
+                        <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
+                            <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                            Load More ({{ remainingTransactions }} remaining)
+                        </Button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Right Sidebar -->
@@ -303,6 +313,7 @@ export default{
             transactions: [],
             originalTransactions: [],
             filteredTransactions: [],
+            displayedTransactions: [],
             statement: {
                 name: null,
                 startDate: null,
@@ -419,6 +430,7 @@ export default{
             
             // Initialize filtered transactions with deep copy
             this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+            this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             
             // Apply search filter if exists
             if(this.search && this.search != ''){
@@ -502,6 +514,7 @@ export default{
 
             // Initialize filtered list
             this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+            this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             if(this.search && this.search != ''){
                 this.performFiltering()
             }
@@ -550,7 +563,13 @@ export default{
             }
         },
         loadMore(){
-            this.currentPage += 1;
+            // Add more transactions to the displayed list
+            const startIndex = this.displayedTransactions.length;
+            const endIndex = startIndex + this.pageSize;
+            const newTransactions = this.filteredTransactions.slice(startIndex, endIndex);
+            
+            // Append new transactions to the displayed list
+            this.displayedTransactions = [...this.displayedTransactions, ...newTransactions];
         },
         calculateStatementPeriod(statementDay, statmentMonth = null, statmentYear = null) {
             const today = new Date();
@@ -687,6 +706,7 @@ export default{
             this.filteredTransactions = []
             this.$nextTick(() => {
                 this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+                this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             })
         },
         applyFilters() {
@@ -744,6 +764,7 @@ export default{
             this.filteredTransactions = []
             this.$nextTick(() => {
                 this.filteredTransactions = JSON.parse(JSON.stringify(filtered))
+                this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             })
         }
     },
@@ -758,6 +779,12 @@ export default{
             const filtered = this.filteredTransactions
             const endIndex = this.currentPage * this.pageSize;
             return filtered.slice(0, endIndex); 
+        },
+        hasMoreTransactions() {
+            return this.displayedTransactions.length < this.filteredTransactions.length;
+        },
+        remainingTransactions() {
+            return this.filteredTransactions.length - this.displayedTransactions.length;
         },
     },
     watch:{

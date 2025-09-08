@@ -27,68 +27,80 @@
                          @input="debouncedSearch"
                      />
                  </div>
-                <Button class="flex">
+                <!-- <Button class="flex">
                     Download Report
                     <Icon name="lucide:printer"/>
-                </Button>
+                </Button> -->
              </div>
 
              <!-- Transaction Table View -->
-             <Card v-if="!showCharts" class="flex flex-col">
-                 <CardHeader>
-                     <CardTitle>Recent Transactions</CardTitle>
-                 </CardHeader>
-                 <CardContent class="p-0 flex flex-col">
-                     <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
-                          <table class="w-full">
-                              <thead class="sticky top-0 bg-white z-10">
-                                  <tr class="border-b">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-600">ID</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Meter Number</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Complex</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Units Issued</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Amount</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Service Fee</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Refund</th>
-                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Time</th>
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                     <tr v-for="(transaction,index) in paginated" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b hover:bg-gray-50 cursor-pointer transition-colors', selectedTransaction && selectedTransaction.transactionUniqueId === transaction.transactionUniqueId ? 'bg-blue-50 border-blue-200' : '']" @click="selectTransaction(transaction)">
-                                     <td class="py-3 px-4 text-sm">{{ transaction.transactionUniqueId }}</td>
-                                        <td class="py-3 px-4 text-sm">{{ transaction.meterNumber }}</td>
-                                     <td class="py-3 px-4 text-sm">{{ transaction.complexName }}</td>
-                                     <td class="py-3 px-4 text-sm">
-                                         {{ transaction.totalUnitsIssued }}
-                                         <span v-if="transaction.utilityType === 'Water'">KL</span>
-                                         <span v-else-if="transaction.utilityType === 'Electricity'">KWh</span>
-                                     </td>
-                                     <td class="py-3 px-4 text-sm">R {{ transaction.managedTenderAmount }}</td>
-                                     <td class="py-3 px-4 text-sm">R {{ transaction.commissionAmountEx }}</td>
-                                     <td class="py-3 px-4 text-sm text-orange-500">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
-                                     <td class="py-3 px-4 text-sm">
-                                         {{ formattedTime(transaction.transactionDate) }}<br>
-                                         {{ formatedDate(transaction.transactionDate) }}
-                                     </td>
-                                 </tr>
-                             </tbody>
-                         </table>
-                     </div>
-                     
-                     <!-- Load More Button -->
-                     <div class="p-4 border-t flex-shrink-0">
-                         <div class="flex justify-center">
-                             <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700">
-                                 + Load More
-                             </Button>
+             <div v-if="!showCharts" class="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
+                 <!-- Table Header -->
+                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-6">
+                     <div class="flex justify-between items-center">
+                         <div>
+                             <h2 class="text-xl font-semibold text-gray-800">Recent Transactions</h2>
+                             <p class="text-gray-600 text-sm">Meter transaction history and details</p>
+                         </div>
+                         <div class="text-right">
+                             <div class="text-sm text-gray-600">Total Records</div>
+                             <div class="text-2xl font-bold text-blue-600">{{ filteredTransactions.length }}</div>
+                             <div class="text-xs text-gray-500 mt-1">Currently Shown: {{ displayedTransactions.length }}</div>
                          </div>
                      </div>
-                 </CardContent>
-            </Card>
+                 </div>
+
+                 <!-- Table Content -->
+                 <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                     <table class="w-full">
+                         <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
+                             <tr>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">ID</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Units Issued</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Service Fee</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Refund</th>
+                                 <th class="text-left py-4 px-6 font-semibold text-gray-700">Time</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             <tr v-for="(transaction,index) in displayedTransactions" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group', selectedTransaction && selectedTransaction.transactionUniqueId === transaction.transactionUniqueId ? 'bg-blue-100/80 border-blue-200' : '']" @click="selectTransaction(transaction)">
+                                 <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
+                                 <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                     <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
+                                     <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
+                                     <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                 </td>
+                                 <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">R {{ transaction.commissionAmountEx }}</td>
+                                 <td class="py-4 px-6 text-sm font-semibold text-orange-600 group-hover:text-orange-700">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
+                                     <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
+                                     <div class="text-xs text-gray-400">{{ formatedDate(transaction.transactionDate) }}</div>
+                                 </td>
+                             </tr>
+                         </tbody>
+                     </table>
+                 </div>
+                 
+                 <!-- Load More Button - Always visible at the end -->
+                 <div v-if="hasMoreTransactions" class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
+                     <div class="flex justify-center">
+                         <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
+                             <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                             Load More ({{ remainingTransactions }} remaining)
+                         </Button>
+                     </div>
+                 </div>
+             </div>
         </div>
 
         <!-- Right Sidebar -->
-         <div class="max-w-96 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
+         <div class="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
             <!-- Filters Section -->
             <div v-if="!showTransactionDetails" class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
@@ -96,7 +108,39 @@
                 <!-- Date Range -->
                 <div class="mb-4">
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Date Range</Label>
-                    <MyDateRangePicker v-model="dateRange" :months="2" v-if="dateRange"/>
+                    <div class="space-y-2">
+                        <Select v-model="selectedDateRange" @update:model-value="onDateRangeChange">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Select date range" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="lastDay">Last Day</SelectItem>
+                                <SelectItem value="lastWeek">Last Week</SelectItem>
+                                <SelectItem value="lastMonth">Last Month</SelectItem>
+                                <SelectItem value="custom">Custom Range</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <div v-if="selectedDateRange === 'custom'" class="space-y-2">
+                            <div>
+                                <Label class="text-xs text-gray-500 mb-1 block">Start Date</Label>
+                                <Input 
+                                    type="date" 
+                                    v-model="startDate"
+                                    class="w-full"
+                                    @change="updateDateRange"
+                                />
+                            </div>
+                            <div>
+                                <Label class="text-xs text-gray-500 mb-1 block">End Date</Label>
+                                <Input 
+                                    type="date" 
+                                    v-model="endDate"
+                                    class="w-full"
+                                    @change="updateDateRange"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Type -->
@@ -258,7 +302,11 @@ const isLoading = ref(true)
 const meterTransactions = ref([])
 const originalTransactions = ref([])
 const filteredTransactions = ref([])
+const displayedTransactions = ref([])
 const dateRange = ref(null)
+const startDate = ref(null)
+const endDate = ref(null)
+const selectedDateRange = ref('lastMonth')
 const pageSize = ref(25)
 const pageSizeSelect = ref([10, 25, 50, 100])
 const currentPage = ref(1)
@@ -295,9 +343,9 @@ const getAdminMeterActivity = async () => {
                 StartDate: dateRange.value.start,
                 EndDate: dateRange.value.end,
                 ResponseFormatType: 0,
-                ReportParentType: 7, //specific meter
+                ReportParentType: 6, //specific meter
                 ParentUniqueID: route.params.meter_id,
-                UtilityType: selectedUtility.value
+                UtilityType: -1
             }
         })
         
@@ -329,6 +377,7 @@ const getAdminMeterActivity = async () => {
         }
         
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+        displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
         console.log('Admin meter transactions:', result)
         meterNumber.value = meterTransactions.value[0]?.meterNumber ?? ''
         await getMeterComplex()
@@ -387,6 +436,7 @@ const getVendMeterActivity = async () => {
         }
         
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+        displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
         await getMeterComplex()
         isLoading.value = false
     } catch (error) {
@@ -509,7 +559,13 @@ const hideTooltip = () => {
 }
 
 const loadMore = () => {
-    currentPage.value += 1
+    // Add more transactions to the displayed list
+    const startIndex = displayedTransactions.value.length;
+    const endIndex = startIndex + pageSize.value;
+    const newTransactions = filteredTransactions.value.slice(startIndex, endIndex);
+    
+    // Append new transactions to the displayed list
+    displayedTransactions.value = [...displayedTransactions.value, ...newTransactions];
 }
 
 const clearFilters = () => {
@@ -517,9 +573,18 @@ const clearFilters = () => {
     selectedMeterComplex.value = null
     search.value = ''
     currentPage.value = 1
+    // Reset date range dropdown and inputs to last month
+    selectedDateRange.value = 'lastMonth'
+    const today = new Date()
+    const lastMonth = new Date()
+    lastMonth.setDate(today.getDate() - 30)
+    startDate.value = lastMonth.toISOString().split('T')[0]
+    endDate.value = today.toISOString().split('T')[0]
+    updateDateRange()
     filteredTransactions.value = []
     nextTick(() => {
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+        displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
     })
     meterTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
 }
@@ -572,6 +637,7 @@ const performFiltering = () => {
     filteredTransactions.value = []
     nextTick(() => {
         filteredTransactions.value = JSON.parse(JSON.stringify(filteredData))
+        displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
         console.log('Filtered results:', filteredTransactions.value.length)
     })
 }
@@ -622,6 +688,53 @@ const formatedDate = (dateString) => {
     })
 }
 
+// Date handling methods
+const updateDateRange = () => {
+    if (startDate.value && endDate.value) {
+        dateRange.value = {
+            start: new Date(startDate.value).toISOString(),
+            end: new Date(endDate.value).toISOString()
+        }
+    }
+}
+
+const onDateRangeChange = (value) => {
+    const today = new Date()
+    let start, end
+    switch (value) {
+        case 'lastDay':
+            start = new Date(today)
+            start.setDate(today.getDate() - 1)
+            end = new Date(today)
+            break
+        case 'lastWeek':
+            start = new Date(today)
+            start.setDate(today.getDate() - 7)
+            end = new Date(today)
+            break
+        case 'lastMonth':
+            start = new Date(today)
+            start.setDate(today.getDate() - 30)
+            end = new Date(today)
+            break
+        case 'custom':
+            return
+        default:
+            return
+    }
+    startDate.value = start.toISOString().split('T')[0]
+    endDate.value = end.toISOString().split('T')[0]
+    updateDateRange()
+}
+
+const setToday = () => {
+    const today = new Date()
+    const todayStr = today.toISOString().split('T')[0]
+    startDate.value = todayStr
+    endDate.value = todayStr
+    updateDateRange()
+}
+
 // Computed properties
 const totalPages = computed(() => {
     return Math.ceil(filteredTransactions.value.length / pageSize.value)
@@ -631,6 +744,14 @@ const paginated = computed(() => {
     const startIndex = (currentPage.value - 1) * pageSize.value
     const endIndex = startIndex + pageSize.value
     return filteredTransactions.value.slice(startIndex, endIndex)
+})
+
+const hasMoreTransactions = computed(() => {
+    return displayedTransactions.value.length < filteredTransactions.value.length
+})
+
+const remainingTransactions = computed(() => {
+    return filteredTransactions.value.length - displayedTransactions.value.length
 })
 
 const chartData = computed(() => {
@@ -792,6 +913,9 @@ onMounted(async () => {
         start: lastMonth.toISOString(),
         end: today.toISOString()
     }
+    // Initialize date inputs for the UI
+    startDate.value = lastMonth.toISOString().split('T')[0]
+    endDate.value = today.toISOString().split('T')[0]
     
     await getMeterActivity()
 })

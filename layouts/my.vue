@@ -29,7 +29,7 @@
                 </div>
                 
                 <!-- Pin/Unpin Button -->
-                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex items-center">
+                <!-- <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex items-center">
                     <button 
                         @click="togglePin"
                         class="text-blue-100 hover:text-white hover:bg-blue-500/50 p-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
@@ -40,7 +40,7 @@
                             class="h-4 w-4"
                         />
                     </button>
-                </div>
+                </div> -->
             </div>
             
             <!-- Navigation Menu -->
@@ -75,20 +75,20 @@
                     </div>
                 </NuxtLink>
                 
-                <!-- Meters
+                <!-- Meters -->
                 <NuxtLink 
                     class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
                     @click="navigateTo(`/my/${$route.params.customer_id}/meters`)"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                        <Icon name="lucide:gauge" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'mr-3 h-5 w-5' : 'h-5 w-5'"/>
+                        <Icon name="lucide:gauge" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'h-5 w-5' : 'h-5 w-5'"/>
                     </div>
                     <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
                         <span class="text-sm font-medium">Meters</span>
                         <span class="text-xs text-blue-200">Manage Devices</span>
                     </div>
-                </NuxtLink> -->
+                </NuxtLink>
                 
                 <!-- Statement -->
                 <NuxtLink 
@@ -186,7 +186,7 @@ export default{
     data(){
         return {
             sidebarExpanded: true,
-            isPinned: false,
+            isPinned: true,
             isHovered: false
         }
     },
