@@ -2,7 +2,7 @@
     <div class="flex h-screen">
         <aside 
             class="hidden md:block bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen transition-all duration-300 ease-in-out flex-shrink-0 relative flex flex-col shadow-xl" 
-            :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'w-72' : 'w-20'"
+            :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'w-64' : 'w-20'"
             :style="{ backgroundColor: bgColor, color: fontColor }"
             @mouseenter="handleSidebarHover(true)"
             @mouseleave="handleSidebarHover(false)"

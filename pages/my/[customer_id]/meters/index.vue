@@ -82,7 +82,7 @@
         </div>
 
         <!-- Right Sidebar -->
-        <div class="w-80 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
+        <div class="w-64 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
             <!-- Filters Section -->
             <div class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>

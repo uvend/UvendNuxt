@@ -5,7 +5,7 @@
             <!-- Header -->
              <div class="mb-6">
                 <Button 
-                    @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)"
+                    @click="router.back()"
                     class=" bg-blue-600 hover:bg-blue-700 mb-3"
                 >
                     <Icon name="lucide:arrow-left" class="w-3 h-4" />
@@ -100,7 +100,7 @@
         </div>
 
         <!-- Right Sidebar -->
-         <div class="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
+         <div class="w-64 bg-white border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar">
             <!-- Filters Section -->
             <div v-if="!showTransactionDetails" class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
@@ -200,6 +200,17 @@
                     </Button>
                 </div>
 
+                <!-- Reset Tamper Button -->
+                <div class="mb-6">
+                    <Button 
+                        @click="resetTamper()"
+                        class="w-full"
+                    >
+                        <Icon name="lucide:refresh-ccw" class="w-4 h-4 mr-2" />
+                        Reset Tamper
+                    </Button>
+                </div>
+
                 <!-- Action Buttons -->
                  <div class="flex gap-2">
                      <Button variant="outline" @click="clearFilters" class="flex-1">
@@ -295,6 +306,7 @@ definePageMeta({
 })
 
 const route = useRoute()
+const router = useRouter()
 const { $toast } = useNuxtApp()
 
 // Reactive data
