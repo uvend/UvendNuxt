@@ -32,6 +32,17 @@
                         <div>
                             <h2 class="text-xl font-semibold text-gray-800">Meter Summary</h2>
                             <p class="text-gray-600 text-sm">Totals per meter for the selected period</p>
+                            <!-- Activity Status Legend -->
+                            <div class="flex items-center gap-4 mt-2">
+                                <div class="flex items-center gap-1">
+                                    <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500" />
+                                    <span class="text-xs text-gray-600">Active (Has vended)</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <Icon name="lucide:x-circle" class="w-4 h-4 text-red-500" />
+                                    <span class="text-xs text-gray-600">Inactive (No vending)</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="text-right">
                             <div class="text-sm text-gray-600">Total Meters</div>
@@ -55,8 +66,18 @@
                         </thead>
                         <tbody>
                             <tr v-for="meter in displayedMeters" :key="meter.meterNumber" class="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group" @click="navigateTo(`/my/${$route.params.customer_id}/meters/${meter.installationUniqueId || meter.meterinstallationuniqueid || meter.meterinstallationuniqueid}`)">
-                                <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ meter.meterNumber }}</td>
-                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ meter.complexName || 'Unknown' }}</td>
+                                <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ meter.meterNumber }}</span>
+                                        <Icon 
+                                            :name="meter.isActive ? 'lucide:check-circle' : 'lucide:x-circle'" 
+                                            :class="meter.isActive ? 'text-green-500' : 'text-red-500'"
+                                            class="w-4 h-4"
+                                            :title="meter.isActive ? 'Active (Has vended)' : 'Inactive (No vending)'"
+                                        />
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ meter.complexName || 'NA' }}</td>
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ meter.utilityType }}</td>
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                     <span class="font-medium">{{ meter.totalUnitsIssued }}</span>
@@ -155,6 +176,21 @@
                     </Select>
                 </div>
 
+                <!-- Activity Status -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Activity Status</Label>
+                    <Select v-model="selectedActivityStatus">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="All meters" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="status in activityStatusOptions" :key="status.value" :value="status.value">
+                                {{ status.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <!-- Load More Amount -->
                 <div class="mb-6">
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Load More Amount</Label>
@@ -212,6 +248,12 @@ export default{
                 { label: 'Electricity', value: 0 },
                 { label: 'Water', value: 1 }
             ],
+            selectedActivityStatus: -1,
+            activityStatusOptions: [
+                { label: 'All', value: -1 },
+                { label: 'Active', value: 1 },
+                { label: 'Inactive', value: 0 }
+            ],
             search: null,
             // dates
             dateRange: null,
@@ -227,7 +269,7 @@ export default{
                 const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                     method: 'GET',
                     params:{
-                        IncludeMetersWithNoActivity : false,
+                        IncludeMetersWithNoActivity : true,
                         StartDate : this.dateRange.start,
                         EndDate: this.dateRange.end,
                         ReportParentType: 4,  // customer
@@ -285,11 +327,16 @@ export default{
                 let installationId = null
                 let complexName = null
                 let firstTxn = null
+                let isActive = false
                 if(meterData && Array.isArray(meterData.transactions)){
                     meterData.transactions.forEach(txn => {
                         totalAmount += parseFloat(txn.tenderedamount || txn.transactionAmount || txn.amount || 0) || 0
                         totalUnits += parseFloat(txn.totalunitsissued || txn.unitsIssued || txn.units || 0) || 0
                         if(!firstTxn) firstTxn = txn
+                        // Check if meter has vended by looking for start and end dates
+                        if(txn.StartDate && txn.EndDate){
+                            isActive = true
+                        }
                     })
                 }
                 if(firstTxn){
@@ -300,11 +347,12 @@ export default{
                 }
                 const row = {
                     meterNumber: meterNumber,
-                    complexName: complexName || 'Unknown',
+                    complexName: complexName || 'NA',
                     utilityType: utilityType || 'Unknown',
                     totalUnitsIssued: Number(totalUnits.toFixed(1)),
                     managedTenderAmount: totalAmount.toFixed(2),
-                    installationUniqueId: installationId
+                    installationUniqueId: installationId,
+                    isActive: isActive
                 }
                 this.metersTotals.push(row)
                 this.originalMetersTotals.push(row)
@@ -341,6 +389,7 @@ export default{
         clearFilters(){
             this.selectedUtility = -1
             this.selectedMeterComplex = null
+            this.selectedActivityStatus = -1
             this.search = ''
             this.currentPage = 1
             // reset dates to last 30 days
@@ -379,6 +428,14 @@ export default{
                 data = data.filter(m => {
                     if(this.selectedUtility === 0) return m.utilityType === 'Electricity'
                     if(this.selectedUtility === 1) return m.utilityType === 'Water'
+                    return true
+                })
+            }
+            // activity status
+            if(this.selectedActivityStatus !== -1){
+                data = data.filter(m => {
+                    if(this.selectedActivityStatus === 1) return m.isActive === true
+                    if(this.selectedActivityStatus === 0) return m.isActive === false
                     return true
                 })
             }

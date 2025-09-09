@@ -13,6 +13,8 @@
                     <div class="flex flex-row gap-1">
                         <Button variant="secondary" @click="toggleSearch"><Icon name="lucide:search"/></Button>
                         <Input type="text" placeholder="Search" v-if="searchActive" v-model="search" @input="debouncedSearch"/>
+                        <Input type="number" placeholder="Min Amount" v-if="searchActive" v-model="minAmount" @input="debouncedSearch" class="w-32"/>
+                        <Input type="number" placeholder="Max Amount" v-if="searchActive" v-model="maxAmount" @input="debouncedSearch" class="w-32"/>
                     </div>
                 </div>
                 <div>
@@ -116,6 +118,8 @@ export default{
             ],
             searchActive: false,
             search: '',
+            minAmount: null,
+            maxAmount: null,
             totalAmount: 0,
             totalSelectedAmount: 0,
             totalSelected: 0,
@@ -202,6 +206,11 @@ export default{
                     (payment.payeeInfo && payment.payeeInfo.description && 
                     payment.payeeInfo.description.toLowerCase().startsWith(this.search.toLowerCase()));
                 
+                // Amount range filter
+                const paymentAmount = parseFloat(payment.periodTotals?.payeePayOutAmount) || 0;
+                const matchesMinAmount = !this.minAmount || paymentAmount >= parseFloat(this.minAmount);
+                const matchesMaxAmount = !this.maxAmount || paymentAmount <= parseFloat(this.maxAmount);
+                
                 // Apply toggle filters
                 const matchesRollbackFilter = !this.filters.onRollback || 
                     (payment.periodTotals && payment.periodTotals.cancellationComment !== '');
@@ -212,7 +221,7 @@ export default{
                 const matchesEmailFilter = !this.filters.hasEmail || 
                     (payment.payeeInfo && payment.payeeInfo.isValidEmailAddress);
                 
-                return matchesSearch && matchesRollbackFilter && matchesBankFilter && matchesEmailFilter;
+                return matchesSearch && matchesMinAmount && matchesMaxAmount && matchesRollbackFilter && matchesBankFilter && matchesEmailFilter;
             });
 
             // Always sort alphabetically by payee name
@@ -344,6 +353,8 @@ export default{
             // Generate filter summary
             const activeFilters = [];
             if (this.search) activeFilters.push(`Search: "${this.search}"`);
+            if (this.minAmount) activeFilters.push(`Min Amount: R ${this.minAmount}`);
+            if (this.maxAmount) activeFilters.push(`Max Amount: R ${this.maxAmount}`);
             if (this.filters.onRollback) activeFilters.push('Rollback Only');
             if (this.filters.hasValidBank) activeFilters.push('Valid Bank Only');
             if (this.filters.hasEmail) activeFilters.push('Email Only');
