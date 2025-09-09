@@ -227,7 +227,7 @@ export default{
                 const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                     method: 'GET',
                     params:{
-                        IncludeMetersWithNoActivity : true,
+                        IncludeMetersWithNoActivity : false,
                         StartDate : this.dateRange.start,
                         EndDate: this.dateRange.end,
                         ReportParentType: 4,  // customer

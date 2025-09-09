@@ -319,7 +319,7 @@ export default{
              }
          },
     methods:{
-                 async getAdminTransactions(){
+            async getAdminTransactions(){
              this.isLoading = true;
              const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                  method: "GET",
