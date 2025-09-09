@@ -201,13 +201,26 @@
                 <!-- Date Range -->
                 <div class="mb-4">
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Date Range</Label>
-                    <MyDateRangePicker
-                        v-if="selectedStatementType"
-                        v-model="dateRange"
-                        :months="2"
-                        :selected-month.sync="selectedMonth"
-                        :selected-year.sync="selectedYear"
-                    />
+                    <div v-if="selectedStatementType" class="space-y-3">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">Start Date</label>
+                            <input 
+                                type="date" 
+                                v-model="startDateInput" 
+                                @change="onStartDateChange"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">End Date</label>
+                            <input 
+                                type="date" 
+                                v-model="endDateInput" 
+                                @change="onEndDateChange"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+                    </div>
                     <div v-else class="space-y-2">
                         <Select v-model="selectedMonth" @update:model-value="monthUpdated">
                             <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
@@ -370,6 +383,8 @@ export default{
             ],
             yearArr: [],
             dateRange: null,
+            startDateInput: '',
+            endDateInput: '',
             customerStatementPeriod: 0,
             customer:null,
             searchActive: true,
@@ -452,6 +467,8 @@ export default{
             this.statement.endDate = this.dateRange.end
             this.statement.name = this.customer
 
+            // Clear existing stats before adding new ones
+            this.statement.stats = []
             for (const [utilityType,data] of Object.entries(this.summary.utilities)) {
                 let newSet = {...data}
                 newSet.utilityType = utilityType
@@ -766,6 +783,32 @@ export default{
                 this.filteredTransactions = JSON.parse(JSON.stringify(filtered))
                 this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             })
+        },
+        onStartDateChange() {
+            if (this.startDateInput) {
+                this.updateDateRange();
+            }
+        },
+        onEndDateChange() {
+            if (this.endDateInput) {
+                this.updateDateRange();
+            }
+        },
+        updateDateRange() {
+            if (this.startDateInput && this.endDateInput) {
+                this.dateRange = {
+                    start: this.returnFormatDate(new Date(this.startDateInput)),
+                    end: this.returnFormatDate(new Date(this.endDateInput))
+                };
+            }
+        },
+        formatDateForInput(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
     },
     async mounted(){
@@ -773,6 +816,12 @@ export default{
         await this.getCustomerDefinition();
         //console.log(this.customerStatementPeriod)
         this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod);
+        
+        // Initialize date inputs if dateRange exists
+        if (this.dateRange && this.dateRange.start && this.dateRange.end) {
+            this.startDateInput = this.formatDateForInput(new Date(this.dateRange.start));
+            this.endDateInput = this.formatDateForInput(new Date(this.dateRange.end));
+        }
     },
     computed:{
         paginated(){
@@ -794,6 +843,13 @@ export default{
             // Month in dateParts is 1-indexed, convert to 0-indexed for JavaScript
             this.selectedMonth = parseInt(dateParts[0]) - 1;
             this.selectedYear = parseInt(dateParts[2]);
+            
+            // Update date inputs when dateRange changes
+            if (newValue && newValue.start && newValue.end) {
+                this.startDateInput = this.formatDateForInput(new Date(newValue.start));
+                this.endDateInput = this.formatDateForInput(new Date(newValue.end));
+            }
+            
             this.getTransactions();
         },
         selectedMeterComplex(newValue){
