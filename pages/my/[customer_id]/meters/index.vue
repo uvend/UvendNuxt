@@ -347,7 +347,7 @@ export default{
                 }
                 const row = {
                     meterNumber: meterNumber,
-                    complexName: complexName || 'NA',
+                    complexName: complexName || 'N/A',
                     utilityType: utilityType || 'Unknown',
                     totalUnitsIssued: Number(totalUnits.toFixed(1)),
                     managedTenderAmount: totalAmount.toFixed(2),
