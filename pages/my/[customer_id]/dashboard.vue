@@ -121,7 +121,8 @@
                                                 </td>
                                                 <td class="py-3 px-3 text-gray-600 group-hover:text-gray-700">
                                                     <div class="truncate max-w-[80px] lg:max-w-[120px]" :title="transaction.complexName">
-                                                        {{ transaction.complexName }}
+                                                        {{transaction.complexName}} <br/>
+                                                        <p class="text-[12px] text-gray-500">{{ transaction.address }}</p>
                                                     </div>
                                                 </td>
                                                 <td class="py-2 px-1 lg:px-2 font-semibold text-green-600 whitespace-nowrap ">R {{ parseFloat(transaction.managedTenderAmount).toFixed(2) }}</td>
@@ -233,6 +234,7 @@ export default {
                             ...transaction,
                             meterNumber: transaction.meternumber || meterNumber,
                             complexName: transaction.complexDescription || 'Unknown',
+                            address: transaction.address0 || 'Unknown',
                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
                             managedTenderAmount: transaction.tenderedamount || 0,
                             totalUnitsIssued: transaction.totalunitsissued || 0,

@@ -77,7 +77,10 @@
                                         />
                                     </div>
                                 </td>
-                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ meter.complexName || 'NA' }}</td>
+                                <td class="py-4 px-6 text-sm text-gray-700 group-hover:text-gray-700">
+                                    {{ meter.complexName || 'N/A' }}
+                                    <p class="text-gray-500">{{ meter.address || 'N/A' }}</p>
+                                </td>
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ meter.utilityType }}</td>
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                     <span class="font-medium">{{ meter.totalUnitsIssued }}</span>
@@ -328,6 +331,7 @@ export default{
                 let complexName = null
                 let firstTxn = null
                 let isActive = false
+                let address0 = null
                 if(meterData && Array.isArray(meterData.transactions)){
                     meterData.transactions.forEach(txn => {
                         totalAmount += parseFloat(txn.tenderedamount || txn.transactionAmount || txn.amount || 0) || 0
@@ -344,11 +348,13 @@ export default{
                     meterNumber = firstTxn.meternumber || meterNumber
                     installationId = firstTxn.meterinstallationuniqueid || firstTxn.installationUniqueId || null
                     complexName = firstTxn.complexDescription || firstTxn.complexName || null
+                    address0 = firstTxn.address0 || null
                 }
                 const row = {
                     meterNumber: meterNumber,
                     complexName: complexName || 'N/A',
                     utilityType: utilityType || 'Unknown',
+                    address: address0 || 'Unknown',
                     totalUnitsIssued: Number(totalUnits.toFixed(1)),
                     managedTenderAmount: totalAmount.toFixed(2),
                     installationUniqueId: installationId,

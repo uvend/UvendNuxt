@@ -65,7 +65,10 @@
                              <tr v-for="(transaction,index) in displayedTransactions" :key="transaction.meterNumber" :data-transaction-id="transaction.meterNumber" :class="['border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group', selectedTransaction && selectedTransaction.transactionUniqueId === transaction.transactionUniqueId ? 'bg-blue-100/80 border-blue-200' : '']" @click="selectTransaction(transaction)">
                                  <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
                                  <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
-                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-700 group-hover:text-gray-700">
+                                    {{ transaction.complexName }}
+                                    <p class="text-gray-500">{{ transaction.address }}</p>
+                                 </td>
                                  <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                      <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
                                      <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
@@ -346,6 +349,7 @@ export default{
                              ...transaction,
                              meterNumber: transaction.meternumber || meterNumber,
                              complexName: transaction.complexDescription || 'Unknown',
+                             address: transaction.address0 || 'Unknown',
                              utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
                              managedTenderAmount: transaction.tenderedamount || 0,
                              totalUnitsIssued: transaction.totalunitsissued || 0,

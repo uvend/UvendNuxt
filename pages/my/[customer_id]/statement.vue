@@ -144,7 +144,10 @@
                             <tr v-for="transaction in displayedTransactions" :key="transaction.transactionUniqueId" class="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group">
                                 <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
                                 <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
-                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ transaction.complexName }}</td>
+                                <td class="py-4 px-6 text-sm text-gray-700 group-hover:text-gray-700">
+                                    {{ transaction.complexName }}
+                                    <p class="text-gray-500">{{ transaction.address0 }}</p>
+                                </td>
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                     <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
                                     <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
@@ -429,6 +432,7 @@ export default{
                             ...transaction,
                             meterNumber: transaction.meternumber || meterNumber,
                             complexName: transaction.complexDescription || 'Unknown',
+                            address: transaction.address0 || 'Unknown',
                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
                             managedTenderAmount: transaction.tenderedamount || 0,
                             totalUnitsIssued: transaction.totalunitsissued || 0,
