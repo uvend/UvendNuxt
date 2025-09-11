@@ -406,7 +406,7 @@ export default{
             const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                 method: "GET",
                 params:{
-                    IncludeMetersWithNoActivity : true,
+                    IncludeMetersWithNoActivity : false,
                     StartDate : this.dateRange.start,
                     EndDate: this.dateRange.end,
                     ReportParentType: this.selectedMeterComplex ? 6 : 4,  // customer
@@ -449,6 +449,12 @@ export default{
             
             // Initialize filtered transactions with deep copy
             this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+            // Sort by date (latest to oldest)
+            this.filteredTransactions.sort((a, b) => {
+                const dateA = new Date(a.transactionDate || 0);
+                const dateB = new Date(b.transactionDate || 0);
+                return dateB - dateA; // Latest first
+            });
             this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             
             // Apply search filter if exists
@@ -535,6 +541,12 @@ export default{
 
             // Initialize filtered list
             this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+            // Sort by date (latest to oldest)
+            this.filteredTransactions.sort((a, b) => {
+                const dateA = new Date(a.transactionDate || 0);
+                const dateB = new Date(b.transactionDate || 0);
+                return dateB - dateA; // Latest first
+            });
             this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             if(this.search && this.search != ''){
                 this.performFiltering()
@@ -727,6 +739,12 @@ export default{
             this.filteredTransactions = []
             this.$nextTick(() => {
                 this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
+                // Sort by date (latest to oldest)
+                this.filteredTransactions.sort((a, b) => {
+                    const dateA = new Date(a.transactionDate || 0);
+                    const dateB = new Date(b.transactionDate || 0);
+                    return dateB - dateA; // Latest first
+                });
                 this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             })
         },
@@ -780,6 +798,13 @@ export default{
                     return id.includes(term) || meter.includes(term) || complex.includes(term) || address.includes(term)
                 })
             }
+
+            // Sort by date (latest to oldest)
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.transactionDate || 0);
+                const dateB = new Date(b.transactionDate || 0);
+                return dateB - dateA; // Latest first
+            });
 
             // Replace filtered list
             this.filteredTransactions = []

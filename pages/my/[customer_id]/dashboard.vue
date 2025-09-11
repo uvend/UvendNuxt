@@ -234,7 +234,7 @@ export default {
                             ...transaction,
                             meterNumber: transaction.meternumber || meterNumber,
                             complexName: transaction.complexDescription || 'Unknown',
-                            address: transaction.address0 || 'Unknown',
+                            address: transaction.address0 || 'N/A',
                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
                             managedTenderAmount: transaction.tenderedamount || 0,
                             totalUnitsIssued: transaction.totalunitsissued || 0,

@@ -354,7 +354,7 @@ export default{
                     meterNumber: meterNumber,
                     complexName: complexName || 'N/A',
                     utilityType: utilityType || 'Unknown',
-                    address: address0 || 'Unknown',
+                    address: address0 || 'N/A',
                     totalUnitsIssued: Number(totalUnits.toFixed(1)),
                     managedTenderAmount: totalAmount.toFixed(2),
                     installationUniqueId: installationId,
@@ -364,8 +364,25 @@ export default{
                 this.originalMetersTotals.push(row)
             }
             this.filteredMeters = JSON.parse(JSON.stringify(this.originalMetersTotals))
-            // sort by meter number asc
-            this.filteredMeters.sort((a, b) => (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' }))
+            // sort by complex name first, then by address, then by meter number
+            this.filteredMeters.sort((a, b) => {
+                // First sort by complex name
+                const complexA = (a.complexName || '').toLowerCase()
+                const complexB = (b.complexName || '').toLowerCase()
+                if (complexA !== complexB) {
+                    return complexA.localeCompare(complexB, undefined, { numeric: true, sensitivity: 'base' })
+                }
+                
+                // Then sort by address
+                const addressA = (a.address || '').toLowerCase()
+                const addressB = (b.address || '').toLowerCase()
+                if (addressA !== addressB) {
+                    return addressA.localeCompare(addressB, undefined, { numeric: true, sensitivity: 'base' })
+                }
+                
+                // Finally sort by meter number
+                return (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' })
+            })
             this.displayedMeters = this.filteredMeters.slice(0, this.pageSize)
         },
         getMeters(){
@@ -410,8 +427,25 @@ export default{
             this.filteredMeters = []
             this.$nextTick(() => {
                 this.filteredMeters = JSON.parse(JSON.stringify(this.originalMetersTotals))
-                // sort by meter number asc
-                this.filteredMeters.sort((a, b) => (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' }))
+                // sort by complex name first, then by address, then by meter number
+                this.filteredMeters.sort((a, b) => {
+                    // First sort by complex name
+                    const complexA = (a.complexName || '').toLowerCase()
+                    const complexB = (b.complexName || '').toLowerCase()
+                    if (complexA !== complexB) {
+                        return complexA.localeCompare(complexB, undefined, { numeric: true, sensitivity: 'base' })
+                    }
+                    
+                    // Then sort by address
+                    const addressA = (a.address || '').toLowerCase()
+                    const addressB = (b.address || '').toLowerCase()
+                    if (addressA !== addressB) {
+                        return addressA.localeCompare(addressB, undefined, { numeric: true, sensitivity: 'base' })
+                    }
+                    
+                    // Finally sort by meter number
+                    return (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' })
+                })
                 this.displayedMeters = this.filteredMeters.slice(0, this.pageSize)
             })
         },
@@ -451,8 +485,25 @@ export default{
                 data = data.filter(m => (m.meterNumber || '').toLowerCase().includes(s) || (m.complexName || '').toLowerCase().includes(s))
             }
 
-            // sort by meter number asc
-            data.sort((a, b) => (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' }))
+            // sort by complex name first, then by address, then by meter number
+            data.sort((a, b) => {
+                // First sort by complex name
+                const complexA = (a.complexName || '').toLowerCase()
+                const complexB = (b.complexName || '').toLowerCase()
+                if (complexA !== complexB) {
+                    return complexA.localeCompare(complexB, undefined, { numeric: true, sensitivity: 'base' })
+                }
+                
+                // Then sort by address
+                const addressA = (a.address || '').toLowerCase()
+                const addressB = (b.address || '').toLowerCase()
+                if (addressA !== addressB) {
+                    return addressA.localeCompare(addressB, undefined, { numeric: true, sensitivity: 'base' })
+                }
+                
+                // Finally sort by meter number
+                return (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' })
+            })
 
             this.filteredMeters = []
             this.$nextTick(() => {

@@ -349,7 +349,7 @@ export default{
                              ...transaction,
                              meterNumber: transaction.meternumber || meterNumber,
                              complexName: transaction.complexDescription || 'Unknown',
-                             address: transaction.address0 || 'Unknown',
+                             address: transaction.address0 || 'N/A',
                              utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
                              managedTenderAmount: transaction.tenderedamount || 0,
                              totalUnitsIssued: transaction.totalunitsissued || 0,
@@ -366,6 +366,12 @@ export default{
              }
              
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
+             // Sort by date (latest to oldest)
+             this.filteredTransactions.sort((a, b) => {
+                 const dateA = new Date(a.transactionDate || 0);
+                 const dateB = new Date(b.transactionDate || 0);
+                 return dateB - dateA; // Latest first
+             });
              this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Initialize displayed transactions
              await this.getMeterComplex()
              this.isLoading = false;
@@ -410,6 +416,12 @@ export default{
              }
              
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
+             // Sort by date (latest to oldest)
+             this.filteredTransactions.sort((a, b) => {
+                 const dateA = new Date(a.transactionDate || 0);
+                 const dateB = new Date(b.transactionDate || 0);
+                 return dateB - dateA; // Latest first
+             });
              this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Initialize displayed transactions
              await this.getMeterComplex()
              this.isLoading = false;
@@ -468,12 +480,18 @@ export default{
              this.endDate = today.toISOString().split('T')[0];
              this.updateDateRange();
              
-             // Reset filtered transactions to show all original transactions with deep copy
-             this.filteredTransactions = [];
-             this.$nextTick(() => {
-                 this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions));
-                 this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Reset displayed transactions
-             });
+            // Reset filtered transactions to show all original transactions with deep copy
+            this.filteredTransactions = [];
+            this.$nextTick(() => {
+                this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions));
+                // Sort by date (latest to oldest)
+                this.filteredTransactions.sort((a, b) => {
+                    const dateA = new Date(a.transactionDate || 0);
+                    const dateB = new Date(b.transactionDate || 0);
+                    return dateB - dateA; // Latest first
+                });
+                this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Reset displayed transactions
+            });
              // Reset transactions to original state as well
              this.transactions = JSON.parse(JSON.stringify(this.originalTransactions));
          },
@@ -533,14 +551,21 @@ export default{
                  });
              }
              
-             // Completely replace the filtered transactions array with a fresh copy
-             this.filteredTransactions = [];
-             this.$nextTick(() => {
-                 this.filteredTransactions = JSON.parse(JSON.stringify(filteredTransactions));
-                 this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Reset displayed transactions
-                 console.log('Filtered results:', this.filteredTransactions.length);
-                 console.log('Sample filtered transaction:', this.filteredTransactions[0]);
-             });
+            // Sort by date (latest to oldest)
+            filteredTransactions.sort((a, b) => {
+                const dateA = new Date(a.transactionDate || 0);
+                const dateB = new Date(b.transactionDate || 0);
+                return dateB - dateA; // Latest first
+            });
+
+            // Completely replace the filtered transactions array with a fresh copy
+            this.filteredTransactions = [];
+            this.$nextTick(() => {
+                this.filteredTransactions = JSON.parse(JSON.stringify(filteredTransactions));
+                this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Reset displayed transactions
+                console.log('Filtered results:', this.filteredTransactions.length);
+                console.log('Sample filtered transaction:', this.filteredTransactions[0]);
+            });
          },
         debouncedSearch(){
             // Apply search filtering automatically as user types

@@ -393,6 +393,12 @@ const getAdminMeterActivity = async () => {
         }
         
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+        // Sort by date (latest to oldest)
+        filteredTransactions.value.sort((a, b) => {
+            const dateA = new Date(a.transactionDate || 0);
+            const dateB = new Date(b.transactionDate || 0);
+            return dateB - dateA; // Latest first
+        });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
         console.log('Admin meter transactions:', result)
         meterNumber.value = meterTransactions.value[0]?.meterNumber ?? ''
@@ -452,6 +458,12 @@ const getVendMeterActivity = async () => {
         }
         
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+        // Sort by date (latest to oldest)
+        filteredTransactions.value.sort((a, b) => {
+            const dateA = new Date(a.transactionDate || 0);
+            const dateB = new Date(b.transactionDate || 0);
+            return dateB - dateA; // Latest first
+        });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
         await getMeterComplex()
         isLoading.value = false
@@ -600,6 +612,12 @@ const clearFilters = () => {
     filteredTransactions.value = []
     nextTick(() => {
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
+        // Sort by date (latest to oldest)
+        filteredTransactions.value.sort((a, b) => {
+            const dateA = new Date(a.transactionDate || 0);
+            const dateB = new Date(b.transactionDate || 0);
+            return dateB - dateA; // Latest first
+        });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
     })
     meterTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
@@ -649,6 +667,13 @@ const performFiltering = () => {
             return meterNumber.includes(searchLower) || address.includes(searchLower)
         })
     }
+    
+    // Sort by date (latest to oldest)
+    filteredData.sort((a, b) => {
+        const dateA = new Date(a.transactionDate || 0);
+        const dateB = new Date(b.transactionDate || 0);
+        return dateB - dateA; // Latest first
+    });
     
     filteredTransactions.value = []
     nextTick(() => {
