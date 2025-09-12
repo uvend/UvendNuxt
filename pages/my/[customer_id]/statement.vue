@@ -263,7 +263,7 @@
                     </Select>
                 </div>
 
-                <!-- Complex -->
+                <!-- Complex
                 <div class="mb-4">
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Complex</Label>
                     <div class="flex gap-2">
@@ -287,6 +287,20 @@
                             </SelectContent>
                         </Select>
                     </div>
+                </div> -->
+
+                <!-- Sort Order -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Sort Order</Label>
+                    <Select v-model="sortOrder" @update:model-value="onSortOrderChange">
+                        <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
+                            <SelectValue placeholder="Latest to Oldest" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="latest">Latest to Oldest</SelectItem>
+                            <SelectItem value="oldest">Oldest to Newest</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <!-- Load More Amount -->
@@ -394,7 +408,8 @@ export default{
             search: null,
             response: null,
             showStatementSummary: true,
-            isGeneratingPDF: false
+            isGeneratingPDF: false,
+            sortOrder: 'latest' // Default to latest to oldest
         }
     },
     methods:{
@@ -449,11 +464,11 @@ export default{
             
             // Initialize filtered transactions with deep copy
             this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
-            // Sort by date (latest to oldest)
+            // Sort by date based on selected sort order
             this.filteredTransactions.sort((a, b) => {
                 const dateA = new Date(a.transactionDate || 0);
                 const dateB = new Date(b.transactionDate || 0);
-                return dateB - dateA; // Latest first
+                return this.sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
             });
             this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             
@@ -541,11 +556,11 @@ export default{
 
             // Initialize filtered list
             this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions))
-            // Sort by date (latest to oldest)
+            // Sort by date based on selected sort order
             this.filteredTransactions.sort((a, b) => {
                 const dateA = new Date(a.transactionDate || 0);
                 const dateB = new Date(b.transactionDate || 0);
-                return dateB - dateA; // Latest first
+                return this.sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
             });
             this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize)
             if(this.search && this.search != ''){
@@ -735,6 +750,7 @@ export default{
             this.selectedMeterComplex = null;
             this.search = '';
             this.currentPage = 1;
+            this.sortOrder = 'latest'; // Reset to default sort order
             // Reset filtered transactions to show all original transactions with deep copy
             this.filteredTransactions = []
             this.$nextTick(() => {
@@ -799,11 +815,11 @@ export default{
                 })
             }
 
-            // Sort by date (latest to oldest)
+            // Sort by date based on selected sort order
             filtered.sort((a, b) => {
                 const dateA = new Date(a.transactionDate || 0);
                 const dateB = new Date(b.transactionDate || 0);
-                return dateB - dateA; // Latest first
+                return this.sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
             });
 
             // Replace filtered list
@@ -838,6 +854,17 @@ export default{
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
+        },
+        
+        onSortOrderChange() {
+            // Reset displayed transactions and re-sort
+            this.displayedTransactions = [];
+            this.currentPage = 1;
+            // Force a complete reset by clearing filtered transactions first
+            this.filteredTransactions = [];
+            this.$nextTick(() => {
+                this.performFiltering();
+            });
         }
     },
     async mounted(){

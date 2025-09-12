@@ -283,6 +283,8 @@ export default {
         },
         onChartDateRangeChanged(dateRange) {
             this.chartDateRange = dateRange;
+            // Also update the main dateRange to trigger API calls
+            this.dateRange = dateRange;
         }
     },
     async mounted() {

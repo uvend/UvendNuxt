@@ -13,7 +13,9 @@
                 </Button>
                  <h1 class="text-3xl font-bold text-gray-900 my-3">Meter Details</h1>
                  <p class="text-gray-600 " v-if="meterNumber">Meter: {{ meterNumber }}</p>
-            </div>
+                 <p class="text-gray-600 " v-if="meterNumber">Complex: {{ complexName }}</p>
+                 <p class="text-gray-600 " v-if="meterNumber">Unit: {{ unitInfo }}</p>
+                </div>
 
              <!-- Search Bar and View Toggle -->
              <div class="mb-6 flex items-center gap-4">
@@ -176,6 +178,20 @@
                     </Select>
                 </div>
 
+                <!-- Sort Order -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Sort Order</Label>
+                    <Select v-model="sortOrder" @update:model-value="onSortOrderChange">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Latest to Oldest" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="latest">Latest to Oldest</SelectItem>
+                            <SelectItem value="oldest">Oldest to Newest</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <!-- Load More Amount -->
                 <div class="mb-6">
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Load More Amount</Label>
@@ -326,6 +342,8 @@ const pageSize = ref(25)
 const pageSizeSelect = ref([10, 25, 50, 100])
 const currentPage = ref(1)
 const meterNumber = ref(null)
+const complexName = ref(null)
+const unitInfo = ref(null)
 const meterInfo = ref(null)
 const meterStatus = ref(null)
 const isOpen = ref(false)
@@ -347,6 +365,7 @@ const selectedMeterComplex = ref(null)
 const selectedTransaction = ref(null)
 const showTransactionDetails = ref(false)
 const showCharts = ref(false)
+const sortOrder = ref('latest') // Default to latest to oldest
 
 // Methods
 const getAdminMeterActivity = async () => {
@@ -393,15 +412,18 @@ const getAdminMeterActivity = async () => {
         }
         
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
-        // Sort by date (latest to oldest)
+        // Sort by date based on selected sort order
         filteredTransactions.value.sort((a, b) => {
             const dateA = new Date(a.transactionDate || 0);
             const dateB = new Date(b.transactionDate || 0);
-            return dateB - dateA; // Latest first
+            return sortOrder.value === 'latest' ? dateB - dateA : dateA - dateB;
         });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
         console.log('Admin meter transactions:', result)
         meterNumber.value = meterTransactions.value[0]?.meterNumber ?? ''
+        complexName.value = meterTransactions.value[0]?.complexName?? ''
+        unitInfo.value = meterTransactions.value[0]?.address0??''
+
         await getMeterComplex()
         isLoading.value = false
     } catch (error) {
@@ -458,11 +480,11 @@ const getVendMeterActivity = async () => {
         }
         
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
-        // Sort by date (latest to oldest)
+        // Sort by date based on selected sort order
         filteredTransactions.value.sort((a, b) => {
             const dateA = new Date(a.transactionDate || 0);
             const dateB = new Date(b.transactionDate || 0);
-            return dateB - dateA; // Latest first
+            return sortOrder.value === 'latest' ? dateB - dateA : dateA - dateB;
         });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
         await getMeterComplex()
@@ -601,6 +623,7 @@ const clearFilters = () => {
     selectedMeterComplex.value = null
     search.value = ''
     currentPage.value = 1
+    sortOrder.value = 'latest' // Reset to default sort order
     // Reset date range dropdown and inputs to last month
     selectedDateRange.value = 'lastMonth'
     const today = new Date()
@@ -612,11 +635,11 @@ const clearFilters = () => {
     filteredTransactions.value = []
     nextTick(() => {
         filteredTransactions.value = JSON.parse(JSON.stringify(originalTransactions.value))
-        // Sort by date (latest to oldest)
+        // Sort by date based on selected sort order
         filteredTransactions.value.sort((a, b) => {
             const dateA = new Date(a.transactionDate || 0);
             const dateB = new Date(b.transactionDate || 0);
-            return dateB - dateA; // Latest first
+            return sortOrder.value === 'latest' ? dateB - dateA : dateA - dateB;
         });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
     })
@@ -668,11 +691,11 @@ const performFiltering = () => {
         })
     }
     
-    // Sort by date (latest to oldest)
+    // Sort by date based on selected sort order
     filteredData.sort((a, b) => {
         const dateA = new Date(a.transactionDate || 0);
         const dateB = new Date(b.transactionDate || 0);
-        return dateB - dateA; // Latest first
+        return sortOrder.value === 'latest' ? dateB - dateA : dateA - dateB;
     });
     
     filteredTransactions.value = []
@@ -774,6 +797,17 @@ const setToday = () => {
     startDate.value = todayStr
     endDate.value = todayStr
     updateDateRange()
+}
+
+const onSortOrderChange = () => {
+    // Reset displayed transactions and re-sort
+    displayedTransactions.value = []
+    currentPage.value = 1
+    // Force a complete reset by clearing filtered transactions first
+    filteredTransactions.value = []
+    nextTick(() => {
+        performFiltering()
+    })
 }
 
 // Computed properties

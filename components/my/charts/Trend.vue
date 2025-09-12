@@ -52,13 +52,13 @@
                   <Input 
                     type="date" 
                     v-model="startDate"
-                    class="w-32 bg-white border-gray-200 rounded-lg"
+                    class="max-w-40 bg-white border-gray-200 rounded-lg"
                     @change="updateCustomDateRange"
                   />
                   <Input 
                     type="date" 
                     v-model="endDate"
-                    class="w-32 bg-white border-gray-200 rounded-lg"
+                    class="max-w-40 bg-white border-gray-200 rounded-lg"
                     @change="updateCustomDateRange"
                   />
                 </div>

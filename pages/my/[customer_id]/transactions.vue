@@ -174,6 +174,20 @@
                     </Select>
                 </div>
 
+                <!-- Sort Order -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Sort Order</Label>
+                    <Select v-model="sortOrder" @update:model-value="onSortOrderChange">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Latest to Oldest" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="latest">Latest to Oldest</SelectItem>
+                            <SelectItem value="oldest">Oldest to Newest</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <!-- Load More Amount -->
                 <div class="mb-6">
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Load More Amount</Label>
@@ -318,7 +332,8 @@ export default{
                  selectedDateRange: 'lastMonth',
                  selectedTransaction: null,
                  showTransactionDetails: false,
-                 showCharts: false // Toggle between charts and transactions view
+                 showCharts: false, // Toggle between charts and transactions view
+                 sortOrder: 'latest' // Default to latest to oldest
              }
          },
     methods:{
@@ -366,11 +381,11 @@ export default{
              }
              
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
-             // Sort by date (latest to oldest)
+             // Sort by date based on selected sort order
              this.filteredTransactions.sort((a, b) => {
                  const dateA = new Date(a.transactionDate || 0);
                  const dateB = new Date(b.transactionDate || 0);
-                 return dateB - dateA; // Latest first
+                 return this.sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
              });
              this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Initialize displayed transactions
              await this.getMeterComplex()
@@ -416,11 +431,11 @@ export default{
              }
              
              this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions)); // Initialize with deep copy of original data
-             // Sort by date (latest to oldest)
+             // Sort by date based on selected sort order
              this.filteredTransactions.sort((a, b) => {
                  const dateA = new Date(a.transactionDate || 0);
                  const dateB = new Date(b.transactionDate || 0);
-                 return dateB - dateA; // Latest first
+                 return this.sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
              });
              this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Initialize displayed transactions
              await this.getMeterComplex()
@@ -470,6 +485,7 @@ export default{
              this.selectedMeterComplex = null;
              this.search = '';
              this.currentPage = 1;
+             this.sortOrder = 'latest'; // Reset to default sort order
              
              // Reset date range dropdown and inputs to last month
              this.selectedDateRange = 'lastMonth';
@@ -484,11 +500,11 @@ export default{
             this.filteredTransactions = [];
             this.$nextTick(() => {
                 this.filteredTransactions = JSON.parse(JSON.stringify(this.originalTransactions));
-                // Sort by date (latest to oldest)
+                // Sort by date based on selected sort order
                 this.filteredTransactions.sort((a, b) => {
                     const dateA = new Date(a.transactionDate || 0);
                     const dateB = new Date(b.transactionDate || 0);
-                    return dateB - dateA; // Latest first
+                    return this.sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
                 });
                 this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Reset displayed transactions
             });
@@ -551,11 +567,11 @@ export default{
                  });
              }
              
-            // Sort by date (latest to oldest)
+            // Sort by date based on selected sort order
             filteredTransactions.sort((a, b) => {
                 const dateA = new Date(a.transactionDate || 0);
                 const dateB = new Date(b.transactionDate || 0);
-                return dateB - dateA; // Latest first
+                return this.sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
             });
 
             // Completely replace the filtered transactions array with a fresh copy
@@ -563,8 +579,6 @@ export default{
             this.$nextTick(() => {
                 this.filteredTransactions = JSON.parse(JSON.stringify(filteredTransactions));
                 this.displayedTransactions = this.filteredTransactions.slice(0, this.pageSize); // Reset displayed transactions
-                console.log('Filtered results:', this.filteredTransactions.length);
-                console.log('Sample filtered transaction:', this.filteredTransactions[0]);
             });
          },
         debouncedSearch(){
@@ -662,6 +676,17 @@ export default{
              this.startDate = todayStr;
              this.endDate = todayStr;
              this.updateDateRange();
+         },
+         
+         onSortOrderChange() {
+             // Reset displayed transactions and re-sort
+             this.displayedTransactions = [];
+             this.currentPage = 1;
+             // Force a complete reset by clearing filtered transactions first
+             this.filteredTransactions = [];
+             this.$nextTick(() => {
+                 this.performFiltering();
+             });
          }
     },
     async mounted(){
