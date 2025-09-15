@@ -519,11 +519,11 @@ export default{
             this.isLoading = false;
         },
         async getTransactions(){
-            if(localStorage.getItem('customer') === 'admin'){
-                await this.getAdminTransactions()
-            }else{
-                await this.getVendTransactions()
-            }
+            await this.getAdminTransactions()
+            // if(localStorage.getItem('customer') === 'admin'){
+            // }else{
+            //     await this.getVendTransactions()
+            // }
 
         },
         async hydrateStatementData(result){

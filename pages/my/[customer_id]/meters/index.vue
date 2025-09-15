@@ -386,11 +386,11 @@ export default{
             this.displayedMeters = this.filteredMeters.slice(0, this.pageSize)
         },
         getMeters(){
-            if(localStorage.getItem('customer') === 'admin'){
-                this.getAdminMeters()
-            }else{
-                this.getVendMeters()
-            }
+            this.getAdminMeters()
+            // if(localStorage.getItem('customer') === 'admin'){
+            // }else{
+            //     this.getVendMeters()
+            // }
         },
         async getMeterComplex(){
             const complexSet = new Set()

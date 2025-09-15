@@ -258,11 +258,11 @@ export default {
             this.originalTransactions = result.responseData.transactionData
         },
         getTransactions() {
-            if (localStorage.getItem('customer') === 'admin') {
-                this.getAdminTransactions()
-            } else {
-                this.getVendTransactions()
-            }
+            this.getAdminTransactions()
+            // if (localStorage.getItem('customer') === 'admin') {
+            // } else {
+            //     this.getVendTransactions()
+            // }
         },
         selectTransaction(transaction) {
             this.selectedTransaction = transaction

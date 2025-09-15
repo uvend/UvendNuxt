@@ -496,11 +496,11 @@ const getVendMeterActivity = async () => {
 }
 
 const getMeterActivity = async () => {
-    if (localStorage.getItem('customer') === 'admin') {
-        await getAdminMeterActivity()
-    } else {
-        await getVendMeterActivity()
-    }
+    await getAdminMeterActivity()
+    // if (localStorage.getItem('customer') === 'admin') {
+    // } else {
+    //     await getVendMeterActivity()
+    // }
 }
 
 const getMeterInfo = async () => {

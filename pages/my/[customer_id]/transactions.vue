@@ -391,7 +391,8 @@ export default{
              await this.getMeterComplex()
              this.isLoading = false;
          },
-                 async getVendTransactions(){
+                
+        async getVendTransactions(){
              this.isLoading = true;
              const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
                  method: "GET",
@@ -442,12 +443,12 @@ export default{
              this.isLoading = false;
          },
         getTransactions(){
-            if(localStorage.getItem('customer') === 'admin'){
-                this.getAdminTransactions()
-            }
-            else{
-                this.getVendTransactions()
-            }
+            this.getAdminTransactions()
+            // if(localStorage.getItem('customer') === 'admin'){
+            // }
+            // else{
+            //     this.getVendTransactions()
+            // }
         },
         changePage(page){
             if (page >= 1 && page <= this.totalPages) {
