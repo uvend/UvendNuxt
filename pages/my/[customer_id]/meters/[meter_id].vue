@@ -119,6 +119,7 @@ export default{
             })
             //console.log(result)
             this.meterTransactions = result.responseData.transactionData
+            this.meterNumber = result.responseData.transactionData[0]?.meterNumber ?? ''
             this.isLoading = false
         },
         async getMeterActivity(){
@@ -140,6 +141,7 @@ export default{
             })
             console.log(result)
             this.meterInfo = result
+            console.log(this.meterInfo)
             this.meterStatus = result.requestedMeterState
         },
         async blockMeter(state = true){
