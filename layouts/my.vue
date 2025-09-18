@@ -159,20 +159,20 @@
                 </div>
                 
                 <!-- Logout Button -->
-                <button 
-                    class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-red-500/20 hover:shadow-lg font-medium transition-all duration-200 w-full" 
-                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
-                    @click="logout"
-                >
-                    <div class="flex items-center justify-center w-8 h-8 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
-                        <Icon name="lucide:log-out" class="h-5 w-5"/>
-                    </div>
-                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
-                        <span class="text-sm font-medium">Logout</span>
-                        <span class="text-xs text-blue-200">Sign out</span>
-                    </div>
-                </button>
             </div>
+            <button 
+                class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-red-500/20 hover:shadow-lg font-medium transition-all duration-200 w-full" 
+                :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
+                @click="logout"
+            >
+                <div class="flex items-center justify-center w-8 h-8 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
+                    <Icon name="lucide:log-out" class="h-5 w-5"/>
+                </div>
+                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                    <span class="text-sm font-medium">Logout</span>
+                    <span class="text-xs text-blue-200">Sign out</span>
+                </div>
+            </button>
         </aside>
         <main class="flex-1 flex flex-col bg-gray-50">
             <div class="flex-1 overflow-auto">
