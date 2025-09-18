@@ -22,6 +22,14 @@
                         @input="debouncedSearch"
                     />
                 </div>
+                <Button 
+                    @click="getStatementPDF()"
+                    :disabled="isGeneratingPDF"
+                    class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <Icon v-if="!isGeneratingPDF" name="lucide:eye" class="w-4 h-4" />
+                    <Icon v-else name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                    {{ isGeneratingPDF ? 'Generating PDF...' : 'View Report' }}
+                </Button>
             </div>
 
             <!-- Meters Table View -->
@@ -263,6 +271,10 @@ export default{
             startDate: null,
             endDate: null,
             selectedDateRange: 'lastMonth'
+            ,
+            // report export
+            transactionResponseData: null,
+            isGeneratingPDF: false
         }
     },
     methods:{
@@ -281,6 +293,13 @@ export default{
                         UtilityType: this.selectedUtility
                     }
                 })
+                // keep response for report
+                this.transactionResponseData = {
+                    transactionData: result.data.transactionData,
+                    startDate: this.dateRange.start,
+                    endDate: this.dateRange.end,
+                    reportParentName: 'Meters Summary'
+                }
                 this._buildFromTransactionData(result.data.transactionData)
                 await this.getMeterComplex()
                 this.isLoading = false
@@ -305,6 +324,13 @@ export default{
                         UtilityType: this.selectedUtility
                     }
                 })
+                // keep response for report
+                this.transactionResponseData = {
+                    transactionData: result.responseData.transactionData,
+                    startDate: this.dateRange.start,
+                    endDate: this.dateRange.end,
+                    reportParentName: 'Meters Summary'
+                }
                 this._buildFromTransactionData(result.responseData.transactionData)
                 await this.getMeterComplex()
                 this.isLoading = false
@@ -315,6 +341,40 @@ export default{
                 this.filteredMeters = []
                 this.displayedMeters = []
                 this.isLoading = false
+            }
+        },
+        async getStatementPDF(){
+            this.isGeneratingPDF = true
+            try{
+                const payload = { data: this.transactionResponseData }
+                const blob = await useAuthFetch(`${STATEMENT_API}/export/pdf?template=statement`,{
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    responseType: 'blob',
+                    body: JSON.stringify(payload)
+                })
+                if (blob instanceof Blob === false) {
+                    console.error('Unexpected response type')
+                    return
+                }
+                const url = URL.createObjectURL(blob)
+                const newTab = window.open(url, '_blank')
+                setTimeout(() => URL.revokeObjectURL(url), 1000)
+                if(!newTab){
+                    const link = document.createElement('a')
+                    link.href = url
+                    const start = (this.dateRange && this.dateRange.start) ? this.dateRange.start : ''
+                    const end = (this.dateRange && this.dateRange.end) ? this.dateRange.end : ''
+                    link.download = `Statement_${start}_${end}.pdf`
+                    document.body.appendChild(link)
+                    link.click()
+                    link.remove()
+                    URL.revokeObjectURL(url)
+                }
+            }catch(err){
+                console.error('Failed to generate report', err)
+            }finally{
+                this.isGeneratingPDF = false
             }
         },
         _buildFromTransactionData(transactionData){

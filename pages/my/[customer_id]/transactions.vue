@@ -22,10 +22,14 @@
                          @input="debouncedSearch"
                      />
                  </div>
-                <!-- <Button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                    <Icon name="lucide:download" class="w-4 h-4" />
-                    Download Report
-                </Button> -->
+                 <Button 
+                     @click="getStatementPDF()"
+                     :disabled="isGeneratingPDF"
+                     class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                     <Icon v-if="!isGeneratingPDF" name="lucide:eye" class="w-4 h-4" />
+                     <Icon v-else name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                     {{ isGeneratingPDF ? 'Generating PDF...' : 'View Report' }}
+                 </Button> 
              </div>
 
 
@@ -303,6 +307,9 @@ export default{
                  filteredTransactions: [], // Store filtered results separately
                  displayedTransactions: [], // Store currently displayed transactions
                  isLoading: true,
+                 // Report export state
+                 transactionResponseData: null,
+                 isGeneratingPDF: false,
                  currentPage: 1,
                  pageSize: 25,
                  pageSizeSelect: [
@@ -351,6 +358,8 @@ export default{
                      UtilityType: this.selectedUtility
                  }
              })
+            // Keep full response for report generation
+            this.transactionResponseData = result.data
              
              // Clear existing transactions
              this.transactions = []
@@ -404,7 +413,10 @@ export default{
                  }
              })
              
-             // Clear existing transactions
+            // Keep full response for report generation
+            this.transactionResponseData = result.responseData
+
+            // Clear existing transactions
              this.transactions = []
              this.originalTransactions = []
              
@@ -442,6 +454,42 @@ export default{
              await this.getMeterComplex()
              this.isLoading = false;
          },
+        async getStatementPDF(){
+            this.isGeneratingPDF = true;
+            try{
+                const payload = {
+                    data: this.transactionResponseData
+                }
+                const blob = await useAuthFetch(`${STATEMENT_API}/export/pdf?template=statement`,{
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    responseType: 'blob',
+                    body: JSON.stringify(payload)
+                })
+                if (blob instanceof Blob === false) {
+                    console.error('Unexpected response type')
+                    return
+                }
+                const url = URL.createObjectURL(blob)
+                const newTab = window.open(url, '_blank')
+                setTimeout(() => URL.revokeObjectURL(url), 1000)
+                if(!newTab){
+                    const link = document.createElement('a')
+                    link.href = url
+                    const start = (this.dateRange && this.dateRange.start) ? this.dateRange.start : ''
+                    const end = (this.dateRange && this.dateRange.end) ? this.dateRange.end : ''
+                    link.download = `Statement_${start}_${end}.pdf`
+                    document.body.appendChild(link)
+                    link.click()
+                    link.remove()
+                    URL.revokeObjectURL(url)
+                }
+            }catch(err){
+                console.error('Failed to generate report', err)
+            }finally{
+                this.isGeneratingPDF = false
+            }
+        },
         getTransactions(){
             this.getAdminTransactions()
             // if(localStorage.getItem('customer') === 'admin'){
