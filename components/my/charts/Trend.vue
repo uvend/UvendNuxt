@@ -135,7 +135,7 @@ const startDate = ref(null)
 const endDate = ref(null)
 
 const chartData = computed(() => {
-  console.log('Trend component received transactions:', props.transactions)
+  // console.log('Trend component received transactions:', props.transactions)
   if (!props.transactions || props.transactions.length === 0) {
     return { water: [], electricity: [] }
   }
