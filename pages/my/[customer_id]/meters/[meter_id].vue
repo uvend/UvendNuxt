@@ -518,9 +518,21 @@ const getMeterInfo = async () => {
                 "ApiUserParams.RequestID": new Date()
             }
         })
-        console.log('Meter info:', result)
         meterInfo.value = result
-        meterStatus.value = result.requestedMeterState
+        
+        // Determine the actual meter blocked state
+        // requestedMeterState returns "Ok" when meter is unblocked, other values when blocked
+        let isMeterBlocked = false
+        
+        if (result.requestedMeterState === "Ok") {
+            // Meter is unblocked when state is "Ok"
+            isMeterBlocked = false
+        } else {
+            // Meter is blocked for any other state value
+            isMeterBlocked = true
+        }
+        
+        meterStatus.value = isMeterBlocked
     } catch (error) {
         console.error('Error fetching meter info:', error)
     }
@@ -538,7 +550,21 @@ const blockMeter = async (state = true) => {
                 "ApiUserParams.RequestID": new Date()
             }
         })
-        meterStatus.value = response.requestedMeterState
+        
+        // Update meter status based on the API response
+        // Check if the response contains the new meter state
+        if (response.requestedMeterState) {
+            // Use the same logic as in getMeterInfo to determine blocked state
+            if (response.requestedMeterState === "Ok") {
+                meterStatus.value = false // Meter is unblocked
+            } else {
+                meterStatus.value = true // Meter is blocked
+            }
+        } else {
+            // Fallback: update based on the action we just performed
+            meterStatus.value = state
+        }
+        
         $toast({
             title: 'Success',
             description: `Meter ${state ? 'blocked' : 'unblocked'} successfully`,
