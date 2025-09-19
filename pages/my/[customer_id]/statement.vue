@@ -675,41 +675,67 @@ export default{
                 const payload = {
                     data: this.transactionResponseData
                 }
-                // Request PDF as a blob
-                const blob = await useAuthFetch(`${STATEMENT_API}/export/pdf?template=statement`, {
+                
+                // Request PDF as a blob with proper headers
+                const response = await fetch(`${STATEMENT_API}/export/pdf?template=statement`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    responseType: 'blob',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/pdf'
+                    },
                     body: JSON.stringify(payload)
                 })
 
-                // In case server returned JSON error instead of PDF
-                if (blob instanceof Blob === false) {
-                    console.error('Unexpected response type');
-                    return;
+                // Check if the response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // Create a blob URL and open in new tab for preview
-                const url = URL.createObjectURL(blob)
-                const newTab = window.open(url, '_blank')
+                // Get the blob from the response
+                const blob = await response.blob();
                 
-                // Clean up the blob URL after a delay to allow the tab to load
-                setTimeout(() => {
-                    URL.revokeObjectURL(url)
-                }, 1000)
-                
-                // If popup was blocked, fallback to download
-                if (!newTab) {
-                    const link = document.createElement('a')
-                    link.href = url
-                    link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.pdf`
-                    document.body.appendChild(link)
-                    link.click()
-                    link.remove()
-                    URL.revokeObjectURL(url)
+                // Validate that we actually got a PDF blob
+                if (!blob || blob.size === 0) {
+                    throw new Error('Received empty or invalid PDF blob');
                 }
+
+                // Check if it's actually a PDF by looking at the content type
+                if (!blob.type.includes('pdf') && !blob.type.includes('application/octet-stream')) {
+                    console.warn('Unexpected content type:', blob.type);
+                }
+
+                // Create a blob URL
+                const url = URL.createObjectURL(blob);
+                
+                // Try to open in new tab first
+                const newTab = window.open(url, '_blank');
+                
+                // If popup was blocked or failed, fallback to download
+                if (!newTab || newTab.closed || typeof newTab.closed == 'undefined') {
+                    console.log('Popup blocked, falling back to download');
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.pdf`;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Clean up the blob URL after download
+                    setTimeout(() => {
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                } else {
+                    // Clean up the blob URL after a longer delay for new tab
+                    setTimeout(() => {
+                        URL.revokeObjectURL(url);
+                    }, 10000); // 10 seconds should be enough for the PDF to load
+                }
+                
             } catch (err) {
-                console.error('Failed to generate report', err)
+                console.error('Failed to generate PDF:', err);
+                // You might want to show a user-friendly error message here
+                alert('Failed to generate PDF. Please try again or check your internet connection.');
             } finally {
                 this.isGeneratingPDF = false;
             }
