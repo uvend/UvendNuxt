@@ -315,6 +315,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Tamper Token Dialog -->
+    <Dialog v-model:open="isOpen">
+        <DialogContent class="max-w-md">
+            <DialogHeader>
+                <DialogTitle>Tamper Reset Token</DialogTitle>
+                <DialogDescription>Enter this token on the meter to reset tamper.</DialogDescription>
+            </DialogHeader>
+            <div class="bg-gray-100 p-4 rounded-lg font-mono text-lg text-center tracking-widest">
+                {{ printJob }}
+            </div>
+            <div class="flex justify-end gap-2 mt-4">
+                <Button variant="outline" @click="copy">Copy token</Button>
+                <DialogClose as-child>
+                    <Button>Close</Button>
+                </DialogClose>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>
 
 <script setup>
