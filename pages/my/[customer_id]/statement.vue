@@ -921,8 +921,8 @@ export default{
     },
     watch:{
         dateRange(newValue) {
-            // Fix: Parse the date properly to get the correct month
-            const dateParts = this.dateRange.start.split('-');
+            // Parse the END date to get the correct month (since billing period ends on 25th of the target month)
+            const dateParts = this.dateRange.end.split('-');
             // Month in dateParts is 1-indexed, convert to 0-indexed for JavaScript
             this.selectedMonth = parseInt(dateParts[0]) - 1;
             this.selectedYear = parseInt(dateParts[2]);
