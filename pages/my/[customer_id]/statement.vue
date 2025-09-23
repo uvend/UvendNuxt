@@ -29,7 +29,7 @@
                 >
                     <Icon v-if="!isGeneratingPDF" name="lucide:eye" class="w-4 h-4" />
                     <Icon v-else name="lucide:loader-2" class="w-4 h-4 animate-spin" />
-                    {{ isGeneratingPDF ? 'Generating PDF...' : 'Preview Statement' }}
+                    {{ isGeneratingPDF ? 'Generating PDF...' : 'Print and Preview Statement' }}
                 </Button>
                 <Button 
                     @click="toggleStatementSummary" 
@@ -80,12 +80,12 @@
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Service Fee</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.commissionAmount }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.commissionAmount) }}</span>
                                 </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                <!-- <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Tenant Fee</span>
                                     <span class="text-sm font-semibold text-gray-900">R {{ Math.round(statement.surchargeAmount) }}</span>
-                                </div>
+                                </div> -->
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Total Tendered Amount</span>
                                     <span class="text-sm font-semibold text-gray-900">R {{ statement.totalValue }}</span>
@@ -638,19 +638,18 @@ export default{
             // When a specific month is selected, we want to show that exact month
             // regardless of the current date
             if(statmentMonth !== null) {
-                // For a selected month, show the full month range
-                var start = new Date(currentYear, currentMonth, 1); // First day of selected month
-                var end = new Date(currentYear, currentMonth + 1, 0); // Last day of selected month
+                // For a selected month, show billing period: 25th of previous month to 26th of selected month
+                var start = new Date(currentYear, currentMonth - 1, 25);
+                var end = new Date(currentYear, currentMonth, 26);
             } else {
-                // For auto calculation based on statement day
+                // Auto calculation uses fixed cycle: 25th of previous/current month to 26th of current/next month
                 const currentDate = today.getDate();
-                
-                if (currentDate > statementDay) {
-                    var start = new Date(currentYear, currentMonth, statementDay + 1);
-                    var end = new Date(currentYear, currentMonth + 1, statementDay);
+                if (currentDate >= 26) {
+                    var start = new Date(currentYear, currentMonth, 25);
+                    var end = new Date(currentYear, currentMonth + 1, 26);
                 } else {
-                    var start = new Date(currentYear, currentMonth - 1, statementDay + 1);
-                    var end = new Date(currentYear, currentMonth, statementDay);
+                    var start = new Date(currentYear, currentMonth - 1, 25);
+                    var end = new Date(currentYear, currentMonth, 26);
                 }
             }
 
