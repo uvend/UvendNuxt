@@ -64,11 +64,11 @@
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Managed Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.managedAmount }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.managedAmount*100)/100 }}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Non Managed Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.nonManagedAmount }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.nonManagedAmount*100)/100 }}</span>
                                 </div>
                             </div>
 
@@ -80,7 +80,7 @@
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Service Fee</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.commissionAmount) }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.commissionAmount*100)/100 }}</span>
                                 </div>
                                 <!-- <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Tenant Fee</span>
@@ -88,7 +88,7 @@
                                 </div> -->
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Total Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{ statement.totalValue }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.totalValue*100)/100 }}</span>
                                 </div>
                             </div>
                         </div>
@@ -635,22 +635,23 @@ export default{
                 currentMonth = statmentMonth; // Use the exact month selected
             }
             
-            // When a specific month is selected, we want to show that exact month
-            // regardless of the current date
+            // Always use 26th to 25th pattern regardless of statement day or month selection
             if(statmentMonth !== null) {
                 // For a selected month, set range from 26th of previous month to 25th of selected month
                 var start = new Date(currentYear, currentMonth - 1, 26); // 26th of previous month
                 var end = new Date(currentYear, currentMonth, 25); // 25th of selected month
             } else {
-                // For auto calculation based on statement day
+                // For auto calculation, always use 26th to 25th pattern
                 const currentDate = today.getDate();
                 
-                if (currentDate > statementDay) {
-                    var start = new Date(currentYear, currentMonth, statementDay + 1);
-                    var end = new Date(currentYear, currentMonth + 1, statementDay);
+                if (currentDate >= 26) {
+                    // If current date is 26th or later, show current period (26th of current month to 25th of next month)
+                    var start = new Date(currentYear, currentMonth, 26);
+                    var end = new Date(currentYear, currentMonth + 1, 25);
                 } else {
-                    var start = new Date(currentYear, currentMonth - 1, statementDay + 1);
-                    var end = new Date(currentYear, currentMonth, statementDay);
+                    // If current date is before 26th, show previous period (26th of previous month to 25th of current month)
+                    var start = new Date(currentYear, currentMonth - 1, 26);
+                    var end = new Date(currentYear, currentMonth, 25);
                 }
             }
 
