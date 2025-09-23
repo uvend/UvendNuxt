@@ -638,18 +638,19 @@ export default{
             // When a specific month is selected, we want to show that exact month
             // regardless of the current date
             if(statmentMonth !== null) {
-                // For a selected month, show billing period: 25th of previous month to 26th of selected month
-                var start = new Date(currentYear, currentMonth - 1, 25);
-                var end = new Date(currentYear, currentMonth, 26);
+                // For a selected month, set range from 26th of previous month to 25th of selected month
+                var start = new Date(currentYear, currentMonth - 1, 26); // 26th of previous month
+                var end = new Date(currentYear, currentMonth, 25); // 25th of selected month
             } else {
-                // Auto calculation uses fixed cycle: 25th of previous/current month to 26th of current/next month
+                // For auto calculation based on statement day
                 const currentDate = today.getDate();
-                if (currentDate >= 26) {
-                    var start = new Date(currentYear, currentMonth, 25);
-                    var end = new Date(currentYear, currentMonth + 1, 26);
+                
+                if (currentDate > statementDay) {
+                    var start = new Date(currentYear, currentMonth, statementDay + 1);
+                    var end = new Date(currentYear, currentMonth + 1, statementDay);
                 } else {
-                    var start = new Date(currentYear, currentMonth - 1, 25);
-                    var end = new Date(currentYear, currentMonth, 26);
+                    var start = new Date(currentYear, currentMonth - 1, statementDay + 1);
+                    var end = new Date(currentYear, currentMonth, statementDay);
                 }
             }
 
