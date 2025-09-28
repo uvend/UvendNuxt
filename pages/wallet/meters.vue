@@ -14,6 +14,10 @@
       <div>
       </div>
       <div class="flex flex-col gap-2">
+        <!-- Debug SmartData -->
+      
+        
+        <SmartData :waterData="waterData" :isloading="isWaterDataLoading" v-if="waterData" />
         <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 p-4">
           <CardHeader>
             <CardTitle class="text-xl font-black">Transaction History</CardTitle>
@@ -57,10 +61,15 @@
 </div>    
 </template>
 <script>
- definePageMeta({
+import SmartData from '~/components/wallet/SmartData.vue'
+
+definePageMeta({
     layout: 'wallet'
 })
   export default {
+    components: {
+      SmartData
+    },
     data() {
       return {
         isLoading: true,
@@ -78,7 +87,9 @@
         selectedMeter: null,
         meterTransactions: [],
         graphTransactions: [],
-        meterInfo: null
+        meterInfo: null,
+        waterData: null,
+        isWaterDataLoading: false
       }
     },
     created() {
@@ -141,10 +152,44 @@
         this.meterTransactions = response.transactions.reverse()
       },
       async getMeterInfo(){
-        const meterNumber = this.selectedMeter.meterNumber;
-        const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/${meterNumber}/info`)
-        console.log(response)
-        this.meterInfo = response;
+        this.isWaterDataLoading = true;
+        //Current Time in milliseconds
+        const endTime = Date.now()
+
+        //24 hours ago
+        const startTime = endTime - (24*60*60*1000);
+        try {
+          const meterNumber = this.selectedMeter.meterNumber;
+          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/${meterNumber}/info`,{
+            params:{
+                startTime:startTime,
+                endTime:endTime,
+                page:0,
+                size:10,
+            }
+          })
+          console.log('Meter info response:', response)
+          this.meterInfo = response;
+          
+          // Handle waterData - check if it exists and is an array
+          if (response.waterData && Array.isArray(response.waterData) && response.waterData.length > 0) {
+            this.waterData = response.waterData[0];
+            console.log('Water data loaded:', this.waterData);
+          } else {
+            console.log('No water data available');
+            this.waterData = null;
+          }
+        } catch (error) {
+          console.error('Error fetching meter info:', error);
+          this.$toast({
+            title: 'Error',
+            description: 'Failed to load meter information',
+            variant: 'destructive'
+          });
+          this.waterData = null;
+        } finally {
+          this.isWaterDataLoading = false;
+        }
       }
     },
     watch:{
@@ -155,6 +200,8 @@
         }else{
           this.meterTransactions = []
           this.meterInfo = null
+          this.waterData = null
+          this.isWaterDataLoading = false
         }
 
       }
