@@ -46,6 +46,7 @@ export default{
                 }
                 const access_token = response.access_token;
                 const refresh_token = response.refresh_token;
+                this.loginToHexing()
                 localStorage.setItem('wallet-access-token',access_token);
                 localStorage.setItem('wallet-refresh-token',refresh_token);
                 // console.log(response)
@@ -58,6 +59,32 @@ export default{
                 });
             }
         },
+        async loginToHexing(){
+        const username = "Uvend"
+        const password = "Uvend@2025"
+        const API_URL = "http://20.87.194.56/api/security/oauth/token"
+
+        const response = await fetch(`${API_URL}`,{
+          method:'POST',
+          headers:{
+            'Content-Type':'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            username:username,
+            password:password,
+            client_id: "d53a7258-9494-4ef4-b755-2e4d4a8d453c",
+            client_secret:"123456",
+            grant_type:"password"            
+          })
+        })
+
+        if (!response.ok){
+          throw new Error(`HTTP error! status: `,error)
+        }
+        const data = await response.json()
+        sessionStorage.setItem('hexingToken',data.access_token)
+
+      },
         valid(){
             this.invalid = []
             if(!this.email) this.invalid.push('email')
