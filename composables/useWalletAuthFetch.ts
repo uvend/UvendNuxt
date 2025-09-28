@@ -2,7 +2,7 @@ export default async function fetch<T>(url: string, options: any = {}, retry = t
   try {
     const accessToken = localStorage.getItem('wallet-access-token');
     const refreshToken = localStorage.getItem('wallet-refresh-token');
-    const hexingToken = sessionStorage.getItem('hexingToken')
+    const hexingToken = localStorage.getItem('hexingToken')
 
     return await $fetch<T>(url, {
       headers: {

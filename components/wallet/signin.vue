@@ -82,7 +82,7 @@ export default{
           throw new Error(`HTTP error! status: `,error)
         }
         const data = await response.json()
-        sessionStorage.setItem('hexingToken',data.access_token)
+        localStorage.setItem('hexingToken',data.access_token)
 
       },
         valid(){
