@@ -26,7 +26,7 @@
             <!-- Home -->
             <NuxtLink 
                 class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
-                to="/wallet"
+                to="/"
                 @click="isMobile && toggleNav()"
             >
                 <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
@@ -40,7 +40,7 @@
             <!-- Transactions -->
             <NuxtLink 
                 class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
-                to="/wallet/transactions"
+                to="/transactions"
                 @click="isMobile && toggleNav()"
             >
                 <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
@@ -54,7 +54,7 @@
             <!-- Payments -->
             <NuxtLink 
                 class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
-                to="/wallet/payments"
+                to="/payments"
                 @click="isMobile && toggleNav()"
             >
                 <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
@@ -128,15 +128,18 @@
     <!-- Mobile Bottom Nav -->
     <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-50">
         <div class="flex justify-around items-stretch h-14">
-            <NuxtLink to="/wallet" class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+            <NuxtLink to="/" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
+                <span v-if="isActive('/')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:home" class="h-5 w-5"/>
                 <span>Home</span>
             </NuxtLink>
-            <NuxtLink to="/wallet/transactions" class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+            <NuxtLink to="/transactions" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/transactions') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
+                <span v-if="isActive('/transactions')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:receipt" class="h-5 w-5"/>
                 <span>Transactions</span>
             </NuxtLink>
-            <NuxtLink to="/wallet/payments" class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+            <NuxtLink to="/payments" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/payments') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
+                <span v-if="isActive('/payments')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:wallet" class="h-5 w-5"/>
                 <span>Payments</span>
             </NuxtLink>
@@ -156,7 +159,8 @@
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <NuxtLink to="/wallet/settings" class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+            <NuxtLink to="/settings" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/settings') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
+                <span v-if="isActive('/settings')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:settings" class="h-5 w-5"/>
                 <span>Settings</span>
             </NuxtLink>
@@ -188,8 +192,14 @@ export default{
 		}
 	},
 	methods: {
+		isActive(path){
+			return this.$route.path === path
+		},
 		buy(type){
 			this.$router.push(`/wallet/payments?utility=${type}`)
+		},
+		toggleNav(){
+			this.isNavOpen = false
 		}
 	}
 }
