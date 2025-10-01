@@ -1,114 +1,216 @@
 <template>
-    <div v-if="isNavOpen"
-        @click="toggleNav"
-        class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300">
-    </div>
-    <div class="flex min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
-        <aside class="flex flex-col justify-between bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen shadow-xl"
-            :class="[
-                !isMobile ? 'w-64 p-4' : '',
-                isMobile && !isNavOpen ? 'w-0 p-0 overflow-hidden' : '',
-                isMobile && isNavOpen ? 'w-64 p-4 fixed top-0 left-0 z-50 transform transition-transform duration-300 ease-in-out' : ''
-            ]">
-            <nav class="space-y-1">
-                <MyLogo />
-                <NuxtLink to="/" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
-                    <Icon name="lucide:layout-dashboard" class="mr-2 h-5 w-5" />
-                    Dashboard
-                </NuxtLink>
-                <NuxtLink to="/transactions" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
-                    <Icon name="lucide:credit-card" class="mr-2 h-5 w-5" />
-                    Transaction History
-                </NuxtLink>
-                <NuxtLink to="/meters" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
-                    <Icon name="lucide:gauge" class="mr-2 h-5 w-5" />
-                    Meters
-                </NuxtLink>
-                <NuxtLink to="/payments" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
-                    <Icon name="lucide:wallet" class="mr-2 h-5 w-5" />
-                    Payments
-                </NuxtLink>
-            </nav>
-            <nav>
-                <NuxtLink to="/settings" class="flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-500/80 font-semibold transition-colors duration-200" @click="toggleNav">
-                    <Icon name="lucide:settings" class="mr-2 h-5 w-5" />
-                    Settings
-                </NuxtLink>
-            </nav>
-        </aside>
-        <div class="flex-1" >
-            <main class="">
-                <header class="flex justify-between items-center py-4 px-6 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200">
-                    <div>
-                        <div>
-                            <p class="title font-black text-xl text-gray-800 flex items-center">
-                                <Button v-if="isMobile" @click="toggleNav" variant="secondary" class="mr-2" size="sm">
-                                    <Icon name="lucide:menu"/>
-                                </Button>
-                                {{ title }}
-                            </p>
-                        </div>
-                    </div>
-                    <WalletPopup buttonLabel="Purchase Token">
-                        <WalletBuyNow />
-                    </WalletPopup>
-                </header>
-                <div class="scroll hide-scrollbar" style="max-width: 100vw">
-                    <slot class="overflow-y-scroll overflow-x hide-scrollbar w-full max-h-screen"/>
-                </div>
-            </main>
-        </div>
-    </div>
+	<div class="flex min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
+		<!-- Desktop Sidebar (applies my.vue style) -->
+		<aside 
+			class="hidden md:flex bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen transition-all duration-300 ease-in-out flex-shrink-0 relative flex-col shadow-xl w-64"
+			:style="{ backgroundColor: bgColor, color: fontColor }"
+		>
+			<!-- Logo Section -->
+			<div class="flex items-center justify-between p-6 border-b border-blue-500/30">
+				<div class="flex items-center gap-4">
+					<MyLogo />
+				</div>
+			</div>
+
+			<!-- Navigation Menu -->
+			<nav class="flex-1 p-4 space-y-2">
+				<!-- Home -->
+				<NuxtLink 
+					class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
+					to="/wallet"
+				>
+					<div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+						<Icon name="lucide:home" class="h-5 w-5"/>
+					</div>
+					<div class="flex flex-col ml-3">
+						<span class="text-sm font-medium">Home</span>
+						<span class="text-xs text-blue-200">Overview</span>
+					</div>
+				</NuxtLink>
+
+				<!-- Transactions -->
+				<NuxtLink 
+					class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
+					to="/wallet/transactions"
+				>
+					<div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+						<Icon name="lucide:receipt" class="h-5 w-5"/>
+					</div>
+					<div class="flex flex-col ml-3">
+						<span class="text-sm font-medium">Transactions</span>
+						<span class="text-xs text-blue-200">Payment History</span>
+					</div>
+				</NuxtLink>
+
+				<!-- Payments -->
+				<NuxtLink 
+					class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
+					to="/wallet/payments"
+				>
+					<div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+						<Icon name="lucide:wallet" class="h-5 w-5"/>
+					</div>
+					<div class="flex flex-col ml-3">
+						<span class="text-sm font-medium">Payments</span>
+						<span class="text-xs text-blue-200">Manage</span>
+					</div>
+				</NuxtLink>
+
+				<!-- Buy (dropdown) -->
+				<DropdownMenu>
+					<DropdownMenuTrigger as-child>
+						<button class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200 w-full">
+							<div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+								<Icon name="lucide:shopping-cart" class="h-5 w-5"/>
+							</div>
+							<div class="flex flex-col ml-3 text-left">
+								<span class="text-sm font-medium">Buy</span>
+								<span class="text-xs text-blue-200">Electricity or Water</span>
+							</div>
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="start">
+						<DropdownMenuItem @click="buy('electricity')">
+							<Icon name="lucide:zap" class="mr-2 h-4 w-4"/> Electricity
+						</DropdownMenuItem>
+						<DropdownMenuItem @click="buy('water')">
+							<Icon name="lucide:droplet" class="mr-2 h-4 w-4"/> Water
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</nav>
+
+			<!-- Footer links -->
+			<nav class="p-4 border-t border-blue-500/30">
+				<NuxtLink 
+					to="/wallet/settings" 
+					class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200"
+				>
+					<div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+						<Icon name="lucide:settings" class="h-5 w-5"/>
+					</div>
+					<div class="flex flex-col ml-3">
+						<span class="text-sm font-medium">Settings</span>
+						<span class="text-xs text-blue-200">Preferences</span>
+					</div>
+				</NuxtLink>
+			</nav>
+		</aside>
+
+		<!-- Main content -->
+		<div class="flex-1 flex flex-col">
+			<header class="flex justify-between items-center py-4 px-6 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200">
+				<p class="title font-black text-xl text-gray-800 flex items-center">
+					{{ title }}
+				</p>
+				<WalletPopup buttonLabel="Purchase Token">
+					<WalletBuyNow />
+				</WalletPopup>
+			</header>
+			<div class="flex-1 overflow-auto" style="max-width: 100vw">
+				<slot class="overflow-y-scroll overflow-x hide-scrollbar w-full max-h-screen"/>
+			</div>
+		</div>
+
+		<!-- Mobile Bottom Nav -->
+		<nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-50">
+			<div class="flex justify-around items-stretch h-14">
+				<NuxtLink to="/wallet" class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+					<Icon name="lucide:home" class="h-5 w-5"/>
+					<span>Home</span>
+				</NuxtLink>
+				<NuxtLink to="/wallet/transactions" class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+					<Icon name="lucide:receipt" class="h-5 w-5"/>
+					<span>Transactions</span>
+				</NuxtLink>
+				<NuxtLink to="/wallet/payments" class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+					<Icon name="lucide:wallet" class="h-5 w-5"/>
+					<span>Payments</span>
+				</NuxtLink>
+				<DropdownMenu>
+					<DropdownMenuTrigger as-child>
+						<button class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+							<Icon name="lucide:shopping-cart" class="h-5 w-5"/>
+							<span>Buy</span>
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="center">
+						<DropdownMenuItem @click="buy('electricity')">
+							<Icon name="lucide:zap" class="mr-2 h-4 w-4"/> Electricity
+						</DropdownMenuItem>
+						<DropdownMenuItem @click="buy('water')">
+							<Icon name="lucide:droplet" class="mr-2 h-4 w-4"/> Water
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+				<NuxtLink to="/wallet/settings" class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
+					<Icon name="lucide:settings" class="h-5 w-5"/>
+					<span>Settings</span>
+				</NuxtLink>
+			</div>
+		</nav>
+	</div>
 </template>
 <script>
 export default{
-    data(){
-        return {
-            isMobile: false,
-            isNavOpen: false
-        }
-    },
-    computed:{
-        title(){
-            const route = this.$route.path.split('/')
-            if(route.at(-2) === 'meters'){
-                return this.$store.pageTitle;
-            }
-            if(route.length == 2 && route.at(-1) == 'wallet'){
-                return "Dashboard";
-            }
-            if(route.at(-1) === 'transactions'){
-                return "Transaction History";
-            }
-            return route.at(-1)
-        },
-        bgColor(){
-            return `#${APP_BG_2?.replace('#', '') || '1287c9'}`
-        },
-        fontColor(){
-            return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`
-        }
-    },
-    beforeDestroy() {
-        window.removeEventListener('resize', this.checkMobile)
-    },
-    methods: {
-        checkMobile() {
-            this.isMobile = window.innerWidth <= 768
-        },
-        toggleNav(){
-            this.isNavOpen = !this.isNavOpen;
-        }
-    },
-    mounted() {
-        this.checkMobile()
-        window.addEventListener('resize', this.checkMobile)
-    },
-
+	data(){
+		return {}
+	},
+	computed:{
+		title(){
+			const route = this.$route.path.split('/')
+			if(route.length == 2 && route.at(-1) == 'wallet'){
+				return "Home";
+			}
+			if(route.at(-1) === 'transactions'){
+				return "Transaction History";
+			}
+			return route.at(-1)
+		},
+		bgColor(){
+			return `#${APP_BG_2?.replace('#', '') || '1287c9'}`
+		},
+		fontColor(){
+			return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`
+		}
+	},
+	methods: {
+		buy(type){
+			this.$router.push(`/wallet/payments?utility=${type}`)
+		}
+	}
 }
 </script>
 <style scoped>
 .title{
     text-transform: capitalize;
+}
+
+.menu-item{
+	width: 100%;
+	cursor: pointer;
+	align-items: center;
+	transition: all 0.2s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.menu-item::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 0;
+	background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+	transition: width 0.2s ease;
+}
+
+.menu-item:hover::before {
+	width: 100%;
+}
+
+.menu-item:hover {
+	transform: translateX(2px);
 }
 </style>
