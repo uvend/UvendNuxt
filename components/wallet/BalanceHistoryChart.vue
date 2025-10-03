@@ -9,7 +9,7 @@
             </div>
         </CardHeader>
         <CardContent>
-            <div class="">
+            <div class="space-y-4">
                 <!-- Period Summary -->
                 <div class="relative overflow-hidden bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50 p-4">
                     <div class="flex items-center justify-between">
