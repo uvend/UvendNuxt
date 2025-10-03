@@ -119,9 +119,6 @@
             </WalletPopup>
         </header>
         <div class="flex-1 overflow-auto" style="max-width: 100vw">
-            <div class="p-4">
-                <WalletTopUpCard />
-            </div>
             <slot class="overflow-y-scroll overflow-x hide-scrollbar w-full max-h-screen"/>
         </div>
     </div>
