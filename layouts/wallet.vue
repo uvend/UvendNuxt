@@ -118,7 +118,11 @@
                 <WalletBuyNow />
             </WalletPopup>
         </header>
+<<<<<<< HEAD
         <div class="flex-1 overflow-auto" style="max-width: 100vw">
+=======
+        <div class="flex-1 overflow-auto pb-20 md:pb-0" style="max-width: 100vw">
+>>>>>>> zaid/feature/new-wallet-layout
             <slot class="overflow-y-scroll overflow-x hide-scrollbar w-full max-h-screen"/>
         </div>
     </div>
