@@ -1,10 +1,11 @@
 <template>
-<!-- Overlay for mobile nav -->
-<div v-if="isNavOpen"
-    @click="toggleNav"
-    class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300">
-</div>
-<div class="flex min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
+<div>
+    <!-- Overlay for mobile nav -->
+    <div v-if="isNavOpen"
+        @click="toggleNav"
+        class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300">
+    </div>
+    <div class="flex min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
     <!-- Sidebar -->
     <aside
         class="bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen shadow-xl transition-all duration-300 ease-in-out flex-shrink-0 relative flex-col"
@@ -91,7 +92,7 @@
         <!-- Footer links -->
         <nav class="p-4 border-t border-blue-500/30">
             <NuxtLink 
-                to="/wallet/settings" 
+                to="/settings" 
                 class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200"
                 @click="isMobile && toggleNav()"
             >
@@ -107,22 +108,12 @@
     </aside>
     <!-- Main content -->
     <div class="flex-1 flex flex-col">
-        <header class="flex justify-between items-center py-4 px-6 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200">
-            <p class="title font-black text-xl text-gray-800 flex items-center">
-                <Button v-if="isMobile" @click="toggleNav" variant="secondary" class="mr-2" size="sm">
-                    <Icon name="lucide:menu"/>
-                </Button>
-                {{ title }}
-            </p>
+        <header class="flex justify-end items-center py-4 px-6 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200">
             <WalletPopup buttonLabel="Purchase Token">
                 <WalletBuyNow />
             </WalletPopup>
         </header>
-<<<<<<< HEAD
-        <div class="flex-1 overflow-auto" style="max-width: 100vw">
-=======
         <div class="flex-1 overflow-auto pb-20 md:pb-0" style="max-width: 100vw">
->>>>>>> zaid/feature/new-wallet-layout
             <slot class="overflow-y-scroll overflow-x hide-scrollbar w-full max-h-screen"/>
         </div>
     </div>
@@ -167,6 +158,7 @@
             </NuxtLink>
         </div>
     </nav>
+    </div>
 </div>
 </template>
 <script>

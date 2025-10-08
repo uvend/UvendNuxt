@@ -3,6 +3,65 @@
     <!-- Wallet Card -->
     <WalletDebitCard />
 
+    <!-- Summary Statistics -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Spent -->
+        <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300">
+            <CardContent class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <Icon name="lucide:coins" class="w-4 h-4 text-purple-600" />
+                    </div>
+                    <span class="text-xs font-medium text-gray-600">Total Spent</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">R {{ totalSpent }}</p>
+                <p class="text-xs text-gray-500 mt-1">Last 30 days</p>
+            </CardContent>
+        </Card>
+
+        <!-- Average per Transaction -->
+        <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300">
+            <CardContent class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <Icon name="lucide:trending-up" class="w-4 h-4 text-green-600" />
+                    </div>
+                    <span class="text-xs font-medium text-gray-600">Average</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">R {{ averageTransaction }}</p>
+                <p class="text-xs text-gray-500 mt-1">Per transaction</p>
+            </CardContent>
+        </Card>
+
+        <!-- Highest Utility -->
+        <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300">
+            <CardContent class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" :class="highestUtility.bgClass">
+                        <Icon :name="highestUtility.icon" class="w-4 h-4" :class="highestUtility.iconClass" />
+                    </div>
+                    <span class="text-xs font-medium text-gray-600">Highest</span>
+                </div>
+                <p class="text-2xl font-bold" :class="highestUtility.textClass">{{ highestUtility.name }}</p>
+                <p class="text-xs text-gray-500 mt-1">R {{ highestUtility.amount }}</p>
+            </CardContent>
+        </Card>
+
+        <!-- Lowest Utility -->
+        <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300">
+            <CardContent class="p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" :class="lowestUtility.bgClass">
+                        <Icon :name="lowestUtility.icon" class="w-4 h-4" :class="lowestUtility.iconClass" />
+                    </div>
+                    <span class="text-xs font-medium text-gray-600">Lowest</span>
+                </div>
+                <p class="text-2xl font-bold" :class="lowestUtility.textClass">{{ lowestUtility.name }}</p>
+                <p class="text-xs text-gray-500 mt-1">R {{ lowestUtility.amount }}</p>
+            </CardContent>
+        </Card>
+    </div>
+
     <!-- Spending Trends Chart -->
     <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
         <CardHeader class="pb-3">
@@ -49,34 +108,102 @@
                             <div class="absolute top-3/4 left-0 right-0 border-t border-gray-100"></div>
                         </div>
                         
-                        <!-- Chart bars -->
-                        <div class="absolute inset-0 flex items-end justify-around px-2">
-                            <div v-for="(day, index) in dailyChartData" :key="index" class="flex-1 flex items-end justify-center gap-1 px-0.5">
-                                <!-- Electricity bar -->
-                                <div 
-                                    class="w-full max-w-[20px] bg-gradient-to-t from-orange-500 to-orange-400 rounded-t hover:from-orange-600 hover:to-orange-500 transition-all cursor-pointer group relative"
-                                    :style="{ height: getBarHeight(day.electricity) }"
-                                    @mouseenter="showTooltip(index, 'electricity', day)"
+                        <!-- Line Chart SVG -->
+                        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <!-- Electricity Line with gradient fill -->
+                            <defs>
+                                <linearGradient id="electricityGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:rgb(249, 115, 22);stop-opacity:0.3" />
+                                    <stop offset="100%" style="stop-color:rgb(249, 115, 22);stop-opacity:0.05" />
+                                </linearGradient>
+                                <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:rgb(59, 130, 246);stop-opacity:0.3" />
+                                    <stop offset="100%" style="stop-color:rgb(59, 130, 246);stop-opacity:0.05" />
+                                </linearGradient>
+                            </defs>
+                            
+                            <!-- Electricity area fill -->
+                            <path 
+                                v-if="electricityLinePath"
+                                :d="electricityAreaPath" 
+                                fill="url(#electricityGradient)"
+                                class="transition-all duration-300"
+                            />
+                            
+                            <!-- Water area fill -->
+                            <path 
+                                v-if="waterLinePath"
+                                :d="waterAreaPath" 
+                                fill="url(#waterGradient)"
+                                class="transition-all duration-300"
+                            />
+                            
+                            <!-- Electricity line -->
+                            <path 
+                                v-if="electricityLinePath"
+                                :d="electricityLinePath" 
+                                fill="none" 
+                                stroke="rgb(249, 115, 22)" 
+                                stroke-width="0.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="transition-all duration-300"
+                            />
+                            
+                            <!-- Water line -->
+                            <path 
+                                v-if="waterLinePath"
+                                :d="waterLinePath" 
+                                fill="none" 
+                                stroke="rgb(59, 130, 246)" 
+                                stroke-width="0.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="transition-all duration-300"
+                            />
+                            
+                            <!-- Data points for Electricity -->
+                            <g v-if="electricityLinePath">
+                                <circle 
+                                    v-for="(point, index) in electricityPoints" 
+                                    :key="'e-' + index"
+                                    :cx="point.x" 
+                                    :cy="point.y" 
+                                    r="1"
+                                    fill="rgb(249, 115, 22)"
+                                    class="cursor-pointer hover:r-1.5 transition-all"
+                                    @mouseenter="showLineTooltip(index, 'electricity', dailyChartData[index])"
                                     @mouseleave="hideTooltip"
                                 >
-                                    <div v-if="tooltipVisible && tooltipIndex === index && tooltipType === 'electricity'" 
-                                         class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                                        R{{ day.electricity }}
-                                    </div>
-                                </div>
-                                <!-- Water bar -->
-                                <div 
-                                    class="w-full max-w-[20px] bg-gradient-to-t from-blue-500 to-blue-400 rounded-t hover:from-blue-600 hover:to-blue-500 transition-all cursor-pointer group relative"
-                                    :style="{ height: getBarHeight(day.water) }"
-                                    @mouseenter="showTooltip(index, 'water', day)"
+                                    <title>R{{ dailyChartData[index].electricity }}</title>
+                                </circle>
+                            </g>
+                            
+                            <!-- Data points for Water -->
+                            <g v-if="waterLinePath">
+                                <circle 
+                                    v-for="(point, index) in waterPoints" 
+                                    :key="'w-' + index"
+                                    :cx="point.x" 
+                                    :cy="point.y" 
+                                    r="1"
+                                    fill="rgb(59, 130, 246)"
+                                    class="cursor-pointer hover:r-1.5 transition-all"
+                                    @mouseenter="showLineTooltip(index, 'water', dailyChartData[index])"
                                     @mouseleave="hideTooltip"
                                 >
-                                    <div v-if="tooltipVisible && tooltipIndex === index && tooltipType === 'water'" 
-                                         class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                                        R{{ day.water }}
-                                    </div>
-                                </div>
-                            </div>
+                                    <title>R{{ dailyChartData[index].water }}</title>
+                                </circle>
+                            </g>
+                        </svg>
+                        
+                        <!-- Tooltip -->
+                        <div 
+                            v-if="tooltipVisible" 
+                            class="absolute px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10 pointer-events-none"
+                            :style="{ left: tooltipX + '%', top: tooltipY + '%', transform: 'translate(-50%, -120%)' }"
+                        >
+                            {{ tooltipType === 'electricity' ? 'Electricity' : 'Water' }}: R{{ tooltipValue }}
                         </div>
                     </div>
                     
@@ -100,18 +227,10 @@
         
 
     <!-- Transactions Table -->
-    <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+    <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden ">
         <CardHeader>
-            <div class="flex items-center justify-between">
-                <div>
-                    <CardTitle class="text-lg font-semibold text-gray-800">Transaction History</CardTitle>
-                    <CardDescription class="text-sm">{{ summary.transactionCount }} transactions found</CardDescription>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm text-gray-600">Total Spent</p>
-                    <p class="text-xl font-bold text-gray-900">R {{ summary.totalSpent }}</p>
-                </div>
-            </div>
+            <CardTitle class="text-lg font-semibold text-gray-800">Transaction History</CardTitle>
+            <CardDescription class="text-sm">{{ summary.transactionCount }} transactions found</CardDescription>
         </CardHeader>
         <CardContent class="p-0">
             <div v-if="isLoading" class="py-8 flex justify-center">
@@ -361,7 +480,10 @@ definePageMeta({
             expandedRows: [],
             tooltipVisible: false,
             tooltipIndex: null,
-            tooltipType: null
+            tooltipType: null,
+            tooltipX: 0,
+            tooltipY: 0,
+            tooltipValue: 0
         }
     },
     methods: {
@@ -469,24 +591,24 @@ definePageMeta({
             }
         },
         
-        showTooltip(index, type, day) {
+        showLineTooltip(index, type, day) {
             this.tooltipVisible = true;
             this.tooltipIndex = index;
             this.tooltipType = type;
+            
+            // Calculate tooltip position
+            const dataLength = this.dailyChartData.length;
+            this.tooltipX = (index / (dataLength - 1)) * 100;
+            
+            const value = parseFloat(type === 'electricity' ? day.electricity : day.water);
+            this.tooltipValue = value.toFixed(2);
+            this.tooltipY = 100 - ((value / this.maxAmount) * 100);
         },
         
         hideTooltip() {
             this.tooltipVisible = false;
             this.tooltipIndex = null;
             this.tooltipType = null;
-        },
-        
-        getBarHeight(amount) {
-            const value = parseFloat(amount);
-            if (value === 0) return '2px'; // Show tiny bar for zero values
-            if (this.maxAmount === 0) return '10px';
-            const percentage = (value / this.maxAmount) * 100;
-            return `${Math.max(percentage, 5)}%`; // Minimum 5% so bars are visible
         }
     },
 
@@ -563,6 +685,124 @@ definePageMeta({
             
             // Round up to nearest 50
             return Math.ceil(max / 50) * 50;
+        },
+        
+        electricityPoints() {
+            return this.dailyChartData.map((day, index) => {
+                const x = (index / (this.dailyChartData.length - 1)) * 100;
+                const y = 100 - ((parseFloat(day.electricity) / this.maxAmount) * 100);
+                return { x, y };
+            });
+        },
+        
+        waterPoints() {
+            return this.dailyChartData.map((day, index) => {
+                const x = (index / (this.dailyChartData.length - 1)) * 100;
+                const y = 100 - ((parseFloat(day.water) / this.maxAmount) * 100);
+                return { x, y };
+            });
+        },
+        
+        electricityLinePath() {
+            if (this.electricityPoints.length === 0) return '';
+            return this.electricityPoints.map((point, index) => {
+                return `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`;
+            }).join(' ');
+        },
+        
+        waterLinePath() {
+            if (this.waterPoints.length === 0) return '';
+            return this.waterPoints.map((point, index) => {
+                return `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`;
+            }).join(' ');
+        },
+        
+        electricityAreaPath() {
+            if (this.electricityPoints.length === 0) return '';
+            const linePath = this.electricityLinePath;
+            const firstPoint = this.electricityPoints[0];
+            const lastPoint = this.electricityPoints[this.electricityPoints.length - 1];
+            return `${linePath} L ${lastPoint.x} 100 L ${firstPoint.x} 100 Z`;
+        },
+        
+        waterAreaPath() {
+            if (this.waterPoints.length === 0) return '';
+            const linePath = this.waterLinePath;
+            const firstPoint = this.waterPoints[0];
+            const lastPoint = this.waterPoints[this.waterPoints.length - 1];
+            return `${linePath} L ${lastPoint.x} 100 L ${firstPoint.x} 100 Z`;
+        },
+        
+        totalSpent() {
+            return this.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toFixed(2);
+        },
+        
+        averageTransaction() {
+            if (this.transactions.length === 0) return '0.00';
+            const total = this.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            return (total / this.transactions.length).toFixed(2);
+        },
+        
+        electricityTotal() {
+            return this.transactions
+                .filter(t => t.utilityType === 'Electricity')
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        },
+        
+        waterTotal() {
+            return this.transactions
+                .filter(t => t.utilityType === 'Water')
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        },
+        
+        highestUtility() {
+            const elecTotal = this.electricityTotal;
+            const waterTotal = this.waterTotal;
+            
+            if (elecTotal > waterTotal) {
+                return {
+                    name: 'Electricity',
+                    amount: elecTotal.toFixed(2),
+                    icon: 'lucide:zap',
+                    bgClass: 'bg-orange-100',
+                    iconClass: 'text-orange-600',
+                    textClass: 'text-orange-600'
+                };
+            } else {
+                return {
+                    name: 'Water',
+                    amount: waterTotal.toFixed(2),
+                    icon: 'lucide:droplet',
+                    bgClass: 'bg-blue-100',
+                    iconClass: 'text-blue-600',
+                    textClass: 'text-blue-600'
+                };
+            }
+        },
+        
+        lowestUtility() {
+            const elecTotal = this.electricityTotal;
+            const waterTotal = this.waterTotal;
+            
+            if (elecTotal < waterTotal) {
+                return {
+                    name: 'Electricity',
+                    amount: elecTotal.toFixed(2),
+                    icon: 'lucide:zap',
+                    bgClass: 'bg-orange-100',
+                    iconClass: 'text-orange-600',
+                    textClass: 'text-orange-600'
+                };
+            } else {
+                return {
+                    name: 'Water',
+                    amount: waterTotal.toFixed(2),
+                    icon: 'lucide:droplet',
+                    bgClass: 'bg-blue-100',
+                    iconClass: 'text-blue-600',
+                    textClass: 'text-blue-600'
+                };
+            }
         }
     }
   }
