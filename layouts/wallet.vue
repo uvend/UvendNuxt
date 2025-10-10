@@ -135,22 +135,11 @@
                 <Icon name="lucide:wallet" class="h-5 w-5"/>
                 <span>Payments</span>
             </NuxtLink>
-            <DropdownMenu>
-                <DropdownMenuTrigger as-child>
-                    <button class="flex flex-col items-center justify-center text-xs font-medium text-gray-700 w-full">
-                        <Icon name="lucide:shopping-cart" class="h-5 w-5"/>
-                        <span>Buy</span>
-                    </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
-                    <DropdownMenuItem @click="buy('electricity')">
-                        <Icon name="lucide:zap" class="mr-2 h-4 w-4"/> Electricity
-                    </DropdownMenuItem>
-                    <DropdownMenuItem @click="buy('water')">
-                        <Icon name="lucide:droplet" class="mr-2 h-4 w-4"/> Water
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <NuxtLink to="/wallet/payments" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/wallet/payments') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
+                <span v-if="isActive('/wallet/payments')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
+                <Icon name="lucide:shopping-cart" class="h-5 w-5"/>
+                <span>Buy</span>
+            </NuxtLink>
             <NuxtLink to="/settings" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/settings') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
                 <span v-if="isActive('/settings')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:settings" class="h-5 w-5"/>
