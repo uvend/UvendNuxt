@@ -48,7 +48,7 @@
                     <Icon name="lucide:receipt" class="h-5 w-5"/>
                 </div>
                 <div class="flex flex-col ml-3">
-                    <span class="text-sm font-medium">Transactions</span>
+                    <span class="text-sm font-medium">Buy</span>
                     <span class="text-xs text-blue-200">Payment History</span>
                 </div>
             </NuxtLink>
@@ -66,28 +66,7 @@
                     <span class="text-xs text-blue-200">Manage</span>
                 </div>
             </NuxtLink>
-            <!-- Buy (dropdown) -->
-            <DropdownMenu>
-                <DropdownMenuTrigger as-child>
-                    <button class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200 w-full">
-                        <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                            <Icon name="lucide:shopping-cart" class="h-5 w-5"/>
-                        </div>
-                        <div class="flex flex-col ml-3 text-left">
-                            <span class="text-sm font-medium">Buy</span>
-                            <span class="text-xs text-blue-200">Electricity or Water</span>
-                        </div>
-                    </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                    <DropdownMenuItem @click="buy('electricity')">
-                        <Icon name="lucide:zap" class="mr-2 h-4 w-4"/> Electricity
-                    </DropdownMenuItem>
-                    <DropdownMenuItem @click="buy('water')">
-                        <Icon name="lucide:droplet" class="mr-2 h-4 w-4"/> Water
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+
         </nav>
         <!-- Footer links -->
         <nav class="p-4 border-t border-blue-500/30">
@@ -128,18 +107,14 @@
             <NuxtLink to="/transactions" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/transactions') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
                 <span v-if="isActive('/transactions')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:receipt" class="h-5 w-5"/>
-                <span>Transactions</span>
+                <span>Buy</span>
             </NuxtLink>
             <NuxtLink to="/payments" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/payments') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
                 <span v-if="isActive('/payments')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:wallet" class="h-5 w-5"/>
                 <span>Payments</span>
             </NuxtLink>
-            <NuxtLink to="/wallet/payments" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/wallet/payments') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
-                <span v-if="isActive('/wallet/payments')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
-                <Icon name="lucide:shopping-cart" class="h-5 w-5"/>
-                <span>Buy</span>
-            </NuxtLink>
+
             <NuxtLink to="/settings" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/settings') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
                 <span v-if="isActive('/settings')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:settings" class="h-5 w-5"/>
@@ -176,9 +151,6 @@ export default{
 	methods: {
 		isActive(path){
 			return this.$route.path === path
-		},
-		buy(type){
-			this.$router.push(`/wallet/payments?utility=${type}`)
 		},
 		toggleNav(){
 			this.isNavOpen = false
