@@ -3,6 +3,8 @@
     <!-- Wallet Card -->
     <WalletDebitCard />
 
+
+
     <!-- Summary Statistics -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total Spent -->
@@ -61,7 +63,11 @@
             </CardContent>
         </Card>
     </div>
-
+        <!-- Service Selection -->
+    <ServiceSelector 
+      v-model="selectedService" 
+      @service-selected="handleServiceSelection" 
+    />
     <!-- Spending Trends Chart -->
     <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
         <CardHeader class="pb-3">
@@ -364,15 +370,21 @@
 </template>
 
 <script>
+import ServiceSelector from '~/components/wallet/ServiceSelector.vue'
+
 definePageMeta({
     layout: 'wallet'
 })
 
   export default {
+    components: {
+      ServiceSelector
+    },
     data() {
       return {
             isLoading: false,
         activeFilter: null,
+            selectedService: null,
             transactions: [
                 {
                     id: 1,
@@ -609,6 +621,12 @@ definePageMeta({
             this.tooltipVisible = false;
             this.tooltipIndex = null;
             this.tooltipType = null;
+        },
+
+        handleServiceSelection(service) {
+            console.log('Selected service:', service);
+            // You can add navigation logic here or emit to parent component
+            // For example: navigate to payment page for selected service
         }
     },
 

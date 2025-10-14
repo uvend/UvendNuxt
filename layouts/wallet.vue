@@ -5,10 +5,10 @@
         @click="toggleNav"
         class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300">
     </div>
-    <div class="flex min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
+    <div class="flex h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
     <!-- Sidebar -->
     <aside
-        class="bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen shadow-xl transition-all duration-300 ease-in-out flex-shrink-0 relative flex-col"
+        class="bg-gradient-to-b from-blue-600 to-blue-700 h-screen shadow-xl transition-all duration-300 ease-in-out flex-shrink-0 relative flex-col"
         :class="[
             'hidden md:flex w-64 flex-col',
             isMobile && isNavOpen ? 'fixed top-0 left-0 z-50 w-64 p-4 flex' : '',
@@ -86,14 +86,34 @@
         </nav>
     </aside>
     <!-- Main content -->
-    <div class="flex-1 flex flex-col">
-        <header class="flex justify-end items-center py-4 px-6 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200">
-            <WalletPopup buttonLabel="Purchase Token">
-                <WalletBuyNow />
-            </WalletPopup>
+    <div class="flex-1 flex flex-col h-screen">
+        <header class="flex justify-between items-center py-3 px-5 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200 flex-shrink-0">
+            <!-- Left side - Purchase Token Button -->
+            <div class="flex items-center">
+                <WalletPopup buttonLabel="Purchase Token">
+                    <WalletBuyNow />
+                </WalletPopup>
+            </div>
+            
+            <!-- Right side - Notification and User icons -->
+            <div class="flex items-center gap-2">
+                <!-- Notification Button -->
+                <button class="relative p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <Icon name="lucide:bell" class="w-5 h-5" />
+                    <!-- Notification badge -->
+                    <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full flex items-center justify-center">
+                        <span class="w-2 h-2 bg-red-600 rounded-full"></span>
+                    </span>
+                </button>
+                
+                <!-- User Icon -->
+                <button class="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <Icon name="lucide:user" class="w-5 h-5" />
+                </button>
+            </div>
         </header>
-        <div class="flex-1 overflow-auto pb-20 md:pb-0" style="max-width: 100vw">
-            <slot class="overflow-y-scroll overflow-x hide-scrollbar w-full max-h-screen"/>
+        <div class="flex-1 overflow-y-auto pb-20 md:pb-0" style="max-width: 100vw">
+            <slot class="w-full"/>
         </div>
     </div>
     <!-- Mobile Bottom Nav -->
