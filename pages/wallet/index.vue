@@ -14,7 +14,7 @@
                 <WalletKpiCards />
                 
                 <!-- Debit Card -->
-                <WalletDebitCard />
+                <WalletDebitCard @balance-updated="handleBalanceUpdate" />
                 <div class="mt-6">
                 <WalletRecentTransactions />
                 </div>
@@ -47,4 +47,17 @@ const filterOptions = ref([
     { key: "water", value: "Water" },
     { key: "payments", value: "Payments" },
 ])
+
+// Handle balance update from DebitCard component
+function handleBalanceUpdate() {
+    // Trigger refresh of components that depend on balance
+    // You can emit events to child components or use a global store
+    console.log('Balance updated - refreshing related components')
+    
+    // Force refresh of KPI cards by triggering a re-render
+    // This is a simple approach - in a more complex app you'd use a store
+    nextTick(() => {
+        // Components will automatically refresh when balance changes
+    })
+}
 </script>

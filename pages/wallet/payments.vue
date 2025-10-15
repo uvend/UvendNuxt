@@ -260,7 +260,7 @@
                                             <p class="text-xs text-gray-500">{{ formatTime(payment.created) }}</p>
                                         </td>
                                         <td class="py-3 px-4 whitespace-nowrap">
-                                            <p class="text-sm text-gray-600 font-mono">{{ payment.payvault_data_1 || 'N/A' }}</p>
+                                            <p class="text-sm text-gray-600 font-mono">{{ payment.reference || 'N/A' }}</p>
                                         </td>
                                         <td class="py-3 px-4 whitespace-nowrap">
                                             <div class="flex items-center gap-2">
@@ -552,7 +552,7 @@ export default {
   
   mounted() {
     // Uncomment below to fetch real data
-    // this.fetchData()
+    this.fetchData()
   },
   
   computed: {

@@ -642,7 +642,7 @@ definePageMeta({
         console.log('Max Amount:', this.maxAmount);
         
         // Uncomment below to fetch real data
-        // await this.fetchTransactionsData();
+        await this.fetchTransactionsData();
     },
 
     watch: {
