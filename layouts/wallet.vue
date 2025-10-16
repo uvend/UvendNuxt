@@ -90,9 +90,27 @@
         <header class="flex justify-between items-center py-3 px-5 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200 flex-shrink-0">
             <!-- Left side - Purchase Token Button -->
             <div class="flex items-center">
-                <WalletPopup buttonLabel="Purchase Token">
-                    <WalletBuyNow />
-                </WalletPopup>
+                <div class="relative group">
+                    <!-- Custom Purchase Token Button -->
+                    <button 
+                        @click="showPurchaseDialog = true"
+                        class="group relative overflow-hidden inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white px-6 py-3 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
+                    >
+                        <div class="flex items-center gap-2">
+                           
+                            
+                            <!-- Button Text -->
+                            <span class="relative z-10">Purchase Token</span>
+                            
+                            <!-- Decorative elements -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div class="absolute top-0 right-0 w-8 h-8 bg-white/10 rounded-full -translate-y-2 translate-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                    </button>
+                    
+                    <!-- Additional glow effect -->
+                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 opacity-0 group-hover:opacity-20 blur-lg transition-opacity duration-300 -z-10"></div>
+                </div>
             </div>
             
             <!-- Right side - Notification and User icons -->
@@ -142,13 +160,54 @@
             </NuxtLink>
         </div>
     </nav>
+    
+    <!-- Purchase Token Dialog -->
+    <Dialog v-model:open="showPurchaseDialog">
+        <DialogContent class="p-0 max-w-md mx-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+            <div class="relative overflow-hidden rounded-2xl">
+                <!-- Header with gradient background -->
+                <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                <Icon name="lucide:zap" class="h-5 w-5 text-white"/>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Purchase Token</h3>
+                                <p class="text-sm text-white/90">Buy tokens for your meters</p>
+                            </div>
+                        </div>
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            @click="showPurchaseDialog = false"
+                            class="text-white hover:bg-white/20 hover:text-white rounded-xl"
+                        >
+                            <Icon name="lucide:x" class="h-5 w-5"/>
+                        </Button>
+                    </div>
+                    
+                    <!-- Decorative elements -->
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-12 translate-x-12"></div>
+                    <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+                </div>
+                
+                <!-- Content area -->
+                <div class="p-6 bg-gradient-to-b from-white to-blue-50/30">
+                    <WalletBuyNow />
+                </div>
+            </div>
+        </DialogContent>
+    </Dialog>
     </div>
 </div>
 </template>
 <script>
 export default{
 	data(){
-		return {}
+		return {
+			showPurchaseDialog: false
+		}
 	},
 	computed:{
 		title(){

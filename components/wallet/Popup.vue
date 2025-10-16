@@ -3,33 +3,33 @@
         {{ buttonLabel }}
     </Button>
     <Drawer v-if="isMobile" v-model:open="isOpen">
-        <DrawerContent class="h-5/6 overflow-y bg-gradient-to-br from-white via-blue-50/30 to-white">
-            <div class="relative">
-                <!-- Header with gradient -->
-                <div class="sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-700 p-4 rounded-t-2xl">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                                <Icon name="lucide:wallet" class="h-4 w-4 text-white"/>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-white">Top Up Wallet</h3>
-                                <p class="text-xs text-white/80">Add funds to your account</p>
-                            </div>
+        <DrawerContent class="h-[90vh] flex flex-col bg-gradient-to-br from-white via-blue-50/30 to-white">
+            <!-- Header with gradient - fixed -->
+            <div class="flex-shrink-0 bg-gradient-to-r from-blue-600 to-blue-700 p-4 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                            <Icon name="lucide:wallet" class="h-4 w-4 text-white"/>
                         </div>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            @click="isOpen = false"
-                            class="text-white hover:bg-white/20 hover:text-white"
-                        >
-                            <Icon name="lucide:x" class="h-4 w-4"/>
-                        </Button>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Top Up Wallet</h3>
+                            <p class="text-xs text-white/80">Add funds to your account</p>
+                        </div>
                     </div>
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        @click="isOpen = false"
+                        class="text-white hover:bg-white/20 hover:text-white"
+                    >
+                        <Icon name="lucide:x" class="h-4 w-4"/>
+                    </Button>
                 </div>
-                
-                <!-- Content with enhanced styling -->
-                <div class="p-6 bg-gradient-to-b from-white to-blue-50/20">
+            </div>
+            
+            <!-- Scrollable content area -->
+            <div class="flex-1 overflow-y-auto bg-gradient-to-b from-white to-blue-50/20">
+                <div class="p-4 pb-8">
                     <slot />
                 </div>
             </div>
@@ -112,12 +112,17 @@ export default{
             this.isOpen = !this.isOpen; // Toggle the computed property
         },
         checkMobile() {
-            this.isMobile = window.innerWidth <= 768
+            // Check for mobile devices with a more comprehensive approach
+            this.isMobile = window.innerWidth <= 768 || 
+                           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
         },
     },
     mounted(){
         this.checkMobile()
         window.addEventListener('resize', this.checkMobile)
+    },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile)
     },
     watch: {
         modelValue(newValue) {
