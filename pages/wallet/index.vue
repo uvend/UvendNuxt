@@ -20,14 +20,10 @@
                 </div>
             </div>
             
-            <!-- Right Column: Buy Again + Balance History -->
+            <!-- Right Column: Balance History -->
             <div class="flex flex-col gap-4">
-                <!-- Buy Again Widget -->
-                <WalletBuyAgainWidget />
-                
                 <!-- Balance History Chart -->
-                    <WalletBalanceHistoryChart />
-
+                <WalletBalanceHistoryChart />
             </div>
         </div>
         

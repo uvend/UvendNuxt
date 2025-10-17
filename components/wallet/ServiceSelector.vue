@@ -1,159 +1,102 @@
 <template>
-  <div class="bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl overflow-hidden group">
-    <!-- Header with gradient background -->
-    <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 p-6 text-white relative overflow-hidden">
-      <!-- Decorative elements -->
-      <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-      
-      <div class="relative z-10">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-            <Icon name="lucide:layers" class="w-5 h-5 text-white"/>
-          </div>
-          <div>
-            <h3 class="text-xl font-bold text-white">Select Service</h3>
-            <p class="text-sm text-white/90">Choose the utility service you need</p>
-          </div>
+  <div class="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+          <Icon name="lucide:layers" class="w-4 h-4 text-gray-600"/>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Select Service</h3>
+          <p class="text-sm text-gray-500">Choose your utility service</p>
         </div>
       </div>
     </div>
 
     <!-- Service Options -->
-    <div class="p-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="p-4">
+      <div class="flex gap-3">
         <!-- Electricity Service -->
         <div 
-          class="relative group cursor-pointer transform transition-all duration-300 hover:scale-105"
+          class="relative cursor-pointer group flex-1"
           @click="selectService('Electricity')"
         >
           <div 
-            class="relative overflow-hidden rounded-2xl p-6 border-2 transition-all duration-300"
+            class="relative p-3 rounded-lg border-2 transition-all duration-200 text-center"
             :class="selectedService === 'Electricity' 
-              ? 'bg-gradient-to-br from-orange-500 to-orange-600 border-orange-400 shadow-2xl' 
-              : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:border-orange-300 hover:shadow-xl'"
+              ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-400 shadow-md' 
+              : 'bg-white border-gray-200 hover:border-orange-300 hover:shadow-sm'"
           >
-            <!-- Background pattern -->
-            <div class="absolute inset-0 opacity-5">
-              <div class="w-full h-full" style="background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 20px 20px;"></div>
+            <!-- Icon -->
+            <div 
+              class="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-200"
+              :class="selectedService === 'Electricity' 
+                ? 'bg-gradient-to-br from-orange-200 to-orange-300 shadow-sm' 
+                : 'bg-gradient-to-br from-orange-50 to-orange-100 group-hover:from-orange-100 group-hover:to-orange-200'"
+            >
+              <Icon 
+                name="lucide:zap" 
+                class="w-5 h-5"
+                :class="selectedService === 'Electricity' ? 'text-orange-700' : 'text-orange-600 group-hover:text-orange-700'"
+              />
             </div>
             
-            <div class="relative z-10 flex flex-col items-center text-center">
-              <!-- Icon Container -->
-              <div 
-                class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300"
-                :class="selectedService === 'Electricity' 
-                  ? 'bg-white/20 backdrop-blur-sm' 
-                  : 'bg-gradient-to-br from-orange-200 to-orange-300 group-hover:from-orange-300 group-hover:to-orange-400'"
-              >
-                <Icon 
-                  name="lucide:zap" 
-                  class="w-8 h-8 transition-all duration-300"
-                  :class="selectedService === 'Electricity' ? 'text-white' : 'text-orange-600'"
-                />
-              </div>
-              
-              <!-- Service Name -->
-              <h4 
-                class="text-lg font-bold mb-1 transition-colors duration-300"
-                :class="selectedService === 'Electricity' ? 'text-white' : 'text-gray-800'"
-              >
-                Electricity
-              </h4>
-              
-              <!-- Description -->
-              <p 
-                class="text-sm font-medium transition-colors duration-300"
-                :class="selectedService === 'Electricity' ? 'text-white/90' : 'text-gray-600'"
-              >
-                Prepaid tokens
-              </p>
-              
-              <!-- Selection indicator -->
-              <div 
-                v-if="selectedService === 'Electricity'"
-                class="absolute top-4 right-4 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg"
-              >
-                <Icon name="lucide:check" class="w-4 h-4 text-orange-600" />
-              </div>
-              
-              <!-- Hover effect overlay -->
-              <div class="absolute inset-0 bg-gradient-to-br from-orange-400/10 to-orange-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+            <!-- Service Name -->
+            <h4 class="text-xs font-semibold text-gray-900 mb-1">Electricity</h4>
+            
+            <!-- Selection indicator -->
+            <div 
+              v-if="selectedService === 'Electricity'"
+              class="w-4 h-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto shadow-sm"
+            >
+              <Icon name="lucide:check" class="w-2.5 h-2.5 text-white" />
             </div>
+            <div 
+              v-else
+              class="w-4 h-4 border-2 border-orange-300 rounded-full mx-auto group-hover:border-orange-400 transition-colors duration-200"
+            ></div>
           </div>
         </div>
 
         <!-- Water Service -->
         <div 
-          class="relative group cursor-pointer transform transition-all duration-300 hover:scale-105"
+          class="relative cursor-pointer group flex-1"
           @click="selectService('Water')"
         >
           <div 
-            class="relative overflow-hidden rounded-2xl p-6 border-2 transition-all duration-300"
+            class="relative p-3 rounded-lg border-2 transition-all duration-200 text-center"
             :class="selectedService === 'Water' 
-              ? 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400 shadow-2xl' 
-              : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:border-blue-300 hover:shadow-xl'"
+              ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-400 shadow-md' 
+              : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-sm'"
           >
-            <!-- Background pattern -->
-            <div class="absolute inset-0 opacity-5">
-              <div class="w-full h-full" style="background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 20px 20px;"></div>
+            <!-- Icon -->
+            <div 
+              class="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-200"
+              :class="selectedService === 'Water' 
+                ? 'bg-gradient-to-br from-blue-200 to-blue-300 shadow-sm' 
+                : 'bg-gradient-to-br from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200'"
+            >
+              <Icon 
+                name="lucide:droplet" 
+                class="w-5 h-5"
+                :class="selectedService === 'Water' ? 'text-blue-700' : 'text-blue-600 group-hover:text-blue-700'"
+              />
             </div>
             
-            <div class="relative z-10 flex flex-col items-center text-center">
-              <!-- Icon Container -->
-              <div 
-                class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300"
-                :class="selectedService === 'Water' 
-                  ? 'bg-white/20 backdrop-blur-sm' 
-                  : 'bg-gradient-to-br from-blue-200 to-blue-300 group-hover:from-blue-300 group-hover:to-blue-400'"
-              >
-                <Icon 
-                  name="lucide:droplet" 
-                  class="w-8 h-8 transition-all duration-300"
-                  :class="selectedService === 'Water' ? 'text-white' : 'text-blue-600'"
-                />
-              </div>
-              
-              <!-- Service Name -->
-              <h4 
-                class="text-lg font-bold mb-1 transition-colors duration-300"
-                :class="selectedService === 'Water' ? 'text-white' : 'text-gray-800'"
-              >
-                Water
-              </h4>
-              
-              <!-- Description -->
-              <p 
-                class="text-sm font-medium transition-colors duration-300"
-                :class="selectedService === 'Water' ? 'text-white/90' : 'text-gray-600'"
-              >
-                Water credits
-              </p>
-              
-              <!-- Selection indicator -->
-              <div 
-                v-if="selectedService === 'Water'"
-                class="absolute top-4 right-4 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg"
-              >
-                <Icon name="lucide:check" class="w-4 h-4 text-blue-600" />
-              </div>
-              
-              <!-- Hover effect overlay -->
-              <div class="absolute inset-0 bg-gradient-to-br from-blue-400/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+            <!-- Service Name -->
+            <h4 class="text-xs font-semibold text-gray-900 mb-1">Water</h4>
+            
+            <!-- Selection indicator -->
+            <div 
+              v-if="selectedService === 'Water'"
+              class="w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto shadow-sm"
+            >
+              <Icon name="lucide:check" class="w-2.5 h-2.5 text-white" />
             </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Additional Info -->
-      <div class="mt-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-2xl border border-gray-100">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Icon name="lucide:info" class="w-4 h-4 text-blue-600"/>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-700">Instant Service</p>
-            <p class="text-xs text-gray-600">Your tokens will be delivered immediately after payment</p>
+            <div 
+              v-else
+              class="w-4 h-4 border-2 border-blue-300 rounded-full mx-auto group-hover:border-blue-400 transition-colors duration-200"
+            ></div>
           </div>
         </div>
       </div>

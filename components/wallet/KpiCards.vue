@@ -10,7 +10,6 @@
                         </div>
                         <div>
                             <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Spent</p>
-                            <p class="text-xs text-gray-500">30 days</p>
                         </div>
                     </div>
                     <div class="w-2 h-2 rounded-full bg-red-500 shadow-sm"></div>
@@ -38,7 +37,6 @@
                         </div>
                         <div>
                             <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Deposited</p>
-                            <p class="text-xs text-gray-500">30 days</p>
                         </div>
                     </div>
                     <div class="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>

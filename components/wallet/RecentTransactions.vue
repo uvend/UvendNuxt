@@ -30,8 +30,9 @@
             <div v-else-if="recentTransactions.length > 0" class="space-y-3">
                 <div v-for="transaction in recentTransactions" 
                      :key="transaction.id"
-                     class="group/item relative overflow-hidden bg-gradient-to-r from-white to-gray-50/50 rounded-xl border border-gray-200/50 p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.01]">
-                    <div class="flex items-center justify-between">
+                     class="group/item relative overflow-hidden bg-gradient-to-r from-white to-gray-50/50 rounded-xl border border-gray-200/50 p-3 hover:shadow-lg transition-all duration-300 hover:scale-[1.01]">
+                    <!-- Desktop Layout -->
+                    <div class="hidden sm:flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl flex items-center justify-center group-hover/item:scale-110 transition-transform duration-300"
                                  :class="transaction.type === 'electricity' ? 'bg-gradient-to-br from-yellow-100 to-orange-100' : 'bg-gradient-to-br from-blue-100 to-cyan-100'">
@@ -47,10 +48,15 @@
                                         {{ formatDate(transaction.date) }}
                                     </p>
                                     <div class="w-1 h-1 rounded-full bg-gray-400"></div>
-                                    <p class="text-xs text-gray-500 font-mono">Ref {{ transaction.reference }}</p>
+                                    <p class="text-xs text-gray-600 font-medium">
+                                        {{ transaction.meterNumber }}
+                                    </p>
                                 </div>
+                                <p v-if="getRemainingUnits(transaction)" class="text-xs text-gray-500 font-medium">
+                                    {{ getRemainingUnits(transaction) }}
+                                </p>
                             </div>
-                        </div>
+                            </div>
                         <div class="text-right">
                             <p class="text-lg font-bold"
                                :class="transaction.type === 'electricity' ? 'text-orange-600' : 'text-blue-600'">
@@ -60,9 +66,38 @@
                                 <div class="w-1.5 h-1.5 rounded-full"
                                      :class="transaction.type === 'electricity' ? 'bg-orange-400' : 'bg-blue-400'"></div>
                                 <p class="text-xs text-gray-500 font-medium">Debit</p>
-                            </div>
                         </div>
                     </div>
+                </div>
+
+                    <!-- Mobile Layout -->
+                    <div class="sm:hidden space-y-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                     :class="transaction.type === 'electricity' ? 'bg-orange-100' : 'bg-blue-100'">
+                                    <Icon :name="transaction.type === 'electricity' ? 'lucide:zap' : 'lucide:droplet'" 
+                                          :class="transaction.type === 'electricity' ? 'h-4 w-4 text-orange-600' : 'h-4 w-4 text-blue-600'"/>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-mono text-gray-700 font-medium">{{ transaction.meterNumber }}</p>
+                                    <p class="text-xs text-gray-500">{{ formatDate(transaction.date) }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-bold"
+                                   :class="transaction.type === 'electricity' ? 'text-orange-600' : 'text-blue-600'">
+                                    -{{ formatAmount(transaction.amount) }}
+                                </p>
+                            </div>
+                        </div>
+                        <div v-if="getRemainingUnits(transaction)" class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 rounded-full"
+                                 :class="transaction.type === 'electricity' ? 'bg-orange-400' : 'bg-blue-400'"></div>
+                            <p class="text-xs text-gray-600 font-medium">{{ getRemainingUnits(transaction) }}</p>
+                        </div>
+                    </div>
+                    
                     <!-- Subtle gradient overlay -->
                     <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-100/20 pointer-events-none"></div>
                 </div>
@@ -98,12 +133,40 @@ function formatAmount(amount) {
 }
 
 function formatDate(dateString) {
+    try {
     const date = new Date(dateString)
+        if (isNaN(date.getTime())) {
+            return 'Invalid Date'
+        }
     return date.toLocaleDateString('en-ZA', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
     })
+    } catch (error) {
+        console.warn('Error formatting date:', dateString, error)
+        return 'Invalid Date'
+    }
+}
+
+function getRemainingUnits(transaction) {
+    if (!transaction.latestReading) {
+        return '';
+    }
+    
+    if (transaction.type === 'electricity') {
+        const credit = transaction.latestReading["Remaining Credit"];
+        if (credit && credit > 0) {
+            return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
+        }
+    } else if (transaction.type === 'water') {
+        const litres = transaction.latestReading["Remaining Litres"];
+        if (litres && litres > 0) {
+            return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
+        }
+    }
+    
+    return '';
 }
 
 async function fetchRecentTransactions() {
@@ -116,46 +179,18 @@ async function fetchRecentTransactions() {
         recentTransactions.value = transactionsResponse.transactions
             .slice(0, 4)
             .map(transaction => ({
-                id: transaction.id || transaction.meterNumber + transaction.date,
-                type: transaction.meterNumber.startsWith('ELE') ? 'electricity' : 'water',
-                date: transaction.date,
+                id: transaction.id || transaction.meterNumber + transaction.created,
+                    type: transaction.utilityType === 'Electricity' ? 'electricity' : 'water',
+                date: transaction.created,
+                    meterNumber: transaction.meterNumber,
                 amount: parseFloat(transaction.amount),
-                reference: transaction.reference || `${transaction.meterNumber.slice(-6)}`
+                latestReading: transaction.latestReading
             }))
             
     } catch (error) {
         console.error('Error fetching recent transactions:', error)
         // Show sample data if API fails
-        recentTransactions.value = [
-            {
-                id: '1',
-                type: 'electricity',
-                date: '2025-09-08',
-                amount: 150.00,
-                reference: 'E-94123'
-            },
-            {
-                id: '2',
-                type: 'water',
-                date: '2025-09-06',
-                amount: 85.50,
-                reference: 'W-18322'
-            },
-            {
-                id: '3',
-                type: 'electricity',
-                date: '2025-09-01',
-                amount: 200.00,
-                reference: 'E-88234'
-            },
-            {
-                id: '4',
-                type: 'water',
-                date: '2025-08-29',
-                amount: 120.75,
-                reference: 'W-44567'
-            }
-        ]
+       
     } finally {
         isLoading.value = false
     }
