@@ -150,17 +150,17 @@ function formatDate(dateString) {
 }
 
 function getRemainingUnits(transaction) {
-    if (!transaction.latestReading) {
+    if (!transaction.latestReading.remainingTokens) {
         return '';
     }
     
     if (transaction.type === 'electricity') {
-        const credit = transaction.latestReading["Remaining Credit"];
+        const credit = transaction.latestReading.remainingTokens["Remaining Credit"];
         if (credit && credit > 0) {
             return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
         }
     } else if (transaction.type === 'water') {
-        const litres = transaction.latestReading["Remaining Litres"];
+        const litres = transaction.latestReading.remainingTokens["Remaining Litres"];
         if (litres && litres > 0) {
             return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
         }

@@ -126,7 +126,7 @@
                                         </td>
                                         <td class="py-3 px-4 whitespace-nowrap">
                                             <p class="text-sm text-gray-900 font-mono">{{ transaction.meterNumber }}</p>
-                                            <p v-if="transaction.latestReading && (transaction.latestReading['Remaining Litres'] > 0 || transaction.latestReading['Remaining Credit'] > 0)" class="text-xs text-gray-500 mt-1">
+                                            <p v-if="transaction.latestReading.remainingTokens && (transaction.latestReading.remainingTokens['Remaining Litres'] > 0 || transaction.latestReading.remainingTokens['Remaining Credit'] > 0)" class="text-xs text-gray-500 mt-1">
                                                 {{ getRemainingUnits(transaction) }}
                                             </p>
                                         </td>
@@ -312,17 +312,17 @@ definePageMeta({
         },
 
         getRemainingUnits(transaction) {
-            if (!transaction.latestReading) {
+            if (!transaction.latestReading.remainingTokens) {
                 return '';
             }
             
             if (transaction.utilityType === 'Electricity') {
-                const credit = transaction.latestReading["Remaining Credit"];
+                const credit = transaction.latestReading.remainingTokens["Remaining Credit"];
                 if (credit && credit > 0) {
                     return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
                 }
             } else if (transaction.utilityType === 'Water') {
-                const litres = transaction.latestReading["Remaining Litres"];
+                const litres = transaction.latestReading.remainingTokens["Remaining Litres"];
                 if (litres && litres > 0) {
                     return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
                 }

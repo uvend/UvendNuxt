@@ -53,14 +53,7 @@
               </p>
               <p class="text-xs text-gray-600">Filtered by service type from navigation</p>
             </div>
-            <Button 
-              @click="clearServiceFilter" 
-              variant="ghost" 
-              size="sm"
-              class="text-gray-500 hover:text-gray-700"
-            >
-              <Icon name="lucide:x" class="w-4 h-4"/>
-            </Button>
+           
           </div>
         </div>
       </div>
@@ -144,17 +137,57 @@
                 
                 <!-- Meter Details -->
                 <div class="flex-1 min-w-0">
-                  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
                     <h3 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ meter.name }}</h3>
-                    <!-- <div class="flex items-center gap-1 px-2 py-1 bg-green-100 rounded-lg w-fit">
-                      <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                      <span class="text-xs font-medium text-green-700">Active</span>
-                    </div> -->
+                    <!-- State Badge -->
+                    <div v-if="meter.latestReading.meterState" class="flex items-center gap-1 px-2 py-1 rounded-lg w-fit"
+                         :class="getStateBgColor(meter.latestReading.meterState.State)">
+                      <div class="w-2 h-2 rounded-full"
+                           :class="meter.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
+                      <span class="text-xs font-medium"
+                            :class="getStateColor(meter.latestReading.meterState.State)">
+                        {{ meter.latestReading.meterState.State === 1 ? 'Active' : 'Offline' }}
+                      </span>
+                    </div>
                   </div>
                   <p class="text-sm font-medium text-gray-600 mb-1">{{ meter.meterNumber }}</p>
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-500">Service Type:</span>
-                    <span class="text-xs font-semibold text-gray-700 capitalize">{{ meter.utilityType || 'General' }}</span>
+                  
+                  <!-- Remaining Units Display -->
+                  <div v-if="getRemainingUnits(meter)" class="mb-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border shadow-sm"
+                         :class="getRemainingUnitsBg(meter.utilityType)">
+                      <div class="w-2 h-2 rounded-full animate-pulse"
+                           :class="getRemainingUnitsDot(meter.utilityType)"></div>
+                      <span class="text-xs font-semibold"
+                            :class="getRemainingUnitsText(meter.utilityType)">
+                        {{ getRemainingUnits(meter) }}
+                      </span>
+                      <Icon :name="getRemainingUnitsIcon(meter.utilityType)" 
+                            class="w-3 h-3"
+                            :class="getRemainingUnitsIconColor(meter.utilityType)"/>
+                    </div>
+                  </div>
+                  
+                  <!-- Meter Status Row -->
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs text-gray-500">Service Type:</span>
+                      <span class="text-xs font-semibold text-gray-700 capitalize">{{ meter.utilityType || 'General' }}</span>
+                    </div>
+                    
+                    <!-- Battery Status -->
+                    <div v-if="meter.latestReading.meterVoltage" class="flex items-center gap-2">
+                      <div class="flex items-center gap-1">
+                        <Icon name="lucide:battery" 
+                              :class="getBatteryColor(convertVoltageToBattery(meter.latestReading.meterVoltage.Voltage))"
+                              class="w-3 h-3"/>
+                        <span class="text-xs font-medium"
+                              :class="getBatteryColor(convertVoltageToBattery(meter.latestReading.meterVoltage.Voltage))">
+                          {{ convertVoltageToBattery(meter.latestReading.meterVoltage.Voltage) }}%
+                        </span>
+                      </div>
+                      <span class="text-xs text-gray-500">{{ meter.latestReading.meterVoltage.Voltage.toFixed(2) }}V</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -273,6 +306,104 @@
           'mobile': 'text-green-600'
         };
         return colorMap[serviceType?.toLowerCase()] || 'text-gray-600';
+      },
+      convertVoltageToBattery(voltage) {
+        if (!voltage || isNaN(voltage)) return 0;
+        
+        // Typical voltage ranges for smart meters:
+        // 3.0V = 0%, 3.7V = 100% (lithium battery)
+        // Adjust these values based on your meter's specifications
+        const minVoltage = 3.0;
+        const maxVoltage = 3.7;
+        
+        const percentage = Math.min(100, Math.max(0, 
+          ((voltage - minVoltage) / (maxVoltage - minVoltage)) * 100
+        ));
+        
+        return Math.round(percentage);
+      },
+      getBatteryColor(percentage) {
+        if (percentage >= 80) return 'text-green-600';
+        if (percentage >= 50) return 'text-yellow-600';
+        if (percentage >= 20) return 'text-orange-600';
+        return 'text-red-600';
+      },
+      getBatteryBgColor(percentage) {
+        if (percentage >= 80) return 'bg-green-100';
+        if (percentage >= 50) return 'bg-yellow-100';
+        if (percentage >= 20) return 'bg-orange-100';
+        return 'bg-red-100';
+      },
+      getStateColor(state) {
+        // Handle binary states: 1 = active, 0 = offline
+        if (state === 1) return 'text-green-600';
+        if (state === 0) return 'text-red-600';
+        return 'text-gray-600';
+      },
+      getStateBgColor(state) {
+        // Handle binary states: 1 = active, 0 = offline
+        if (state === 1) return 'bg-green-100';
+        if (state === 0) return 'bg-red-100';
+        return 'bg-gray-100';
+      },
+      getRemainingUnits(meter) {
+        if (!meter.latestReading || !meter.latestReading.remainingTokens) {
+          return '';
+        }
+        
+        if (meter.utilityType === 'Electricity') {
+          const credit = meter.latestReading.remainingTokens["Remaining Credit"];
+          if (credit && credit > 0) {
+            return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
+          }
+        } else if (meter.utilityType === 'Water') {
+          const litres = meter.latestReading.remainingTokens["Remaining Litres"];
+          if (litres && litres > 0) {
+            return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
+          }
+        }
+        
+        return '';
+      },
+      getRemainingUnitsBg(utilityType) {
+        if (utilityType === 'Electricity') {
+          return 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200';
+        } else if (utilityType === 'Water') {
+          return 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200';
+        }
+        return 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200';
+      },
+      getRemainingUnitsDot(utilityType) {
+        if (utilityType === 'Electricity') {
+          return 'bg-orange-400';
+        } else if (utilityType === 'Water') {
+          return 'bg-blue-400';
+        }
+        return 'bg-gray-400';
+      },
+      getRemainingUnitsText(utilityType) {
+        if (utilityType === 'Electricity') {
+          return 'text-orange-700';
+        } else if (utilityType === 'Water') {
+          return 'text-blue-700';
+        }
+        return 'text-gray-700';
+      },
+      getRemainingUnitsIcon(utilityType) {
+        if (utilityType === 'Electricity') {
+          return 'lucide:zap';
+        } else if (utilityType === 'Water') {
+          return 'lucide:droplet';
+        }
+        return 'lucide:activity';
+      },
+      getRemainingUnitsIconColor(utilityType) {
+        if (utilityType === 'Electricity') {
+          return 'text-orange-600';
+        } else if (utilityType === 'Water') {
+          return 'text-blue-600';
+        }
+        return 'text-gray-600';
       },
       purchaseTokens(meter) {
         // Navigate to buy now page with selected meter
