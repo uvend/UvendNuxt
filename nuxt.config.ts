@@ -38,7 +38,7 @@ export default defineNuxtConfig({
       APP_FONT_COLOR_3: JSON.stringify(process.env.APP_FONT_COLOR_3 || ''),
       APP_ENV: JSON.stringify(process.env.APP_ENV || ''),
       CUSTOMER_API: JSON.stringify(process.env.CUSTOMER_API || ''),
-    }
+    },
   },
   ssr: false,// Not required in Tailwind 3+, but useful for older versions
   plugins: [
