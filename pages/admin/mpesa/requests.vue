@@ -141,7 +141,7 @@ export default{
             page: 1,
             pageSize: 10,
             pageSizeSelect: [
-                10,50,100,200
+                10,50,100
             ],
             isLoading: true,
             requests: [],
