@@ -177,14 +177,14 @@
                                 <p class="text-sm text-white/90">Buy tokens for your meters</p>
                             </div>
                         </div>
-                        <Button 
+                        <!-- <Button 
                             variant="ghost" 
                             size="sm" 
                             @click="showPurchaseDialog = false"
                             class="text-white hover:bg-white/20 hover:text-white rounded-xl"
                         >
                             <Icon name="lucide:x" class="h-5 w-5"/>
-                        </Button>
+                        </Button> -->
                     </div>
                     
                     <!-- Decorative elements -->

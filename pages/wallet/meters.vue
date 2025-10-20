@@ -206,7 +206,7 @@
                 </Button>
                 
                 <Button 
-                  @click="purchaseTokens(meter)"
+                  @click="openPurchaseDialog(meter)"
                   size="sm"
                   class="px-3 py-2 text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                 >
@@ -237,6 +237,37 @@
       </div>
     </div>
     
+    <!-- Purchase Token Dialog -->
+    <Dialog v-model:open="showPurchaseDialog">
+        <DialogContent class="p-0 max-w-md mx-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+            <div class="relative overflow-hidden rounded-2xl">
+                <!-- Header with gradient background -->
+                <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                <Icon name="lucide:zap" class="h-5 w-5 text-white"/>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Purchase Token</h3>
+                                <p class="text-sm text-white/90">Buy tokens for your meters</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Decorative elements -->
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-12 translate-x-12"></div>
+                    <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+                </div>
+                
+                <!-- Content area -->
+                <div class="p-6 bg-gradient-to-b from-white to-blue-50/30">
+                    <WalletBuyNow :selectedMeter="selectedMeterForPurchase" />
+                </div>
+            </div>
+        </DialogContent>
+    </Dialog>
+    
 </div>    
 </template>
 <script>
@@ -254,7 +285,9 @@
         meterTransactions: [],
         graphTransactions: [],
         meterInfo: null,
-        selectedServiceType: null
+        selectedServiceType: null,
+        showPurchaseDialog: false,
+        selectedMeterForPurchase: null
       }
     },
     computed: {
@@ -353,12 +386,12 @@
         
         if (meter.utilityType === 'Electricity') {
           const credit = meter.latestReading.remainingTokens["Remaining Credit"];
-          if (credit && credit > 0) {
+          if (credit  >= 0) {
             return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
           }
         } else if (meter.utilityType === 'Water') {
           const litres = meter.latestReading.remainingTokens["Remaining Litres"];
-          if (litres && litres > 0) {
+          if (litres >= 0) {
             return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
           }
         }
@@ -404,6 +437,10 @@
           return 'text-blue-600';
         }
         return 'text-gray-600';
+      },
+      openPurchaseDialog(meter) {
+        this.selectedMeterForPurchase = meter;
+        this.showPurchaseDialog = true;
       },
       purchaseTokens(meter) {
         // Navigate to buy now page with selected meter

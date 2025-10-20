@@ -5,8 +5,8 @@
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
           <Icon name="lucide:layers" class="w-4 h-4 text-gray-600"/>
-        </div>
-        <div>
+          </div>
+          <div>
           <h3 class="text-lg font-semibold text-gray-900">Select Service</h3>
           <p class="text-sm text-gray-500">Choose your utility service</p>
         </div>
@@ -30,27 +30,27 @@
             <!-- Icon -->
             <div 
               class="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-200"
-              :class="selectedService === 'Electricity' 
+                :class="selectedService === 'Electricity' 
                 ? 'bg-gradient-to-br from-orange-200 to-orange-300 shadow-sm' 
                 : 'bg-gradient-to-br from-orange-50 to-orange-100 group-hover:from-orange-100 group-hover:to-orange-200'"
-            >
-              <Icon 
-                name="lucide:zap" 
+              >
+                <Icon 
+                  name="lucide:zap" 
                 class="w-5 h-5"
                 :class="selectedService === 'Electricity' ? 'text-orange-700' : 'text-orange-600 group-hover:text-orange-700'"
-              />
-            </div>
-            
-            <!-- Service Name -->
+                />
+              </div>
+              
+              <!-- Service Name -->
             <h4 class="text-xs font-semibold text-gray-900 mb-1">Electricity</h4>
-            
-            <!-- Selection indicator -->
-            <div 
-              v-if="selectedService === 'Electricity'"
+              
+              <!-- Selection indicator -->
+              <div 
+                v-if="selectedService === 'Electricity'"
               class="w-4 h-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto shadow-sm"
-            >
+              >
               <Icon name="lucide:check" class="w-2.5 h-2.5 text-white" />
-            </div>
+              </div>
             <div 
               v-else
               class="w-4 h-4 border-2 border-orange-300 rounded-full mx-auto group-hover:border-orange-400 transition-colors duration-200"
@@ -72,27 +72,27 @@
             <!-- Icon -->
             <div 
               class="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-200"
-              :class="selectedService === 'Water' 
+                :class="selectedService === 'Water' 
                 ? 'bg-gradient-to-br from-blue-200 to-blue-300 shadow-sm' 
                 : 'bg-gradient-to-br from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200'"
-            >
-              <Icon 
-                name="lucide:droplet" 
+              >
+                <Icon 
+                  name="lucide:droplet" 
                 class="w-5 h-5"
                 :class="selectedService === 'Water' ? 'text-blue-700' : 'text-blue-600 group-hover:text-blue-700'"
-              />
-            </div>
-            
-            <!-- Service Name -->
+                />
+              </div>
+              
+              <!-- Service Name -->
             <h4 class="text-xs font-semibold text-gray-900 mb-1">Water</h4>
-            
-            <!-- Selection indicator -->
-            <div 
-              v-if="selectedService === 'Water'"
+              
+              <!-- Selection indicator -->
+              <div 
+                v-if="selectedService === 'Water'"
               class="w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto shadow-sm"
-            >
+              >
               <Icon name="lucide:check" class="w-2.5 h-2.5 text-white" />
-            </div>
+              </div>
             <div 
               v-else
               class="w-4 h-4 border-2 border-blue-300 rounded-full mx-auto group-hover:border-blue-400 transition-colors duration-200"

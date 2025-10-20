@@ -47,6 +47,12 @@
 </template>
 <script>
 export default {
+  props: {
+    selectedMeter: {
+      type: Object,
+      default: null
+    }
+  },
   data() {
     return {
       meters: [],
@@ -104,6 +110,16 @@ export default {
         this.vending = false;
       }
     },
+  },
+  watch: {
+    selectedMeter: {
+      handler(newMeter) {
+        if (newMeter) {
+          this.value = newMeter;
+        }
+      },
+      immediate: true
+    }
   },
   async mounted() {
     await this.fetchMeters()

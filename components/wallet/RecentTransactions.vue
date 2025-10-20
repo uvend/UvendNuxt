@@ -11,7 +11,7 @@
                 <Button 
                     variant="ghost" 
                     class="group/btn relative overflow-hidden text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300"
-                    @click="navigateTo('/wallet/transactions')"
+                    @click="navigateTo('/transactions')"
                 >
                     <span class="relative z-10 flex items-center gap-1">
                         View all
@@ -55,7 +55,32 @@
                                 <p v-if="getRemainingUnits(transaction)" class="text-xs text-gray-500 font-medium">
                                     {{ getRemainingUnits(transaction) }}
                                 </p>
+                                
+                                <!-- Battery and State Info -->
+                                <div class="flex items-center gap-3 mt-2">
+                                    <!-- Battery Status -->
+                                    <div v-if="transaction.latestReading && transaction.latestReading.meterVoltage" class="flex items-center gap-1">
+                                        <Icon name="lucide:battery" 
+                                              :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))"
+                                              class="w-3 h-3"/>
+                                        <span class="text-xs font-medium"
+                                              :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))">
+                                            {{ convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage) }}%
+                                        </span>
+                                        <span class="text-xs text-gray-500">{{ transaction.latestReading.meterVoltage.Voltage.toFixed(2) }}V</span>
                             </div>
+                            
+                                    <!-- State Status -->
+                                    <div v-if="transaction.latestReading && transaction.latestReading.meterState" class="flex items-center gap-1">
+                                        <div class="w-1.5 h-1.5 rounded-full"
+                                             :class="transaction.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
+                                        <span class="text-xs font-medium"
+                                              :class="getStateColor(transaction.latestReading.meterState.State)">
+                                            {{ transaction.latestReading.meterState.State === 1 ? 'Active' : 'Offline' }}
+                                    </span>
+                                    </div>
+                                </div>
+                                </div>
                             </div>
                         <div class="text-right">
                             <p class="text-lg font-bold"
@@ -95,6 +120,30 @@
                             <div class="w-1.5 h-1.5 rounded-full"
                                  :class="transaction.type === 'electricity' ? 'bg-orange-400' : 'bg-blue-400'"></div>
                             <p class="text-xs text-gray-600 font-medium">{{ getRemainingUnits(transaction) }}</p>
+                        </div>
+
+                        <!-- Battery and State Info - Mobile -->
+                            <div class="flex items-center justify-between">
+                            <!-- Battery Status -->
+                            <div v-if="transaction.latestReading && transaction.latestReading.meterVoltage" class="flex items-center gap-1">
+                                <Icon name="lucide:battery" 
+                                      :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))"
+                                      class="w-3 h-3"/>
+                                <span class="text-xs font-medium"
+                                      :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))">
+                                    {{ convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage) }}%
+                                </span>
+                        </div>
+
+                            <!-- State Status -->
+                            <div v-if="transaction.latestReading && transaction.latestReading.meterState" class="flex items-center gap-1">
+                                <div class="w-1.5 h-1.5 rounded-full"
+                                     :class="transaction.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
+                                <span class="text-xs font-medium"
+                                      :class="getStateColor(transaction.latestReading.meterState.State)">
+                                    {{ transaction.latestReading.meterState.State === 1 ? 'Active' : 'Offline' }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     
@@ -156,17 +205,45 @@ function getRemainingUnits(transaction) {
     
     if (transaction.type === 'electricity') {
         const credit = transaction.latestReading.remainingTokens["Remaining Credit"];
-        if (credit && credit > 0) {
+        if (credit >= 0) {
             return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
         }
     } else if (transaction.type === 'water') {
         const litres = transaction.latestReading.remainingTokens["Remaining Litres"];
-        if (litres && litres > 0) {
+        if (litres >= 0) {
             return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
         }
     }
     
     return '';
+}
+
+// Battery and voltage methods
+function convertVoltageToBattery(voltage) {
+    if (!voltage || isNaN(voltage)) return 0;
+    
+    const minVoltage = 3.0;
+    const maxVoltage = 3.7;
+    
+    const percentage = Math.min(100, Math.max(0, 
+        ((voltage - minVoltage) / (maxVoltage - minVoltage)) * 100
+    ));
+    
+    return Math.round(percentage);
+}
+
+function getBatteryColor(percentage) {
+    if (percentage >= 80) return 'text-green-600';
+    if (percentage >= 50) return 'text-yellow-600';
+    if (percentage >= 20) return 'text-orange-600';
+    return 'text-red-600';
+}
+
+// State methods
+function getStateColor(state) {
+    if (state === 1) return 'text-green-600';
+    if (state === 0) return 'text-red-600';
+    return 'text-gray-600';
 }
 
 async function fetchRecentTransactions() {
@@ -177,6 +254,7 @@ async function fetchRecentTransactions() {
         
         // Process and format recent transactions (last 4)
         recentTransactions.value = transactionsResponse.transactions
+            .reverse()
             .slice(0, 4)
             .map(transaction => ({
                 id: transaction.id || transaction.meterNumber + transaction.created,
@@ -200,3 +278,31 @@ onMounted(() => {
     fetchRecentTransactions()
 })
 </script>
+
+<style scoped>
+/* Custom scrollbar for transaction list */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Firefox scrollbar */
+.scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+</style>

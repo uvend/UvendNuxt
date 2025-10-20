@@ -2,9 +2,9 @@
 <div class="flex flex-col p-4 gap-6">
     <!-- Wallet Card and Meter Spending Chart -->
     <div class="grid grid-cols-1 lg:grid-cols-1 gap-6">
-        <!-- Wallet Card -->
+    <!-- Wallet Card -->
          
-        <WalletDebitCard />
+    <WalletDebitCard />
         
         <!-- Meter Spending Chart -->
        
@@ -94,12 +94,15 @@
                 <div class="hidden md:block overflow-x-auto">
                     <div class="inline-block min-w-full align-middle">
                         <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                            <table class="min-w-[900px] w-full">
+                            <table class="min-w-[1200px] w-full">
                                 <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                                     <tr>
                                         <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[150px]">Date & Time</th>
                                         <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[150px]">Service</th>
                                         <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[150px]">Meter Number</th>
+                                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[120px]">Remaining</th>
+                                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[100px]">Battery</th>
+                                        <th class="text-center py-3 px-4 text-xs font-semibold text-gray-700 w-[100px]">State</th>
                                         <th class="text-right py-3 px-4 text-xs font-semibold text-gray-700 w-[120px]">Amount</th>
                                         <th class="text-center py-3 px-4 text-xs font-semibold text-gray-700 w-[100px]">Status</th>
                                     </tr>
@@ -126,9 +129,51 @@
                                         </td>
                                         <td class="py-3 px-4 whitespace-nowrap">
                                             <p class="text-sm text-gray-900 font-mono">{{ transaction.meterNumber }}</p>
-                                            <p v-if="transaction.latestReading.remainingTokens && (transaction.latestReading.remainingTokens['Remaining Litres'] > 0 || transaction.latestReading.remainingTokens['Remaining Credit'] > 0)" class="text-xs text-gray-500 mt-1">
-                                                {{ getRemainingUnits(transaction) }}
-                                            </p>
+                                        </td>
+                                        
+                                        <!-- Remaining Units Column -->
+                                        <td class="py-3 px-4 whitespace-nowrap">
+                                            <div v-if="getRemainingUnits(transaction)" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border shadow-sm"
+                                                 :class="getRemainingUnitsBg(transaction.utilityType)">
+                                                <div class="w-1.5 h-1.5 rounded-full animate-pulse"
+                                                     :class="getRemainingUnitsDot(transaction.utilityType)"></div>
+                                                <span class="text-xs font-semibold"
+                                                      :class="getRemainingUnitsText(transaction.utilityType)">
+                                                    {{ getRemainingUnits(transaction) }}
+                                                </span>
+                                            </div>
+                                            <span v-else class="text-xs text-gray-400">No data</span>
+                                        </td>
+                                        
+                                        <!-- Battery Column -->
+                                        <td class="py-3 px-4 whitespace-nowrap">
+                                            <div v-if="transaction.latestReading && transaction.latestReading.meterVoltage" class="flex items-center gap-1.5">
+                                                <Icon name="lucide:battery" 
+                                                      :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))"
+                                                      class="w-3 h-3"/>
+                                                <div class="flex flex-col">
+                                                    <span class="text-xs font-semibold"
+                                                          :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))">
+                                                        {{ convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage) }}%
+                                                    </span>
+                                                    <span class="text-xs text-gray-500">{{ transaction.latestReading.meterVoltage.Voltage.toFixed(2) }}V</span>
+                                                </div>
+                                            </div>
+                                            <span v-else class="text-xs text-gray-400">No data</span>
+                                        </td>
+                                        
+                                        <!-- State Column -->
+                                        <td class="py-3 px-4 text-center whitespace-nowrap">
+                                            <div v-if="transaction.latestReading && transaction.latestReading.meterState" class="inline-flex items-center gap-1 px-2 py-1 rounded-md"
+                                                 :class="getStateBg(transaction.latestReading.meterState.State)">
+                                                <div class="w-1.5 h-1.5 rounded-full"
+                                                     :class="transaction.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
+                                                <span class="text-xs font-semibold"
+                                                      :class="getStateText(transaction.latestReading.meterState.State)">
+                                                    {{ transaction.latestReading.meterState.State === 1 ? 'Active' : 'Offline' }}
+                                                </span>
+                                            </div>
+                                            <span v-else class="text-xs text-gray-400">No data</span>
                                         </td>
                                       
                                         <td class="py-3 px-4 text-right whitespace-nowrap">
@@ -186,13 +231,52 @@
                                 <span class="text-xs text-gray-600">Meter Number</span>
                                 <span class="text-xs font-medium text-gray-900 font-mono">{{ transaction.meterNumber }}</span>
                             </div>
-                            <div
-                                v-if="transaction.latestReading && (transaction.latestReading['Remaining Litres'] > 0 || transaction.latestReading['Remaining Credit'] > 0)"
-                                class="flex justify-between"
-                            >
+                            
+                            <!-- Remaining Units - Enhanced -->
+                            <div v-if="getRemainingUnits(transaction)" class="flex justify-between items-center">
                                 <span class="text-xs text-gray-600">Remaining</span>
-                                <span class="text-xs font-medium text-gray-900">{{ getRemainingUnits(transaction) }}</span>
+                                <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border shadow-sm"
+                                     :class="getRemainingUnitsBg(transaction.utilityType)">
+                                    <div class="w-1.5 h-1.5 rounded-full animate-pulse"
+                                         :class="getRemainingUnitsDot(transaction.utilityType)"></div>
+                                    <span class="text-xs font-semibold"
+                                          :class="getRemainingUnitsText(transaction.utilityType)">
+                                        {{ getRemainingUnits(transaction) }}
+                                    </span>
+                                </div>
                             </div>
+                            
+                            <!-- Battery Status - Enhanced -->
+                            <div v-if="transaction.latestReading && transaction.latestReading.meterVoltage" class="flex justify-between items-center">
+                                <span class="text-xs text-gray-600">Battery</span>
+                                <div class="flex items-center gap-1.5 px-2 py-1 rounded-md border shadow-sm bg-white">
+                                    <Icon name="lucide:battery" 
+                                          :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))"
+                                          class="w-3 h-3"/>
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-semibold"
+                                              :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))">
+                                            {{ convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage) }}%
+                                        </span>
+                                        <span class="text-xs text-gray-500">{{ transaction.latestReading.meterVoltage.Voltage.toFixed(2) }}V</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Meter State - Enhanced -->
+                            <div v-if="transaction.latestReading && transaction.latestReading.meterState" class="flex justify-between items-center">
+                                <span class="text-xs text-gray-600">State</span>
+                                <div class="inline-flex items-center gap-1 px-2 py-1 rounded-md"
+                                     :class="getStateBg(transaction.latestReading.meterState.State)">
+                                    <div class="w-1.5 h-1.5 rounded-full"
+                                         :class="transaction.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
+                                    <span class="text-xs font-semibold"
+                                          :class="getStateText(transaction.latestReading.meterState.State)">
+                                        {{ transaction.latestReading.meterState.State === 1 ? 'Active' : 'Offline' }}
+                                    </span>
+                                </div>
+                            </div>
+                            
                             <div class="flex justify-between">
                                 <span class="text-xs text-gray-600">Time</span>
                                 <span class="text-xs font-medium text-gray-900">{{ formatTime(transaction.created) }}</span>
@@ -310,6 +394,64 @@ definePageMeta({
         getAmountClass(type) {
             return type === 'Electricity' ? 'text-orange-600' : 'text-blue-600'
         },
+        
+        // Battery and voltage methods
+        convertVoltageToBattery(voltage) {
+            if (!voltage || isNaN(voltage)) return 0;
+            
+            const minVoltage = 3.0;
+            const maxVoltage = 3.7;
+            
+            const percentage = Math.min(100, Math.max(0, 
+                ((voltage - minVoltage) / (maxVoltage - minVoltage)) * 100
+            ));
+            
+            return Math.round(percentage);
+        },
+        getBatteryColor(percentage) {
+            if (percentage >= 80) return 'text-green-600';
+            if (percentage >= 50) return 'text-yellow-600';
+            if (percentage >= 20) return 'text-orange-600';
+            return 'text-red-600';
+        },
+        
+        // Remaining units styling methods
+        getRemainingUnitsBg(utilityType) {
+            if (utilityType === 'Electricity') {
+                return 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200';
+            } else if (utilityType === 'Water') {
+                return 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200';
+            }
+            return 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200';
+        },
+        getRemainingUnitsDot(utilityType) {
+            if (utilityType === 'Electricity') {
+                return 'bg-orange-400';
+            } else if (utilityType === 'Water') {
+                return 'bg-blue-400';
+            }
+            return 'bg-gray-400';
+        },
+        getRemainingUnitsText(utilityType) {
+            if (utilityType === 'Electricity') {
+                return 'text-orange-700';
+            } else if (utilityType === 'Water') {
+                return 'text-blue-700';
+            }
+            return 'text-gray-700';
+        },
+        
+        // State styling methods
+        getStateBg(state) {
+            if (state === 1) return 'bg-green-100 border-green-200';
+            if (state === 0) return 'bg-red-100 border-red-200';
+            return 'bg-gray-100 border-gray-200';
+        },
+        getStateText(state) {
+            if (state === 1) return 'text-green-700';
+            if (state === 0) return 'text-red-700';
+            return 'text-gray-700';
+        },
 
         getRemainingUnits(transaction) {
             if (!transaction.latestReading.remainingTokens) {
@@ -318,12 +460,12 @@ definePageMeta({
             
             if (transaction.utilityType === 'Electricity') {
                 const credit = transaction.latestReading.remainingTokens["Remaining Credit"];
-                if (credit && credit > 0) {
+                if (credit>=0 ) {
                     return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
                 }
             } else if (transaction.utilityType === 'Water') {
                 const litres = transaction.latestReading.remainingTokens["Remaining Litres"];
-                if (litres && litres > 0) {
+                if (litres>=0 ) {
                     return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
                 }
             }
@@ -337,10 +479,10 @@ definePageMeta({
                 if (isNaN(date.getTime())) {
                     return 'Invalid Date';
                 }
-                return date.toLocaleDateString('en-ZA', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
+            return date.toLocaleDateString('en-ZA', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
                 });
             } catch (error) {
                 console.warn('Error formatting date:', dateString, error);
@@ -354,10 +496,10 @@ definePageMeta({
                 if (isNaN(date.getTime())) {
                     return 'Invalid Time';
                 }
-                return date.toLocaleTimeString('en-ZA', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
+            return date.toLocaleTimeString('en-ZA', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
                 });
             } catch (error) {
                 console.warn('Error formatting time:', dateString, error);
