@@ -147,7 +147,7 @@
                                         
                                         <!-- Battery Column -->
                                         <td class="py-3 px-4 whitespace-nowrap">
-                                            <div v-if="transaction.latestReading && transaction.latestReading.meterVoltage" class="flex items-center gap-1.5">
+                                            <div v-if="hasValidBattery(transaction)" class="flex items-center gap-1.5">
                                                 <Icon name="lucide:battery" 
                                                       :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))"
                                                       class="w-3 h-3"/>
@@ -164,7 +164,7 @@
                                         
                                         <!-- State Column -->
                                         <td class="py-3 px-4 text-center whitespace-nowrap">
-                                            <div v-if="transaction.latestReading && transaction.latestReading.meterState" class="inline-flex items-center gap-1 px-2 py-1 rounded-md"
+                                            <div v-if="hasValidState(transaction)" class="inline-flex items-center gap-1 px-2 py-1 rounded-md"
                                                  :class="getStateBg(transaction.latestReading.meterState.State)">
                                                 <div class="w-1.5 h-1.5 rounded-full"
                                                      :class="transaction.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
@@ -247,7 +247,7 @@
                             </div>
                             
                             <!-- Battery Status - Enhanced -->
-                            <div v-if="transaction.latestReading && transaction.latestReading.meterVoltage" class="flex justify-between items-center">
+                            <div v-if="hasValidBattery(transaction)" class="flex justify-between items-center">
                                 <span class="text-xs text-gray-600">Battery</span>
                                 <div class="flex items-center gap-1.5 px-2 py-1 rounded-md border shadow-sm bg-white">
                                     <Icon name="lucide:battery" 
@@ -264,7 +264,7 @@
                             </div>
                             
                             <!-- Meter State - Enhanced -->
-                            <div v-if="transaction.latestReading && transaction.latestReading.meterState" class="flex justify-between items-center">
+                            <div v-if="hasValidState(transaction)" class="flex justify-between items-center">
                                 <span class="text-xs text-gray-600">State</span>
                                 <div class="inline-flex items-center gap-1 px-2 py-1 rounded-md"
                                      :class="getStateBg(transaction.latestReading.meterState.State)">
@@ -454,18 +454,18 @@ definePageMeta({
         },
 
         getRemainingUnits(transaction) {
-            if (!transaction.latestReading.remainingTokens) {
+            if (!transaction.latestReading || !transaction.latestReading.remainingTokens) {
                 return '';
             }
             
             if (transaction.utilityType === 'Electricity') {
                 const credit = transaction.latestReading.remainingTokens["Remaining Credit"];
-                if (credit>=0 ) {
+                if (credit !== null && credit !== undefined && credit >= 0) {
                     return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
                 }
             } else if (transaction.utilityType === 'Water') {
                 const litres = transaction.latestReading.remainingTokens["Remaining Litres"];
-                if (litres>=0 ) {
+                if (litres !== null && litres !== undefined && litres >= 0) {
                     return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
                 }
             }
@@ -553,6 +553,23 @@ definePageMeta({
             console.log('Selected service:', service);
             // You can add navigation logic here or emit to parent component
             // For example: navigate to payment page for selected service
+        },
+        
+        // Validation methods
+        hasValidBattery(transaction) {
+            return transaction.latestReading && 
+                   transaction.latestReading.meterVoltage && 
+                   transaction.latestReading.meterVoltage.Voltage !== null && 
+                   transaction.latestReading.meterVoltage.Voltage !== undefined &&
+                   transaction.latestReading.meterVoltage.Voltage >= 0;
+        },
+        
+        hasValidState(transaction) {
+            return transaction.latestReading && 
+                   transaction.latestReading.meterState && 
+                   transaction.latestReading.meterState.State !== null && 
+                   transaction.latestReading.meterState.State !== undefined &&
+                   (transaction.latestReading.meterState.State === 0 || transaction.latestReading.meterState.State === 1);
         }
     },
 

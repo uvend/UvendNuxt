@@ -57,9 +57,9 @@
                                 </p>
                                 
                                 <!-- Battery and State Info -->
-                                <div class="flex items-center gap-3 mt-2">
+                                <div v-if="hasValidBatteryOrState(transaction)" class="flex items-center gap-3 mt-2">
                                     <!-- Battery Status -->
-                                    <div v-if="transaction.latestReading && transaction.latestReading.meterVoltage" class="flex items-center gap-1">
+                                    <div v-if="hasValidBattery(transaction)" class="flex items-center gap-1">
                                         <Icon name="lucide:battery" 
                                               :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))"
                                               class="w-3 h-3"/>
@@ -68,16 +68,16 @@
                                             {{ convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage) }}%
                                         </span>
                                         <span class="text-xs text-gray-500">{{ transaction.latestReading.meterVoltage.Voltage.toFixed(2) }}V</span>
-                            </div>
-                            
+                                    </div>
+                                    
                                     <!-- State Status -->
-                                    <div v-if="transaction.latestReading && transaction.latestReading.meterState" class="flex items-center gap-1">
+                                    <div v-if="hasValidState(transaction)" class="flex items-center gap-1">
                                         <div class="w-1.5 h-1.5 rounded-full"
                                              :class="transaction.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
                                         <span class="text-xs font-medium"
                                               :class="getStateColor(transaction.latestReading.meterState.State)">
                                             {{ transaction.latestReading.meterState.State === 1 ? 'Active' : 'Offline' }}
-                                    </span>
+                                        </span>
                                     </div>
                                 </div>
                                 </div>
@@ -123,9 +123,9 @@
                         </div>
 
                         <!-- Battery and State Info - Mobile -->
-                            <div class="flex items-center justify-between">
+                        <div v-if="hasValidBatteryOrState(transaction)" class="flex items-center justify-between">
                             <!-- Battery Status -->
-                            <div v-if="transaction.latestReading && transaction.latestReading.meterVoltage" class="flex items-center gap-1">
+                            <div v-if="hasValidBattery(transaction)" class="flex items-center gap-1">
                                 <Icon name="lucide:battery" 
                                       :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))"
                                       class="w-3 h-3"/>
@@ -133,10 +133,10 @@
                                       :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))">
                                     {{ convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage) }}%
                                 </span>
-                        </div>
-
+                            </div>
+                            
                             <!-- State Status -->
-                            <div v-if="transaction.latestReading && transaction.latestReading.meterState" class="flex items-center gap-1">
+                            <div v-if="hasValidState(transaction)" class="flex items-center gap-1">
                                 <div class="w-1.5 h-1.5 rounded-full"
                                      :class="transaction.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
                                 <span class="text-xs font-medium"
@@ -199,18 +199,18 @@ function formatDate(dateString) {
 }
 
 function getRemainingUnits(transaction) {
-    if (!transaction.latestReading.remainingTokens) {
+    if (!transaction.latestReading || !transaction.latestReading.remainingTokens) {
         return '';
     }
     
     if (transaction.type === 'electricity') {
         const credit = transaction.latestReading.remainingTokens["Remaining Credit"];
-        if (credit >= 0) {
+        if (credit !== null && credit !== undefined && credit >= 0) {
             return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
         }
     } else if (transaction.type === 'water') {
         const litres = transaction.latestReading.remainingTokens["Remaining Litres"];
-        if (litres >= 0) {
+        if (litres !== null && litres !== undefined && litres >= 0) {
             return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
         }
     }
@@ -244,6 +244,27 @@ function getStateColor(state) {
     if (state === 1) return 'text-green-600';
     if (state === 0) return 'text-red-600';
     return 'text-gray-600';
+}
+
+// Validation methods
+function hasValidBattery(transaction) {
+    return transaction.latestReading && 
+           transaction.latestReading.meterVoltage && 
+           transaction.latestReading.meterVoltage.Voltage !== null && 
+           transaction.latestReading.meterVoltage.Voltage !== undefined &&
+           transaction.latestReading.meterVoltage.Voltage >= 0;
+}
+
+function hasValidState(transaction) {
+    return transaction.latestReading && 
+           transaction.latestReading.meterState && 
+           transaction.latestReading.meterState.State !== null && 
+           transaction.latestReading.meterState.State !== undefined &&
+           (transaction.latestReading.meterState.State === 0 || transaction.latestReading.meterState.State === 1);
+}
+
+function hasValidBatteryOrState(transaction) {
+    return hasValidBattery(transaction) || hasValidState(transaction);
 }
 
 async function fetchRecentTransactions() {

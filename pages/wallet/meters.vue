@@ -140,7 +140,7 @@
                   <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
                     <h3 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ meter.name }}</h3>
                     <!-- State Badge -->
-                    <div v-if="meter.latestReading.meterState" class="flex items-center gap-1 px-2 py-1 rounded-lg w-fit"
+                    <div v-if="hasValidState(meter)" class="flex items-center gap-1 px-2 py-1 rounded-lg w-fit"
                          :class="getStateBgColor(meter.latestReading.meterState.State)">
                       <div class="w-2 h-2 rounded-full"
                            :class="meter.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
@@ -176,7 +176,7 @@
                     </div>
                     
                     <!-- Battery Status -->
-                    <div v-if="meter.latestReading.meterVoltage" class="flex items-center gap-2">
+                    <div v-if="hasValidBattery(meter)" class="flex items-center gap-2">
                       <div class="flex items-center gap-1">
                         <Icon name="lucide:battery" 
                               :class="getBatteryColor(convertVoltageToBattery(meter.latestReading.meterVoltage.Voltage))"
@@ -386,12 +386,12 @@
         
         if (meter.utilityType === 'Electricity') {
           const credit = meter.latestReading.remainingTokens["Remaining Credit"];
-          if (credit  >= 0) {
+          if (credit !== null && credit !== undefined && credit >= 0) {
             return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
           }
         } else if (meter.utilityType === 'Water') {
           const litres = meter.latestReading.remainingTokens["Remaining Litres"];
-          if (litres >= 0) {
+          if (litres !== null && litres !== undefined && litres >= 0) {
             return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
           }
         }
@@ -441,6 +441,23 @@
       openPurchaseDialog(meter) {
         this.selectedMeterForPurchase = meter;
         this.showPurchaseDialog = true;
+      },
+      
+      // Validation methods
+      hasValidBattery(meter) {
+        return meter.latestReading && 
+               meter.latestReading.meterVoltage && 
+               meter.latestReading.meterVoltage.Voltage !== null && 
+               meter.latestReading.meterVoltage.Voltage !== undefined &&
+               meter.latestReading.meterVoltage.Voltage >= 0;
+      },
+      
+      hasValidState(meter) {
+        return meter.latestReading && 
+               meter.latestReading.meterState && 
+               meter.latestReading.meterState.State !== null && 
+               meter.latestReading.meterState.State !== undefined &&
+               (meter.latestReading.meterState.State === 0 || meter.latestReading.meterState.State === 1);
       },
       purchaseTokens(meter) {
         // Navigate to buy now page with selected meter
