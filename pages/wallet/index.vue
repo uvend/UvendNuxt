@@ -23,7 +23,7 @@
             <!-- Right Column: Balance History -->
             <div class="flex flex-col gap-4">
                 <!-- Balance History Chart -->
-                <WalletBalanceHistoryChart />
+                <!-- <WalletBalanceHistoryChart /> -->
             </div>
         </div>
         

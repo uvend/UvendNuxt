@@ -194,7 +194,7 @@
               
               <!-- Action Buttons -->
               <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                <Button 
+                <!-- <Button 
                   @click="selectedMeter = meter"
                   variant="outline" 
                   size="sm"
@@ -203,7 +203,7 @@
                   <Icon name="lucide:eye" class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2"/>
                   <span class="hidden sm:inline">View Details</span>
                   <span class="sm:hidden">View</span>
-                </Button>
+                </Button> -->
                 
                 <Button 
                   @click="openPurchaseDialog(meter)"
