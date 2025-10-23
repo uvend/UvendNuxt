@@ -469,10 +469,6 @@ definePageMeta({
         this.isLoading = true;        
         try {
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`, {
-            params: {
-              startDate: this.startDate,
-              endDate: this.endDate,
-            }
           })
           this.transactions = response.transactions;
           this.summary.totalSpent = Number(response.totalAmount).toFixed(2)
