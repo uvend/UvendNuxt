@@ -461,11 +461,17 @@ definePageMeta({
             meters: null,
             metersLoading: false,
             showPurchaseDialog: false,
-            selectedMeterForPurchase: null
+            selectedMeterForPurchase: null,
+            // Transaction totals from API
+            transactionTotals: {
+                totalAmount: 0,
+                electricityTotal: 0,
+                waterTotal: 0
+            }
         }
     },
     methods: {
-      async fetchTransactionsData() {
+        async fetchTransactionsData() {
         this.isLoading = true;        
         try {
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`, {
@@ -473,6 +479,13 @@ definePageMeta({
           this.transactions = response.transactions;
           this.summary.totalSpent = Number(response.totalAmount).toFixed(2)
           this.summary.transactionCount = response.totalCount
+         
+                // Store the totals from the response instead of calculating
+                this.transactionTotals = {
+                    totalAmount: parseFloat(response.totalAmount || 0),
+                    electricityTotal: parseFloat(response.electricityTotal || 0),
+                    waterTotal: parseFloat(response.waterTotal || 0)
+                }
          
                 // Prepare chart data
                 this.chartData = this.transactions.map(t => ({
@@ -781,28 +794,20 @@ definePageMeta({
     
     computed: {
         totalSpent() {
-            if (!this.transactions || this.transactions.length === 0) return '0.00';
-            return this.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toFixed(2);
+            return this.transactionTotals.totalAmount.toFixed(2);
         },
         
         averageTransaction() {
-            if (!this.transactions || this.transactions.length === 0) return '0.00';
-            const total = this.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-            return (total / this.transactions.length).toFixed(2);
+            if (!this.summary.transactionCount || this.summary.transactionCount === 0) return '0.00';
+            return (this.transactionTotals.totalAmount / this.summary.transactionCount).toFixed(2);
         },
         
         electricityTotal() {
-            if (!this.transactions || this.transactions.length === 0) return 0;
-            return this.transactions
-                .filter(t => t.utilityType === 'Electricity')
-                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            return this.transactionTotals.electricityTotal;
         },
         
         waterTotal() {
-            if (!this.transactions || this.transactions.length === 0) return 0;
-            return this.transactions
-                .filter(t => t.utilityType === 'Water')
-                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            return this.transactionTotals.waterTotal;
         },
         
         highestUtility() {

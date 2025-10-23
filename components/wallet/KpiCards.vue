@@ -76,13 +76,11 @@ function formatAmount(amount) {
 async function fetchKpiData() {
     isLoading.value = true
     try {
-        // Fetch transactions data to calculate spent and deposited amounts
+        // Fetch transactions data to get total amounts
         const transactionsResponse = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`)
         
-        // Calculate total spent (all transaction amounts)
-        totalSpent.value = transactionsResponse.transactions.reduce((sum, transaction) => {
-            return sum + parseFloat(transaction.amount)
-        }, 0)
+        // Use the totalAmount from the response instead of calculating
+        totalSpent.value = parseFloat(transactionsResponse.totalAmount || 0)
 
         // For now, we'll use wallet balance as deposited amount
         // In a real scenario, you'd have separate deposit transactions

@@ -273,6 +273,13 @@ async function fetchRecentTransactions() {
         // Fetch transactions data
         const transactionsResponse = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`)
         
+        // Store the totals from the response for potential future use
+        const transactionTotals = {
+            totalAmount: parseFloat(transactionsResponse.totalAmount || 0),
+            electricityTotal: parseFloat(transactionsResponse.electricityTotal || 0),
+            waterTotal: parseFloat(transactionsResponse.waterTotal || 0)
+        }
+        
         // Process and format recent transactions (last 4)
         recentTransactions.value = transactionsResponse.transactions
             .slice(0, 4)
