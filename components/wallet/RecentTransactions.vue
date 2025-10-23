@@ -275,7 +275,6 @@ async function fetchRecentTransactions() {
         
         // Process and format recent transactions (last 4)
         recentTransactions.value = transactionsResponse.transactions
-            .reverse()
             .slice(0, 4)
             .map(transaction => ({
                 id: transaction.id || transaction.meterNumber + transaction.created,

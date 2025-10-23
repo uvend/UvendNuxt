@@ -70,11 +70,104 @@
             </CardContent>
         </Card>
     </div>
-        <!-- Service Selection -->
-    <ServiceSelector 
-      v-model="selectedService" 
-      @service-selected="handleServiceSelection" 
-    />
+        <!-- My Meters Section -->
+    <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+        <CardHeader>
+            <CardTitle class="text-lg font-semibold text-gray-800">My Meters</CardTitle>
+            <CardDescription class="text-sm">Manage and purchase tokens for your utility meters</CardDescription>
+        </CardHeader>
+        <CardContent class="p-0">
+            <div v-if="metersLoading" class="py-8 flex justify-center">
+                <MyLoader />
+            </div>
+            <div v-else-if="meters && meters.length > 0" class="divide-y divide-gray-100">
+                <div v-for="meter in meters" :key="meter.meterNumber" class="p-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <!-- Meter Info -->
+                        <div class="flex items-center gap-4 flex-1">
+                            <!-- Service Icon -->
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                                 :class="getServiceIconBg(meter.utilityType || 'all')">
+                                <Icon :name="getServiceIcon(meter.utilityType || 'all')" 
+                                      :class="getServiceIconColor(meter.utilityType || 'all')"
+                                      class="w-6 h-6"/>
+                            </div>
+                            
+                            <!-- Meter Details -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                                    <h3 class="text-lg font-bold text-gray-900 truncate">{{ meter.name }}</h3>
+                                    <!-- State Badge -->
+                                    <div v-if="hasValidState(meter)" class="flex items-center gap-1 px-2 py-1 rounded-lg w-fit"
+                                         :class="getStateBgColor(meter.latestReading.meterState.State)">
+                                        <div class="w-2 h-2 rounded-full"
+                                             :class="meter.latestReading.meterState.State === 1 ? 'bg-green-500' : 'bg-red-500'"></div>
+                                        <span class="text-xs font-medium"
+                                              :class="getStateColor(meter.latestReading.meterState.State)">
+                                            {{ meter.latestReading.meterState.State === 1 ? 'Active' : 'Offline' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p class="text-sm font-medium text-gray-600 mb-1">{{ meter.meterNumber }}</p>
+                                <p class="text-xs text-gray-500 capitalize">{{ meter.utilityType || 'General' }}</p>
+                                
+                                <!-- Meter Status Row -->
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-3">
+                                    <!-- Remaining Units Display -->
+                                    <div v-if="getRemainingUnits(meter)" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border shadow-sm"
+                                         :class="getRemainingUnitsBg(meter.utilityType)">
+                                        <div class="w-2 h-2 rounded-full animate-pulse"
+                                             :class="getRemainingUnitsDot(meter.utilityType)"></div>
+                                        <span class="text-xs font-semibold"
+                                              :class="getRemainingUnitsText(meter.utilityType)">
+                                            {{ getRemainingUnits(meter) }}
+                                        </span>
+                                        <Icon :name="getRemainingUnitsIcon(meter.utilityType)" 
+                                              class="w-3 h-3"
+                                              :class="getRemainingUnitsIconColor(meter.utilityType)"/>
+                                    </div>
+                                    
+                                    <!-- Battery Status -->
+                                    <div v-if="hasValidBattery(meter)" class="flex items-center gap-2">
+                                        <div class="flex items-center gap-1">
+                                            <Icon name="lucide:battery" 
+                                                  :class="getBatteryColor(convertVoltageToBattery(meter.latestReading.meterVoltage.Voltage))"
+                                                  class="w-3 h-3"/>
+                                            <span class="text-xs font-medium"
+                                                  :class="getBatteryColor(convertVoltageToBattery(meter.latestReading.meterVoltage.Voltage))">
+                                                {{ convertVoltageToBattery(meter.latestReading.meterVoltage.Voltage) }}%
+                                            </span>
+                                        </div>
+                                        <span class="text-xs text-gray-500">{{ meter.latestReading.meterVoltage.Voltage.toFixed(2) }}V</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Buy Button -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <Button 
+                                @click="openPurchaseDialog(meter)"
+                                size="sm"
+                                class="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                                <Icon name="lucide:credit-card" class="w-4 h-4 mr-2"/>
+                                Purchase Token
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-else class="text-center py-12">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Icon name="lucide:home" class="w-8 h-8 text-gray-400" />
+                </div>
+                <p class="text-gray-600 font-medium">No meters found</p>
+                <p class="text-gray-400 text-sm mt-1">Add your first meter to get started</p>
+            </div>
+        </CardContent>
+    </Card>
+
     <!-- Spending Trends Chart -->
     <SpendingTrendsChart :transactions="transactions" :isLoading="isLoading" />
         
@@ -306,13 +399,42 @@
     </div>
         </CardContent>
     </Card>
+    
+    <!-- Purchase Token Dialog -->
+    <Dialog v-model:open="showPurchaseDialog">
+        <DialogContent class="p-0 max-w-md mx-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+            <div class="relative overflow-hidden rounded-2xl">
+                <!-- Header with gradient background -->
+                <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                <Icon name="lucide:zap" class="h-5 w-5 text-white"/>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Purchase Token</h3>
+                                <p class="text-sm text-white/90">Buy tokens for your meters</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Decorative elements -->
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-12 translate-x-12"></div>
+                    <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+                </div>
+                
+                <!-- Content area -->
+                <div class="p-6 bg-gradient-to-b from-white to-blue-50/30">
+                    <WalletBuyNow :selectedMeter="selectedMeterForPurchase" />
+                </div>
+            </div>
+        </DialogContent>
+    </Dialog>
 </div>
 </template>
 
 <script>
-import ServiceSelector from '~/components/wallet/ServiceSelector.vue'
 import SpendingTrendsChart from '~/components/wallet/SpendingTrendsChart.vue'
-import MeterSpendingChart from '~/components/wallet/MeterSpendingChart.vue'
 
 definePageMeta({
     layout: 'wallet'
@@ -320,29 +442,26 @@ definePageMeta({
 
   export default {
     components: {
-      ServiceSelector,
-      SpendingTrendsChart,
-      MeterSpendingChart
+      SpendingTrendsChart
     },
     data() {
       return {
             isLoading: false,
         activeFilter: null,
-            selectedService: null,
             transactions: [],
             chartData: [],
         summary: {
                 totalSpent: '0.00',
                 transactionCount: 0
             },
-        filterOptions: [
-                { key: null, value: "All Transactions" },
-                { key: "Electricity", value: "Electricity" },
-                { key: "Water", value: "Water" },
-        ],
             startDate: null,
             endDate: null,
-            expandedRows: []
+            expandedRows: [],
+            // Meters data
+            meters: null,
+            metersLoading: false,
+            showPurchaseDialog: false,
+            selectedMeterForPurchase: null
         }
     },
     methods: {
@@ -353,10 +472,9 @@ definePageMeta({
             params: {
               startDate: this.startDate,
               endDate: this.endDate,
-              utilityType: this.activeFilter
             }
           })
-          this.transactions = response.transactions.reverse();
+          this.transactions = response.transactions;
           this.summary.totalSpent = Number(response.totalAmount).toFixed(2)
           this.summary.transactionCount = response.totalCount
          
@@ -415,31 +533,6 @@ definePageMeta({
             return 'text-red-600';
         },
         
-        // Remaining units styling methods
-        getRemainingUnitsBg(utilityType) {
-            if (utilityType === 'Electricity') {
-                return 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200';
-            } else if (utilityType === 'Water') {
-                return 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200';
-            }
-            return 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200';
-        },
-        getRemainingUnitsDot(utilityType) {
-            if (utilityType === 'Electricity') {
-                return 'bg-orange-400';
-            } else if (utilityType === 'Water') {
-                return 'bg-blue-400';
-            }
-            return 'bg-gray-400';
-        },
-        getRemainingUnitsText(utilityType) {
-            if (utilityType === 'Electricity') {
-                return 'text-orange-700';
-            } else if (utilityType === 'Water') {
-                return 'text-blue-700';
-            }
-            return 'text-gray-700';
-        },
         
         // State styling methods
         getStateBg(state) {
@@ -453,25 +546,6 @@ definePageMeta({
             return 'text-gray-700';
         },
 
-        getRemainingUnits(transaction) {
-            if (!transaction.latestReading || !transaction.latestReading.remainingTokens) {
-                return '';
-            }
-            
-            if (transaction.utilityType === 'Electricity') {
-                const credit = transaction.latestReading.remainingTokens["Remaining Credit"];
-                if (credit !== null && credit !== undefined && credit >= 0) {
-                    return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
-                }
-            } else if (transaction.utilityType === 'Water') {
-                const litres = transaction.latestReading.remainingTokens["Remaining Litres"];
-                if (litres !== null && litres !== undefined && litres >= 0) {
-                    return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
-                }
-            }
-            
-            return '';
-        },
 
         formatDate(dateString) {
             try {
@@ -508,36 +582,19 @@ definePageMeta({
         },
 
         formatDateForAPI(rawDate) {
-        return rawDate.toISOString().split('T')[0];
+        return rawDate.toISOString();
       },
 
         setDateRange(newValue) {
         const startDate = new Date();
         const endDate = new Date();
-            if (newValue == '7days') {
-          startDate.setDate(endDate.getDate() - 7);
-        }
-            if (newValue == '30days') {
-          startDate.setDate(endDate.getDate() - 30);
-        }
-            if (newValue == '6months') {
-          startDate.setDate(endDate.getDate() - 182);
-        }
-            if (newValue == '12months') {
-          startDate.setDate(endDate.getDate() - 265);
-        }
-            this.startDate = this.formatDateForAPI(startDate);
-        endDate.setDate(endDate.getDate() + 1);
-            this.endDate = this.formatDateForAPI(endDate);
+        startDate.setMonth(startDate.getMonth() - 1);
+    
+        
+        this.startDate = this.formatDateForAPI(startDate);
+        this.endDate = this.formatDateForAPI(endDate);
         },
 
-        handleFilterUpdate(value) {
-            console.log('Filter update:', value)
-        },
-
-        handleDateUpdate(value) {
-            console.log('Date update:', value)
-        },
 
         toggleExpand(transactionId) {
             const index = this.expandedRows.indexOf(transactionId)
@@ -549,10 +606,143 @@ definePageMeta({
         },
         
 
-        handleServiceSelection(service) {
-            console.log('Selected service:', service);
-            // You can add navigation logic here or emit to parent component
-            // For example: navigate to payment page for selected service
+        // Meters methods
+        async fetchMeters() {
+            this.metersLoading = true;
+            try {
+                const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
+                this.meters = response.meters;
+            } catch (error) {
+                console.error('Error fetching meters:', error);
+                this.$toast({
+                    title: 'Error',
+                    description: 'Failed to load meters',
+                    variant: 'destructive'
+                });
+            } finally {
+                this.metersLoading = false;
+            }
+        },
+        
+        openPurchaseDialog(meter) {
+            this.selectedMeterForPurchase = meter;
+            this.showPurchaseDialog = true;
+        },
+        
+        getServiceIcon(serviceType) {
+            const iconMap = {
+                'electricity': 'lucide:zap',
+                'elect': 'lucide:zap',
+                'water': 'lucide:droplet',
+                'all': 'lucide:grid-3x3',
+                'gas': 'lucide:flame',
+                'internet': 'lucide:wifi',
+                'mobile': 'lucide:smartphone'
+            };
+            return iconMap[serviceType?.toLowerCase()] || 'lucide:home';
+        },
+        
+        getServiceIconBg(serviceType) {
+            const bgMap = {
+                'electricity': 'bg-gradient-to-br from-orange-100 to-orange-200',
+                'elect': 'bg-gradient-to-br from-orange-100 to-orange-200',
+                'water': 'bg-gradient-to-br from-blue-100 to-blue-200',
+                'all': 'bg-gradient-to-br from-gray-100 to-gray-200',
+                'gas': 'bg-gradient-to-br from-red-100 to-red-200',
+                'internet': 'bg-gradient-to-br from-purple-100 to-purple-200',
+                'mobile': 'bg-gradient-to-br from-green-100 to-green-200'
+            };
+            return bgMap[serviceType?.toLowerCase()] || 'bg-gradient-to-br from-gray-100 to-gray-200';
+        },
+        
+        getServiceIconColor(serviceType) {
+            const colorMap = {
+                'electricity': 'text-orange-600',
+                'elect': 'text-orange-600',
+                'water': 'text-blue-600',
+                'all': 'text-gray-600',
+                'gas': 'text-red-600',
+                'internet': 'text-purple-600',
+                'mobile': 'text-green-600'
+            };
+            return colorMap[serviceType?.toLowerCase()] || 'text-gray-600';
+        },
+        
+        getStateColor(state) {
+            if (state === 1) return 'text-green-600';
+            if (state === 0) return 'text-red-600';
+            return 'text-gray-600';
+        },
+        
+        getStateBgColor(state) {
+            if (state === 1) return 'bg-green-100';
+            if (state === 0) return 'bg-red-100';
+            return 'bg-gray-100';
+        },
+        
+        getRemainingUnits(meter) {
+            if (!meter.latestReading || !meter.latestReading.remainingTokens) {
+                return '';
+            }
+            
+            if (meter.utilityType === 'Electricity') {
+                const credit = meter.latestReading.remainingTokens["Remaining Credit"];
+                if (credit !== null && credit !== undefined && credit >= 0) {
+                    return `${(parseFloat(credit) / 1000).toFixed(2)} KWh`;
+                }
+            } else if (meter.utilityType === 'Water') {
+                const litres = meter.latestReading.remainingTokens["Remaining Litres"];
+                if (litres !== null && litres !== undefined && litres >= 0) {
+                    return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
+                }
+            }
+            
+            return '';
+        },
+        
+        getRemainingUnitsBg(utilityType) {
+            if (utilityType === 'Electricity') {
+                return 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200';
+            } else if (utilityType === 'Water') {
+                return 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200';
+            }
+            return 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200';
+        },
+        
+        getRemainingUnitsDot(utilityType) {
+            if (utilityType === 'Electricity') {
+                return 'bg-orange-400';
+            } else if (utilityType === 'Water') {
+                return 'bg-blue-400';
+            }
+            return 'bg-gray-400';
+        },
+        
+        getRemainingUnitsText(utilityType) {
+            if (utilityType === 'Electricity') {
+                return 'text-orange-700';
+            } else if (utilityType === 'Water') {
+                return 'text-blue-700';
+            }
+            return 'text-gray-700';
+        },
+        
+        getRemainingUnitsIcon(utilityType) {
+            if (utilityType === 'Electricity') {
+                return 'lucide:zap';
+            } else if (utilityType === 'Water') {
+                return 'lucide:droplet';
+            }
+            return 'lucide:activity';
+        },
+        
+        getRemainingUnitsIconColor(utilityType) {
+            if (utilityType === 'Electricity') {
+                return 'text-orange-600';
+            } else if (utilityType === 'Water') {
+                return 'text-blue-600';
+            }
+            return 'text-gray-600';
         },
         
         // Validation methods
@@ -575,17 +765,11 @@ definePageMeta({
 
     async mounted() {
         this.setDateRange('30days');
-        // Calculate summary from sample data
-        this.summary.transactionCount = this.transactions.length;
-        this.summary.totalSpent = this.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toFixed(2);
-        
-        // Log for debugging
-        console.log('Transactions:', this.transactions.length);
-        console.log('Daily Chart Data:', this.dailyChartData);
-        console.log('Max Amount:', this.maxAmount);
-        
-        // Uncomment below to fetch real data
-        await this.fetchTransactionsData();
+        // Fetch both transactions and meters data
+        await Promise.all([
+            this.fetchTransactionsData(),
+            this.fetchMeters()
+        ]);
     },
 
     watch: {

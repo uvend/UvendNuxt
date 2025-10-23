@@ -69,7 +69,7 @@
 
         </nav>
         <!-- Footer links -->
-        <nav class="p-4 border-t border-blue-500/30">
+        <!-- <nav class="p-4 border-t border-blue-500/30">
             <NuxtLink 
                 to="/settings" 
                 class="menu-item group flex items-center justify-start px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200"
@@ -83,7 +83,7 @@
                     <span class="text-xs text-blue-200">Preferences</span>
                 </div>
             </NuxtLink>
-        </nav>
+        </nav> -->
     </aside>
     <!-- Main content -->
     <div class="flex-1 flex flex-col h-screen">
@@ -113,21 +113,10 @@
                 </div>
             </div>
             
-            <!-- Right side - Notification and User icons -->
-            <div class="flex items-center gap-2">
-                <!-- Notification Button -->
-                <button class="relative p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    <Icon name="lucide:bell" class="w-5 h-5" />
-                    <!-- Notification badge -->
-                    <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full flex items-center justify-center">
-                        <span class="w-2 h-2 bg-red-600 rounded-full"></span>
-                    </span>
-                </button>
-                
-                <!-- User Icon -->
-                <button class="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    <Icon name="lucide:user" class="w-5 h-5" />
-                </button>
+            <!-- Right side - User Menu Dropdown -->
+            <div class="flex items-center gap-2 z-[9999999999]">
+                <!-- User Menu Dropdown -->
+                <UserMenuDropdown />
             </div>
         </header>
         <div class="flex-1 overflow-y-auto pb-20 md:pb-0" style="max-width: 100vw">
@@ -153,11 +142,11 @@
                 <span>Payments</span>
             </NuxtLink>
 
-            <NuxtLink to="/settings" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/settings') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
+            <!-- <NuxtLink to="/settings" :class="['flex flex-col items-center justify-center text-xs font-medium w-full relative', isActive('/settings') ? 'text-blue-700' : 'text-gray-700']" @click="toggleNav">
                 <span v-if="isActive('/settings')" class="absolute top-0 inset-x-6 h-0.5 bg-blue-600 rounded-full"></span>
                 <Icon name="lucide:settings" class="h-5 w-5"/>
                 <span>Settings</span>
-            </NuxtLink>
+            </NuxtLink> -->
         </div>
     </nav>
     
@@ -203,7 +192,12 @@
 </div>
 </template>
 <script>
+import UserMenuDropdown from '~/components/wallet/UserMenuDropdown.vue'
+
 export default{
+	components: {
+		UserMenuDropdown
+	},
 	data(){
 		return {
 			showPurchaseDialog: false
