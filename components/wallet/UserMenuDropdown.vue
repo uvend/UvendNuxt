@@ -3,9 +3,9 @@
     <!-- User Icon Button -->
     <button 
       @click="toggleDropdown"
-      class="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+      class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center hover:from-blue-200 hover:to-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
     >
-      <Icon name="lucide:user" class="w-5 h-5" />
+      <Icon name="lucide:user" class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
     </button>
 
     <!-- Dropdown Menu - Using fixed positioning -->
@@ -61,7 +61,7 @@ export default {
       
       return {
         top: `${this.buttonRect.bottom + 8}px`,
-        right: `${window.innerWidth - this.buttonRect.right}px`,
+        left: `${this.buttonRect.left}px`,
         zIndex: 9999
       }
     }

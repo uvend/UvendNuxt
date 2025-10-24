@@ -20,7 +20,7 @@
         </Card>
 
         <!-- Successful Payments -->
-        <Card class="bg-white/95 backdrop-blur-sm border border-green-200 shadow-md hover:shadow-lg transition-all duration-300">
+        <!-- <Card class="bg-white/95 backdrop-blur-sm border border-green-200 shadow-md hover:shadow-lg transition-all duration-300">
             <CardContent class="p-4">
                 <div class="flex items-center gap-2 mb-2">
                     <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -31,10 +31,10 @@
                 <p class="text-2xl font-bold text-green-600">{{ successfulCount }}</p>
                 <p class="text-xs text-gray-500 mt-1">{{ successRate }}% success rate</p>
             </CardContent>
-            </Card>
+            </Card> -->
             
         <!-- Failed Payments -->
-        <Card class="bg-white/95 backdrop-blur-sm border border-red-200 shadow-md hover:shadow-lg transition-all duration-300">
+        <!-- <Card class="bg-white/95 backdrop-blur-sm border border-red-200 shadow-md hover:shadow-lg transition-all duration-300">
             <CardContent class="p-4">
                 <div class="flex items-center gap-2 mb-2">
                     <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
@@ -45,7 +45,7 @@
                 <p class="text-2xl font-bold text-red-600">{{ failedCount }}</p>
                 <p class="text-xs text-gray-500 mt-1">R {{ failedAmount }}</p>
             </CardContent>
-        </Card>
+        </Card> -->
 
         <!-- Average Deposit -->
         <Card class="bg-white/95 backdrop-blur-sm border border-purple-200 shadow-md hover:shadow-lg transition-all duration-300">
@@ -63,167 +63,7 @@
         </div>
 
     <!-- Deposit Trends Chart -->
-    <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
-        <CardHeader class="pb-3">
-            <div class="flex items-center justify-between">
-                <div>
-                    <CardTitle class="text-lg font-semibold text-gray-800">Deposit Trends</CardTitle>
-                    <CardDescription class="text-sm">Last 7 days deposit activity</CardDescription>
-                </div>
-                <div class="flex items-center gap-3 text-xs">
-                    <div class="flex items-center gap-1">
-                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span class="text-gray-600">Successful</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                        <span class="text-gray-600">Failed</span>
-                    </div>
-                </div>
-            </div>
-        </CardHeader>
-        <CardContent class="p-4 sm:p-6">
-            <div v-if="isLoading" class="py-8 flex justify-center">
-                <MyLoader />
-            </div>
-            <div v-else class="w-full">
-                <!-- Chart Container -->
-                <div class="relative h-[250px] sm:h-[300px]">
-                    <!-- Y-axis labels -->
-                    <div class="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-gray-500 pr-2">
-                        <span>R{{ maxChartAmount }}</span>
-                        <span>R{{ Math.round(maxChartAmount * 0.75) }}</span>
-                        <span>R{{ Math.round(maxChartAmount * 0.5) }}</span>
-                        <span>R{{ Math.round(maxChartAmount * 0.25) }}</span>
-                        <span>R0</span>
-                    </div>
-                    
-                    <!-- Chart area -->
-                    <div class="absolute left-12 right-0 top-0 bottom-8 border-l border-b border-gray-200">
-                        <!-- Grid lines -->
-                        <div class="absolute inset-0">
-                            <div class="absolute top-0 left-0 right-0 border-t border-gray-100"></div>
-                            <div class="absolute top-1/4 left-0 right-0 border-t border-gray-100"></div>
-                            <div class="absolute top-1/2 left-0 right-0 border-t border-gray-100"></div>
-                            <div class="absolute top-3/4 left-0 right-0 border-t border-gray-100"></div>
-                        </div>
-                        
-                        <!-- Line Chart SVG -->
-                        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <!-- Gradients -->
-                            <defs>
-                                <linearGradient id="successGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:rgb(34, 197, 94);stop-opacity:0.3" />
-                                    <stop offset="100%" style="stop-color:rgb(34, 197, 94);stop-opacity:0.05" />
-                                </linearGradient>
-                                <linearGradient id="failedGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:rgb(239, 68, 68);stop-opacity:0.3" />
-                                    <stop offset="100%" style="stop-color:rgb(239, 68, 68);stop-opacity:0.05" />
-                                </linearGradient>
-                            </defs>
-                            
-                            <!-- Success area fill -->
-                            <path 
-                                v-if="successLinePath"
-                                :d="successAreaPath" 
-                                fill="url(#successGradient)"
-                                class="transition-all duration-300"
-                            />
-                            
-                            <!-- Failed area fill -->
-                            <path 
-                                v-if="failedLinePath"
-                                :d="failedAreaPath" 
-                                fill="url(#failedGradient)"
-                                class="transition-all duration-300"
-                            />
-                            
-                            <!-- Success line -->
-                            <path 
-                                v-if="successLinePath"
-                                :d="successLinePath" 
-                                fill="none" 
-                                stroke="rgb(34, 197, 94)" 
-                                stroke-width="0.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="transition-all duration-300"
-                            />
-                            
-                            <!-- Failed line -->
-                            <path 
-                                v-if="failedLinePath"
-                                :d="failedLinePath" 
-                                fill="none" 
-                                stroke="rgb(239, 68, 68)" 
-                                stroke-width="0.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="transition-all duration-300"
-                            />
-                            
-                            <!-- Data points for Success -->
-                            <g v-if="successLinePath">
-                                <circle 
-                                    v-for="(point, index) in successPoints" 
-                                    :key="'s-' + index"
-                                    :cx="point.x" 
-                                    :cy="point.y" 
-                                    r="1"
-                                    fill="rgb(34, 197, 94)"
-                                    class="cursor-pointer hover:r-1.5 transition-all"
-                                    @mouseenter="showLineTooltip(index, 'success', dailyChartData[index])"
-                                    @mouseleave="hideTooltip"
-                                >
-                                    <title>R{{ dailyChartData[index].success }}</title>
-                                </circle>
-                            </g>
-                            
-                            <!-- Data points for Failed -->
-                            <g v-if="failedLinePath">
-                                <circle 
-                                    v-for="(point, index) in failedPoints" 
-                                    :key="'f-' + index"
-                                    :cx="point.x" 
-                                    :cy="point.y" 
-                                    r="1"
-                                    fill="rgb(239, 68, 68)"
-                                    class="cursor-pointer hover:r-1.5 transition-all"
-                                    @mouseenter="showLineTooltip(index, 'failed', dailyChartData[index])"
-                                    @mouseleave="hideTooltip"
-                                >
-                                    <title>R{{ dailyChartData[index].failed }}</title>
-                                </circle>
-                            </g>
-                        </svg>
-                        
-                        <!-- Tooltip -->
-                        <div 
-                            v-if="tooltipVisible" 
-                            class="absolute px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10 pointer-events-none"
-                            :style="{ left: tooltipX + '%', top: tooltipY + '%', transform: 'translate(-50%, -120%)' }"
-                        >
-                            {{ tooltipType === 'success' ? 'Successful' : 'Failed' }}: R{{ tooltipValue }}
-                        </div>
-                    </div>
-                    
-                    <!-- X-axis labels -->
-                    <div class="absolute left-12 right-0 bottom-0 h-8 flex items-center justify-around text-xs text-gray-500">
-                        <span v-for="(day, index) in dailyChartData" :key="index">{{ day.label }}</span>
-                    </div>
-                </div>
-                
-                <!-- Empty state when no data -->
-                <div v-if="dailyChartData.length === 0" class="text-center py-8">
-                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Icon name="lucide:bar-chart-3" class="w-8 h-8 text-gray-400" />
-                    </div>
-                    <p class="text-gray-600 font-medium">No payment data available</p>
-                    <p class="text-xs text-gray-400 mt-1">Chart will appear when payments are made</p>
-                </div>
-            </div>
-        </CardContent>
-            </Card>
+    <WalletBalanceHistoryChart :transactions="fundingHistory" :isLoading="isLoading" />
 
     <!-- Payments Table -->
     <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
@@ -455,13 +295,7 @@ export default {
           result_desc: 'Auth Done'
         }
       ],
-      expandedRows: [],
-      tooltipVisible: false,
-      tooltipIndex: null,
-      tooltipType: null,
-      tooltipX: 0,
-      tooltipY: 0,
-      tooltipValue: 0
+      expandedRows: []
     }
   },
   methods: {
@@ -527,26 +361,6 @@ export default {
         } else {
             this.expandedRows.push(paymentId)
         }
-    },
-    
-    showLineTooltip(index, type, day) {
-        this.tooltipVisible = true;
-        this.tooltipIndex = index;
-        this.tooltipType = type;
-        
-        // Calculate tooltip position
-        const dataLength = this.dailyChartData.length;
-        this.tooltipX = (index / (dataLength - 1)) * 100;
-        
-        const value = parseFloat(type === 'success' ? day.success : day.failed);
-        this.tooltipValue = value.toFixed(2);
-        this.tooltipY = 100 - ((value / this.maxChartAmount) * 100);
-    },
-    
-    hideTooltip() {
-        this.tooltipVisible = false;
-        this.tooltipIndex = null;
-        this.tooltipType = null;
     }
   },
   
@@ -591,100 +405,7 @@ export default {
         return (total / this.successfulPayments.length / 100).toFixed(2);
     },
 
-    dailyChartData() {
-        // Group payments by date
-        const groupedByDate = {};
-        
-        this.fundingHistory.forEach(payment => {
-            const date = new Date(payment.created);
-            const dateKey = date.toISOString().split('T')[0];
-            
-            if (!groupedByDate[dateKey]) {
-                groupedByDate[dateKey] = {
-                    date: dateKey,
-                    success: 0,
-                    failed: 0
-                };
-            }
-            
-            const amount = parseFloat(payment.amount) / 100;
-            if (payment.result_desc?.toLowerCase() === 'auth done') {
-                groupedByDate[dateKey].success += amount;
-            } else {
-                groupedByDate[dateKey].failed += amount;
-            }
-        });
-        
-        // Convert to array and sort by date
-        const chartData = Object.values(groupedByDate)
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .map(day => ({
-                label: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                success: day.success.toFixed(2),
-                failed: day.failed.toFixed(2),
-                date: day.date
-            }));
-        
-        // Show last 7 days for better readability
-        return chartData.slice(-7);
-    },
     
-    maxChartAmount() {
-        if (this.dailyChartData.length === 0) return 100;
-        
-        const maxSuccess = Math.max(...this.dailyChartData.map(d => parseFloat(d.success)));
-        const maxFailed = Math.max(...this.dailyChartData.map(d => parseFloat(d.failed)));
-        const max = Math.max(maxSuccess, maxFailed);
-        
-        // Round up to nearest 50
-        return Math.ceil(max / 50) * 50;
-    },
-    
-    successPoints() {
-        return this.dailyChartData.map((day, index) => {
-            const x = (index / (this.dailyChartData.length - 1)) * 100;
-            const y = 100 - ((parseFloat(day.success) / this.maxChartAmount) * 100);
-            return { x, y };
-        });
-    },
-    
-    failedPoints() {
-        return this.dailyChartData.map((day, index) => {
-            const x = (index / (this.dailyChartData.length - 1)) * 100;
-            const y = 100 - ((parseFloat(day.failed) / this.maxChartAmount) * 100);
-            return { x, y };
-        });
-    },
-    
-    successLinePath() {
-        if (this.successPoints.length === 0) return '';
-        return this.successPoints.map((point, index) => {
-            return `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`;
-        }).join(' ');
-    },
-    
-    failedLinePath() {
-        if (this.failedPoints.length === 0) return '';
-        return this.failedPoints.map((point, index) => {
-            return `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`;
-        }).join(' ');
-    },
-    
-    successAreaPath() {
-        if (this.successPoints.length === 0) return '';
-        const linePath = this.successLinePath;
-        const firstPoint = this.successPoints[0];
-        const lastPoint = this.successPoints[this.successPoints.length - 1];
-        return `${linePath} L ${lastPoint.x} 100 L ${firstPoint.x} 100 Z`;
-    },
-    
-    failedAreaPath() {
-        if (this.failedPoints.length === 0) return '';
-        const linePath = this.failedLinePath;
-        const firstPoint = this.failedPoints[0];
-        const lastPoint = this.failedPoints[this.failedPoints.length - 1];
-        return `${linePath} L ${lastPoint.x} 100 L ${firstPoint.x} 100 Z`;
-    }
   }
 }
 </script>

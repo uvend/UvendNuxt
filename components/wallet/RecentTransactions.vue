@@ -87,11 +87,14 @@
                                :class="transaction.type === 'electricity' ? 'text-orange-600' : 'text-blue-600'">
                                 -{{ formatAmount(transaction.amount) }}
                             </p>
-                            <div class="flex items-center gap-1 mt-1">
+                            <p v-if="transaction.totalUnits" class="text-xs text-gray-600 font-medium mt-1">
+                                {{ transaction.totalUnits }} units
+                            </p>
+                            <!-- <div class="flex items-center gap-1 mt-1">
                                 <div class="w-1.5 h-1.5 rounded-full"
                                      :class="transaction.type === 'electricity' ? 'bg-orange-400' : 'bg-blue-400'"></div>
                                 <p class="text-xs text-gray-500 font-medium">Debit</p>
-                        </div>
+                            </div> -->
                     </div>
                 </div>
 
@@ -113,6 +116,9 @@
                                 <p class="text-sm font-bold"
                                    :class="transaction.type === 'electricity' ? 'text-orange-600' : 'text-blue-600'">
                                     -{{ formatAmount(transaction.amount) }}
+                                </p>
+                                <p v-if="transaction.totalUnits" class="text-xs text-gray-600 font-medium mt-1">
+                                    {{ transaction.totalUnits }} units
                                 </p>
                             </div>
                         </div>
@@ -283,15 +289,19 @@ async function fetchRecentTransactions() {
         // Process and format recent transactions (last 4)
         recentTransactions.value = transactionsResponse.transactions
             .slice(0, 4)
-            .map(transaction => ({
+            .map(transaction => {
+                
+                const totalUnitsPaid = JSON.parse(transaction.vendResponse).listOfTokenTransactions[0]?.tokens[0]?.units || ""
+                return {
                 id: transaction.id || transaction.meterNumber + transaction.created,
-                    type: transaction.utilityType === 'Electricity' ? 'electricity' : 'water',
+                type: transaction.utilityType === 'Electricity' ? 'electricity' : 'water',
                 date: transaction.created,
-                    meterNumber: transaction.meterNumber,
+                meterNumber: transaction.meterNumber,
+                totalUnits:totalUnitsPaid,
                 amount: parseFloat(transaction.amount),
                 latestReading: transaction.latestReading
-            }))
-            
+            }})
+            console.log(recentTransactions.value)
     } catch (error) {
         console.error('Error fetching recent transactions:', error)
         // Show sample data if API fails

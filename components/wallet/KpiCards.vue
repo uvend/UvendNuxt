@@ -36,17 +36,17 @@
                             <Icon name="lucide:trending-up" class="h-4 w-4 text-green-600"/>
                         </div>
                         <div>
-                            <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Deposited</p>
+                            <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Purchases Made</p>
                         </div>
                     </div>
                     <div class="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>
                 </div>
                 <div class="space-y-1">
                     <Skeleton class="w-24 h-8" v-if="isLoading"/>
-                    <p class="text-2xl font-bold text-green-700" v-else>{{ formatAmount(totalDeposited) }}</p>
+                    <p class="text-2xl font-bold text-green-700" v-else>{{ totalPurchases }}</p>
                     <div class="flex items-center gap-1">
                         <div class="w-1.5 h-1.5 rounded-full bg-green-400"></div>
-                        <p class="text-xs text-gray-600">Deposits</p>
+                        <p class="text-xs text-gray-600">Purchases</p>
                     </div>
                 </div>
             </div>
@@ -60,6 +60,7 @@
 import { ref, onMounted } from 'vue'
 
 const totalSpent = ref(0)
+const totalPurchases = ref(0)
 const totalDeposited = ref(0)
 const isLoading = ref(true)
 
@@ -81,6 +82,8 @@ async function fetchKpiData() {
         
         // Use the totalAmount from the response instead of calculating
         totalSpent.value = parseFloat(transactionsResponse.totalAmount || 0)
+        totalPurchases.value = transactionsResponse.totalCount ||0
+
 
         // For now, we'll use wallet balance as deposited amount
         // In a real scenario, you'd have separate deposit transactions

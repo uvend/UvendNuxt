@@ -87,36 +87,37 @@
     </aside>
     <!-- Main content -->
     <div class="flex-1 flex flex-col h-screen">
-        <header class="flex justify-between items-center py-3 px-5 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200 flex-shrink-0">
-            <!-- Left side - Purchase Token Button -->
-            <div class="flex items-center">
-                <div class="relative group">
-                    <!-- Custom Purchase Token Button -->
-                    <button 
-                        @click="showPurchaseDialog = true"
-                        class="group relative overflow-hidden inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white px-6 py-3 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
-                    >
-                        <div class="flex items-center gap-2">
-                           
-                            
-                            <!-- Button Text -->
-                            <span class="relative z-10">Purchase Token</span>
-                            
-                            <!-- Decorative elements -->
-                            <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            <div class="absolute top-0 right-0 w-8 h-8 bg-white/10 rounded-full -translate-y-2 translate-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </div>
-                    </button>
-                    
-                    <!-- Additional glow effect -->
-                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 opacity-0 group-hover:opacity-20 blur-lg transition-opacity duration-300 -z-10"></div>
+        <header class="flex justify-between items-center py-3 px-4 sm:px-6 bg-white/95 backdrop-blur-sm shadow-sm border-b border-blue-200 flex-shrink-0">
+            <!-- Left side - Greeting Section -->
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="flex items-center gap-2 z-[9999999999]">
+                    <!-- User Menu Dropdown -->
+                    <UserMenuDropdown />
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-semibold text-gray-800">Welcome back</h1>
+                    <p class="text-xs sm:text-sm text-gray-600">{{ currentPageQuip }}</p>
                 </div>
             </div>
             
-            <!-- Right side - User Menu Dropdown -->
-            <div class="flex items-center gap-2 z-[9999999999]">
-                <!-- User Menu Dropdown -->
-                <UserMenuDropdown />
+            <!-- Right side - Buy Button -->
+            <div class="relative group">
+                <button 
+                    @click="showPurchaseDialog = true"
+                    class="group relative overflow-hidden inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
+                >
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <Icon name="lucide:zap" class="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span class="relative z-10">Buy</span>
+                    </div>
+                    
+                    <!-- Decorative elements -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="absolute top-0 right-0 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full -translate-y-1 translate-x-1 sm:-translate-y-2 sm:translate-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+                
+                <!-- Additional glow effect -->
+                <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 opacity-0 group-hover:opacity-20 blur-lg transition-opacity duration-300 -z-10"></div>
             </div>
         </header>
         <div class="flex-1 overflow-y-auto pb-20 md:pb-0" style="max-width: 100vw">
@@ -213,6 +214,38 @@ export default{
 				return "Transaction History";
 			}
 			return route.at(-1)
+		},
+		currentPageTitle(){
+			const route = this.$route.path
+			if(route === '/' || route === '/wallet'){
+				return "Dashboard Overview"
+			}
+			if(route === '/transactions'){
+				return "Transaction History"
+			}
+			if(route === '/payments'){
+				return "Payment Management"
+			}
+			if(route === '/settings'){
+				return "Account Settings"
+			}
+			return "Wallet"
+		},
+		currentPageQuip(){
+			const route = this.$route.path
+			if(route === '/' || route === '/wallet'){
+				return "Manage your utilities"
+			}
+			if(route === '/transactions'){
+				return "Where money went 💸"
+			}
+			if(route === '/payments'){
+				return "Wallet's best friend 💳"
+			}
+			if(route === '/settings'){
+				return "Get personal ⚙️"
+			}
+			return "Ready to go!"
 		},
 		bgColor(){
 			return `#${APP_BG_2?.replace('#', '') || '1287c9'}`

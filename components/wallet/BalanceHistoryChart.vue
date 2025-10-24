@@ -1,116 +1,230 @@
 <template>
-    <Card class="group relative overflow-hidden  h-full bg-gradient-to-br from-white to-green-50/20 border border-green-200/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
+    <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
         <CardHeader class="pb-3">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors duration-300">
-                    <Icon name="lucide:trending-up" class="h-4 w-4 text-green-600"/>
+            <div class="flex items-center justify-between">
+                <div>
+                    <CardTitle class="text-lg font-semibold text-gray-800">Balance History</CardTitle>
+                    <CardDescription class="text-sm">Last 7 days balance changes</CardDescription>
                 </div>
-                <CardTitle class="text-lg font-bold text-gray-900">Balance History</CardTitle>
-            </div>
-        </CardHeader>
-        <CardContent>
-            <div class="space-y-4">
-                <!-- Period Summary -->
-                <div class="relative overflow-hidden bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50 p-4">
-                    <div class="flex items-center justify-between">
-                        <div class="space-y-1">
-                            <p class="text-xs font-medium text-gray-600">Period Growth</p>
-                            <p class="text-xl font-bold text-green-700">+350.00</p>
+                <div class="flex items-center gap-3 text-xs">
                             <div class="flex items-center gap-1">
-                                <div class="w-1.5 h-1.5 rounded-full bg-green-400"></div>
-                                <p class="text-xs text-gray-600">Positive trend</p>
-                            </div>
-                        </div>
-                        <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
-                            <Icon name="lucide:arrow-up-right" class="h-6 w-6 text-green-600"/>
-                        </div>
-                    </div>
-                    <!-- Subtle gradient overlay -->
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-green-100/20 pointer-events-none"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-gray-600">Deposits</span>
                 </div>
                 
-                <!-- Chart Area -->
-                <div class="h-48 relative bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200/50 p-4">
-                    <div v-if="isLoading" class="flex items-center justify-center h-full">
-                        <div class="flex flex-col items-center gap-3">
-                            <MyLoader />
-                            <p class="text-sm text-gray-500">Loading chart data...</p>
                         </div>
                     </div>
-                    <div v-else class="h-full">
-                        <LineChart
-                            :data="chartData"
-                            :categories="['balance']"
-                            index="date"
-                            :colors="['#10b981']"
-                            :curve="'monotone'"
-                            :grid="true"
-                            :y-axis="true"
-                            :x-axis="true"
-                            :tooltip="true"
-                            :animate="true"
-                            :value-formatter="(value) => formatAmount(value)"
-                            class="[&>svg]:stroke-border [&>svg]:stroke-[2]"
-                        />
+        </CardHeader>
+        <CardContent class="p-4 sm:p-6">
+            <div v-if="isLoading" class="py-8 flex justify-center">
+                <MyLoader />
+            </div>
+            <div v-else-if="chartData.length > 0" class="w-full">
+                <!-- ApexCharts Container -->
+                <div id="balance-history-chart" class="w-full h-[300px]"></div>
                     </div>
+            <div v-else class="text-center py-8">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Icon name="lucide:trending-up" class="w-8 h-8 text-gray-400" />
                 </div>
+                <p class="text-gray-600 font-medium">No balance data available</p>
+                <p class="text-xs text-gray-400 mt-1">Chart will appear when balance changes occur</p>
             </div>
         </CardContent>
     </Card>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { LineChart } from '@/components/ui/chart-line'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 
-const isLoading = ref(true)
-const chartData = ref([])
+const props = defineProps({
+    transactions: {
+        type: Array,
+        default: () => []
+    },
+    isLoading: {
+        type: Boolean,
+        default: false
+    }
+})
 
-function formatAmount(amount) {
-    return new Intl.NumberFormat('en-ZA', {
-        style: 'currency',
-        currency: 'ZAR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount)
-}
+const chart = ref(null)
 
-async function fetchBalanceHistory() {
-    isLoading.value = true
-    try {
-        // Generate sample data for the last 30 days
-        const today = new Date()
-        const sampleData = []
+const chartData = computed(() => {
+    if (!props.transactions || props.transactions.length === 0) return []
+    
+    // Group transactions by date
+    const groupedByDate = {}
+    
+    props.transactions.forEach(transaction => {
+        const date = new Date(transaction.created)
+        const dateKey = date.toISOString().split('T')[0]
         
-        for (let i = 29; i >= 0; i--) {
-            const date = new Date(today)
-            date.setDate(date.getDate() - i)
-            
-            // Generate realistic balance progression
-            const baseBalance = 1000
-            const variation = Math.sin(i * 0.2) * 200 + Math.random() * 100
-            const balance = Math.max(0, baseBalance + variation)
-            
-            sampleData.push({
-                date: date.toISOString().split('T')[0],
-                balance: Math.round(balance)
-            })
+        if (!groupedByDate[dateKey]) {
+            groupedByDate[dateKey] = {
+                date: dateKey,
+                deposits: 0,
+                withdrawals: 0
+            }
         }
         
-        chartData.value = sampleData
-    } catch (error) {
-        console.error('Error fetching balance history:', error)
-        useToast({
-            title: 'Error',
-            description: 'Failed to load balance history',
-            variant: 'destructive'
-        })
-    } finally {
-        isLoading.value = false
+        const amount = parseFloat(transaction.amount)
+        if (transaction.type === 'deposit') {
+            groupedByDate[dateKey].deposits += amount
+        } else {
+            groupedByDate[dateKey].withdrawals += amount
+        }
+    })
+    
+    // Convert to array and sort by date
+    const chartData = Object.values(groupedByDate)
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .map(day => ({
+            label: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            deposits: day.deposits.toFixed(2),
+            withdrawals: day.withdrawals.toFixed(2),
+            date: day.date
+        }))
+    
+    // Show last 7 days for better readability
+    return chartData.slice(-7)
+})
+
+const initializeChart = () => {
+    if (chartData.value.length === 0) return
+    
+    const chartElement = document.querySelector("#balance-history-chart")
+    if (!chartElement) return
+    
+    const options = {
+        chart: {
+            type: 'area',
+            height: 300,
+            toolbar: {
+                show: false
+            },
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 800
+            }
+        },
+        series: [
+            {
+                name: 'Deposits',
+                data: chartData.value.map(day => parseFloat(day.deposits)),
+                color: '#22c55e'
+            },
+            {
+                name: 'Withdrawals',
+                data: chartData.value.map(day => parseFloat(day.withdrawals)),
+                color: '#ef4444'
+            }
+        ],
+        xaxis: {
+            categories: chartData.value.map(day => day.label),
+            labels: {
+                style: {
+                    colors: '#6b7280',
+                    fontSize: '12px'
+                }
+            },
+            axisBorder: {
+                show: false
+            },
+            axisTicks: {
+                show: false
+            }
+        },
+        yaxis: {
+            labels: {
+                style: {
+                    colors: '#6b7280',
+                    fontSize: '12px'
+                },
+                formatter: function (value) {
+                    return 'R' + value.toFixed(0)
+                }
+            }
+        },
+        grid: {
+            borderColor: '#e5e7eb',
+            strokeDashArray: 4,
+            xaxis: {
+                lines: {
+                    show: false
+                }
+            },
+            yaxis: {
+                lines: {
+                    show: true
+                }
+            }
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.3,
+                opacityTo: 0.05,
+                stops: [0, 100]
+            }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        markers: {
+            size: 4,
+            strokeWidth: 2,
+            strokeColors: ['#22c55e', '#ef4444'],
+            fillColors: ['#22c55e', '#ef4444'],
+            hover: {
+                size: 6
+            }
+        },
+        tooltip: {
+            shared: true,
+            intersect: false,
+            style: {
+                fontSize: '12px'
+            },
+            y: {
+                formatter: function (value, { seriesIndex }) {
+                    return 'R' + value.toFixed(2)
+                }
+            }
+        },
+        legend: {
+            show: false
+        }
     }
+
+    if (chart.value) {
+        chart.value.destroy()
+    }
+
+    nextTick(() => {
+        chart.value = new ApexCharts(chartElement, options)
+        chart.value.render()
+    })
 }
 
 onMounted(() => {
-    fetchBalanceHistory()
+    nextTick(() => {
+        initializeChart()
+    })
 })
+
+onBeforeUnmount(() => {
+    if (chart.value) {
+        chart.value.destroy()
+    }
+})
+
+watch(chartData, () => {
+    nextTick(() => {
+        initializeChart()
+    })
+}, { deep: true })
 </script>

@@ -24,7 +24,7 @@
                     <span class="text-xs font-medium text-gray-600">Total Spent</span>
                 </div>
                 <p class="text-2xl font-bold text-gray-900">R {{ totalSpent }}</p>
-                <p class="text-xs text-gray-500 mt-1">Last 30 days</p>
+                <p class="text-xs text-gray-500 mt-1">Lifetime</p>
             </CardContent>
         </Card>
 
@@ -38,7 +38,7 @@
                     <span class="text-xs font-medium text-gray-600">Average</span>
                 </div>
                 <p class="text-2xl font-bold text-gray-900">R {{ averageTransaction }}</p>
-                <p class="text-xs text-gray-500 mt-1">Per transaction</p>
+                <p class="text-xs text-gray-500 mt-1">Lifetime average</p>
             </CardContent>
         </Card>
 
@@ -52,7 +52,7 @@
                     <span class="text-xs font-medium text-gray-600">Highest</span>
                 </div>
                 <p class="text-2xl font-bold" :class="highestUtility.textClass">{{ highestUtility.name }}</p>
-                <p class="text-xs text-gray-500 mt-1">R {{ highestUtility.amount }}</p>
+                <p class="text-xs text-gray-500 mt-1">R {{ highestUtility.amount }} lifetime</p>
             </CardContent>
         </Card>
 
@@ -66,15 +66,32 @@
                     <span class="text-xs font-medium text-gray-600">Lowest</span>
                 </div>
                 <p class="text-2xl font-bold" :class="lowestUtility.textClass">{{ lowestUtility.name }}</p>
-                <p class="text-xs text-gray-500 mt-1">R {{ lowestUtility.amount }}</p>
+                <p class="text-xs text-gray-500 mt-1">R {{ lowestUtility.amount }} lifetime</p>
             </CardContent>
         </Card>
     </div>
         <!-- My Meters Section -->
     <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
         <CardHeader>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
             <CardTitle class="text-lg font-semibold text-gray-800">My Meters</CardTitle>
             <CardDescription class="text-sm">Manage and purchase tokens for your utility meters</CardDescription>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-medium text-gray-700">Filter by Utility</label>
+                    <Select v-model="selectedMeterFilter" @update:modelValue="handleMeterFilterChange">
+                        <SelectTrigger class="w-full sm:w-48 bg-white/80 backdrop-blur-sm border-gray-200 shadow-sm">
+                            <SelectValue placeholder="All Meters" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Meters</SelectItem>
+                            <SelectItem value="Electricity">Electricity Only</SelectItem>
+                            <SelectItem value="Water">Water Only</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
         </CardHeader>
         <CardContent class="p-0">
             <div v-if="metersLoading" class="py-8 flex justify-center">
@@ -187,17 +204,15 @@
                 <div class="hidden md:block overflow-x-auto">
                     <div class="inline-block min-w-full align-middle">
                         <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                            <table class="min-w-[1200px] w-full">
+                            <table class="min-w-[1000px] w-full">
                                 <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                                     <tr>
-                                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[150px]">Date & Time</th>
-                                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[150px]">Service</th>
-                                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[150px]">Meter Number</th>
-                                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[120px]">Remaining</th>
-                                        <th class="text-left py-3 px-4 text-xs font-semibold text-gray-700 w-[100px]">Battery</th>
-                                        <th class="text-center py-3 px-4 text-xs font-semibold text-gray-700 w-[100px]">State</th>
-                                        <th class="text-right py-3 px-4 text-xs font-semibold text-gray-700 w-[120px]">Amount</th>
-                                        <th class="text-center py-3 px-4 text-xs font-semibold text-gray-700 w-[100px]">Status</th>
+                                        <th class="text-left py-3 px-2 text-xs font-semibold text-gray-700 w-[140px]">Date & Time</th>
+                                        <th class="text-left py-3 px-2 text-xs font-semibold text-gray-700 w-[140px]">Service</th>
+                                        <th class="text-left py-3 px-2 text-xs font-semibold text-gray-700 w-[140px]">Meter Number</th>
+                                        <th class="text-left py-3 px-2 text-xs font-semibold text-gray-700 w-[90px]">Battery</th>
+                                        <th class="text-center py-3 px-2 text-xs font-semibold text-gray-700 w-[90px]">State</th>
+                                        <th class="text-right py-3 px-2 text-xs font-semibold text-gray-700 w-[110px]">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100 bg-white">
@@ -205,14 +220,14 @@
                                         :key="transaction.id"
                                         class="hover:bg-blue-50/50 transition-colors duration-200"
                                     >
-                                        <td class="py-3 px-4 whitespace-nowrap">
+                                        <td class="py-3 px-2 whitespace-nowrap">
                                             <p class="text-sm font-medium text-gray-900">{{ formatDate(transaction.created) }}</p>
                                             <p class="text-xs text-gray-500">{{ formatTime(transaction.created) }}</p>
                                         </td>
-                                        <td class="py-3 px-4 whitespace-nowrap">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border" :class="getUtilityBg(transaction.utilityType)">
-                                                    <Icon :name="getUtilityIcon(transaction.utilityType)" class="w-5 h-5" :class="getUtilityIconClass(transaction.utilityType)" />
+                                        <td class="py-3 px-2 whitespace-nowrap">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm border" :class="getUtilityBg(transaction.utilityType)">
+                                                    <Icon :name="getUtilityIcon(transaction.utilityType)" class="w-4 h-4" :class="getUtilityIconClass(transaction.utilityType)" />
                                                 </div>
                                                 <div>
                                                     <span class="text-sm font-semibold text-gray-900">{{ transaction.utilityType }}</span>
@@ -220,13 +235,10 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="py-3 px-4 whitespace-nowrap">
+                                        <td class="py-3 px-2 whitespace-nowrap">
                                             <p class="text-sm text-gray-900 font-mono">{{ transaction.meterNumber }}</p>
-                                        </td>
-                                        
-                                        <!-- Remaining Units Column -->
-                                        <td class="py-3 px-4 whitespace-nowrap">
-                                            <div v-if="getRemainingUnits(transaction)" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border shadow-sm"
+                                            <div v-if="getRemainingUnits(transaction)" class="mt-1">
+                                                <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border shadow-sm"
                                                  :class="getRemainingUnitsBg(transaction.utilityType)">
                                                 <div class="w-1.5 h-1.5 rounded-full animate-pulse"
                                                      :class="getRemainingUnitsDot(transaction.utilityType)"></div>
@@ -235,12 +247,12 @@
                                                     {{ getRemainingUnits(transaction) }}
                                                 </span>
                                             </div>
-                                            <span v-else class="text-xs text-gray-400">No data</span>
+                                            </div>
                                         </td>
                                         
                                         <!-- Battery Column -->
-                                        <td class="py-3 px-4 whitespace-nowrap">
-                                            <div v-if="hasValidBattery(transaction)" class="flex items-center gap-1.5">
+                                        <td class="py-3 px-2 whitespace-nowrap">
+                                            <div v-if="hasValidBattery(transaction)" class="flex items-center gap-1">
                                                 <Icon name="lucide:battery" 
                                                       :class="getBatteryColor(convertVoltageToBattery(transaction.latestReading.meterVoltage.Voltage))"
                                                       class="w-3 h-3"/>
@@ -256,7 +268,7 @@
                                         </td>
                                         
                                         <!-- State Column -->
-                                        <td class="py-3 px-4 text-center whitespace-nowrap">
+                                        <td class="py-3 px-2 text-center whitespace-nowrap">
                                             <div v-if="hasValidState(transaction)" class="inline-flex items-center gap-1 px-2 py-1 rounded-md"
                                                  :class="getStateBg(transaction.latestReading.meterState.State)">
                                                 <div class="w-1.5 h-1.5 rounded-full"
@@ -269,16 +281,16 @@
                                             <span v-else class="text-xs text-gray-400">No data</span>
                                         </td>
                                       
-                                        <td class="py-3 px-4 text-right whitespace-nowrap">
+                                        <td class="py-3 px-2 text-right whitespace-nowrap">
                                             <p class="text-sm font-semibold" :class="getAmountClass(transaction.utilityType)">
                                                 R {{ parseFloat(transaction.amount).toFixed(2) }}
                                             </p>
-                                        </td>
-                                        <td class="py-3 px-4 text-center whitespace-nowrap">
-                                            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200 shadow-sm">
-                                                <Icon name="lucide:check-circle" class="w-3 h-3 mr-1" />
-                                                Success
-                                            </span>
+                                            <p v-if="transaction.unitsIssued" class="text-xs text-gray-600 font-medium mt-1">
+                                                {{ transaction.unitsIssued }} units
+                                            </p>
+                                            <p v-if="transaction.delimitedTokenNumber" class="text-xs text-gray-500 font-mono mt-1">
+                                                {{ transaction.delimitedTokenNumber }}
+                                            </p>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -308,9 +320,17 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
+                                <div class="text-right">
                                 <p class="text-sm font-bold" :class="getAmountClass(transaction.utilityType)">
                                     R {{ parseFloat(transaction.amount).toFixed(2) }}
                                 </p>
+                                    <p v-if="transaction.unitsIssued" class="text-xs text-gray-600 font-medium mt-1">
+                                        {{ transaction.unitsIssued }} units
+                                    </p>
+                                    <p v-if="transaction.delimitedTokenNumber" class="text-xs text-gray-500 font-mono mt-1">
+                                        {{ transaction.delimitedTokenNumber }}
+                                    </p>
+                                </div>
                                 <Icon 
                                     :name="expandedRows.includes(transaction.id) ? 'lucide:chevron-up' : 'lucide:chevron-down'" 
                                     class="w-5 h-5 text-gray-500 transition-colors duration-200"
@@ -322,12 +342,9 @@
                         <div v-if="expandedRows.includes(transaction.id)" class="mt-4 space-y-3 bg-gray-50 p-3 rounded-lg">
                             <div class="flex justify-between">
                                 <span class="text-xs text-gray-600">Meter Number</span>
+                                <div class="text-right">
                                 <span class="text-xs font-medium text-gray-900 font-mono">{{ transaction.meterNumber }}</span>
-                            </div>
-                            
-                            <!-- Remaining Units - Enhanced -->
-                            <div v-if="getRemainingUnits(transaction)" class="flex justify-between items-center">
-                                <span class="text-xs text-gray-600">Remaining</span>
+                                    <div v-if="getRemainingUnits(transaction)" class="mt-1">
                                 <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border shadow-sm"
                                      :class="getRemainingUnitsBg(transaction.utilityType)">
                                     <div class="w-1.5 h-1.5 rounded-full animate-pulse"
@@ -336,8 +353,11 @@
                                           :class="getRemainingUnitsText(transaction.utilityType)">
                                         {{ getRemainingUnits(transaction) }}
                                     </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            
                             
                             <!-- Battery Status - Enhanced -->
                             <div v-if="hasValidBattery(transaction)" class="flex justify-between items-center">
@@ -375,13 +395,6 @@
                                 <span class="text-xs font-medium text-gray-900">{{ formatTime(transaction.created) }}</span>
                             </div>
                             
-                            <div class="flex justify-between">
-                                <span class="text-xs text-gray-600">Status</span>
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200 shadow-sm">
-                                    <Icon name="lucide:check-circle" class="w-3 h-3 mr-1" />
-                                    Success
-                                </span>
-                            </div>
                             <div v-if="transaction.token" class="pt-2 border-t border-gray-200">
                                 <span class="text-xs text-gray-600">Token</span>
                                 <p class="text-xs font-mono text-gray-900 mt-1 break-all">{{ transaction.token }}</p>
@@ -467,11 +480,14 @@ definePageMeta({
                 totalAmount: 0,
                 electricityTotal: 0,
                 waterTotal: 0
-            }
+            },
+            // Meter filter
+            selectedMeterFilter: 'all',
+            allMeters: []
         }
     },
     methods: {
-        async fetchTransactionsData() {
+      async fetchTransactionsData() {
         this.isLoading = true;        
         try {
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`, {
@@ -486,6 +502,17 @@ definePageMeta({
                     electricityTotal: parseFloat(response.electricityTotal || 0),
                     waterTotal: parseFloat(response.waterTotal || 0)
                 }
+         
+                // Add unitsIssued to each transaction
+                this.transactions = this.transactions.map(transaction => {
+                    const unitsIssued = JSON.parse(transaction.vendResponse).listOfTokenTransactions[0]?.tokens[0]?.units || ""
+                    const delimitedTokenNumber = JSON.parse(transaction.vendResponse).listOfTokenTransactions[0]?.tokens[0]?.delimitedTokenNumber || ""
+                    return {
+                        ...transaction,
+                        unitsIssued: unitsIssued,
+                        delimitedTokenNumber:delimitedTokenNumber
+                    }
+                })
          
                 // Prepare chart data
                 this.chartData = this.transactions.map(t => ({
@@ -620,6 +647,7 @@ definePageMeta({
             this.metersLoading = true;
             try {
                 const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
+                this.allMeters = response.meters;
                 this.meters = response.meters;
             } catch (error) {
                 console.error('Error fetching meters:', error);
@@ -636,6 +664,22 @@ definePageMeta({
         openPurchaseDialog(meter) {
             this.selectedMeterForPurchase = meter;
             this.showPurchaseDialog = true;
+        },
+        
+        // Meter filter method
+        handleMeterFilterChange(filter) {
+            this.selectedMeterFilter = filter;
+            this.filterMeters();
+        },
+
+        filterMeters() {
+            if (this.selectedMeterFilter === 'all') {
+                this.meters = [...this.allMeters];
+            } else {
+                this.meters = this.allMeters.filter(meter => 
+                    meter.utilityType === this.selectedMeterFilter
+                );
+            }
         },
         
         getServiceIcon(serviceType) {
