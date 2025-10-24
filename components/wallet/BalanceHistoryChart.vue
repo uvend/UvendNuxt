@@ -4,15 +4,13 @@
             <div class="flex items-center justify-between">
                 <div>
                     <CardTitle class="text-lg font-semibold text-gray-800">Balance History</CardTitle>
-                    <CardDescription class="text-sm">Last 7 days balance changes</CardDescription>
                 </div>
                 <div class="flex items-center gap-3 text-xs">
-                            <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1">
                         <div class="w-3 h-3 rounded-full bg-green-500"></div>
                         <span class="text-gray-600">Deposits</span>
+                    </div>
                 </div>
-                
-                        </div>
                     </div>
         </CardHeader>
         <CardContent class="p-4 sm:p-6">
@@ -35,7 +33,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from 'vue'
+import ApexCharts from 'apexcharts'
 
 const props = defineProps({
     transactions: {
@@ -53,6 +52,11 @@ const chart = ref(null)
 const chartData = computed(() => {
     if (!props.transactions || props.transactions.length === 0) return []
     
+    // Debug: Log the first transaction to see its structure
+    if (props.transactions.length > 0) {
+        console.log('First transaction structure:', props.transactions[0])
+    }
+    
     // Group transactions by date
     const groupedByDate = {}
     
@@ -63,17 +67,17 @@ const chartData = computed(() => {
         if (!groupedByDate[dateKey]) {
             groupedByDate[dateKey] = {
                 date: dateKey,
-                deposits: 0,
-                withdrawals: 0
+                deposits: 0
             }
         }
         
-        const amount = parseFloat(transaction.amount)
-        if (transaction.type === 'deposit') {
+        const amount = parseFloat(transaction.amount/100)
+        
+        // Debug: Log transaction details
+        
+        
+        
             groupedByDate[dateKey].deposits += amount
-        } else {
-            groupedByDate[dateKey].withdrawals += amount
-        }
     })
     
     // Convert to array and sort by date
@@ -82,12 +86,13 @@ const chartData = computed(() => {
         .map(day => ({
             label: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             deposits: day.deposits.toFixed(2),
-            withdrawals: day.withdrawals.toFixed(2),
             date: day.date
         }))
     
     // Show last 7 days for better readability
-    return chartData.slice(-7)
+    const finalData = chartData.slice(-7)
+    console.log('Final chart data:', finalData)
+    return finalData
 })
 
 const initializeChart = () => {
@@ -114,11 +119,6 @@ const initializeChart = () => {
                 name: 'Deposits',
                 data: chartData.value.map(day => parseFloat(day.deposits)),
                 color: '#22c55e'
-            },
-            {
-                name: 'Withdrawals',
-                data: chartData.value.map(day => parseFloat(day.withdrawals)),
-                color: '#ef4444'
             }
         ],
         xaxis: {
@@ -177,8 +177,8 @@ const initializeChart = () => {
         markers: {
             size: 4,
             strokeWidth: 2,
-            strokeColors: ['#22c55e', '#ef4444'],
-            fillColors: ['#22c55e', '#ef4444'],
+            strokeColors: ['#22c55e'],
+            fillColors: ['#22c55e'],
             hover: {
                 size: 6
             }

@@ -78,18 +78,26 @@
             <CardTitle class="text-lg font-semibold text-gray-800">My Meters</CardTitle>
             <CardDescription class="text-sm">Manage and purchase tokens for your utility meters</CardDescription>
                 </div>
-                <div class="flex flex-col gap-2">
-                    <label class="text-xs font-medium text-gray-700">Filter by Utility</label>
-                    <Select v-model="selectedMeterFilter" @update:modelValue="handleMeterFilterChange">
-                        <SelectTrigger class="w-full sm:w-48 bg-white/80 backdrop-blur-sm border-gray-200 shadow-sm">
-                            <SelectValue placeholder="All Meters" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Meters</SelectItem>
-                            <SelectItem value="Electricity">Electricity Only</SelectItem>
-                            <SelectItem value="Water">Water Only</SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs font-medium text-gray-700">Filter by Utility</label>
+                        <Select v-model="selectedMeterFilter" @update:modelValue="handleMeterFilterChange">
+                            <SelectTrigger class="w-full sm:w-48 bg-white/80 backdrop-blur-sm border-gray-200 shadow-sm">
+                                <SelectValue placeholder="All Meters" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Meters</SelectItem>
+                                <SelectItem value="Electricity">Electricity Only</SelectItem>
+                                <SelectItem value="Water">Water Only</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs font-medium text-gray-700">Actions</label>
+                        <WalletPopup buttonLabel="Add Meter">
+                            <WalletAddMeter @success="fetchMeters()"/>
+                        </WalletPopup>
+                    </div>
                 </div>
             </div>
         </CardHeader>
@@ -443,6 +451,7 @@
             </div>
         </DialogContent>
     </Dialog>
+    
 </div>
 </template>
 
@@ -665,6 +674,7 @@ definePageMeta({
             this.selectedMeterForPurchase = meter;
             this.showPurchaseDialog = true;
         },
+        
         
         // Meter filter method
         handleMeterFilterChange(filter) {
