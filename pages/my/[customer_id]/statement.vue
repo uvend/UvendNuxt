@@ -37,7 +37,7 @@
                     class="flex items-center gap-2 rounded-xl"
                 >
                     <Icon :name="showStatementSummary ? 'lucide:eye-off' : 'lucide:eye'" class="w-4 h-4" />
-                    {{ showStatementSummary ? 'Hide' : 'Show' }} Summary
+                    {{ showStatementSummary ? 'Show Statement Details' : 'Show Statement Summary' }} 
                 </Button>
             </div>
 
@@ -64,11 +64,11 @@
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Managed Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.managedAmount*100)/100 }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.managedAmount) }}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Non Managed Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.nonManagedAmount*100)/100 }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.nonManagedAmount) }}</span>
                                 </div>
                             </div>
 
@@ -76,11 +76,11 @@
                             <div class="space-y-4">
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Service Percentage</span>
-                                    <span class="text-sm font-semibold text-gray-900">{{ statement.commissionPerc }}%</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ formatCurrency(statement.commissionPerc) }}%</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Service Fee</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.commissionAmount*100)/100 }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.commissionAmount) }}</span>
                                 </div>
                                 <!-- <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Tenant Fee</span>
@@ -88,7 +88,7 @@
                                 </div> -->
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Total Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.totalValue*100)/100 }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.totalValue) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -100,7 +100,7 @@
                                 <div v-for="stat in statement.stats" :key="stat.utilityType" class="bg-white rounded-lg p-3 border border-gray-200">
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm font-medium text-gray-700">{{ stat.utilityType }}</span>
-                                        <span class="text-sm font-semibold text-gray-900">R {{ stat.tenderedamount }}</span>
+                                        <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(stat.tenderedamount) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -158,7 +158,7 @@
                                     <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
                                     <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
                                 </td>
-                                <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
+                                <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ formatCurrency(transaction.managedTenderAmount) }}</td>
                                 <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
                                     <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
                                     <div class="text-xs text-gray-400">{{ formattedDate(transaction.transactionDate) }}</div>
@@ -892,6 +892,10 @@ export default{
             this.$nextTick(() => {
                 this.performFiltering();
             });
+        },
+        formatCurrency(amount) {
+            // Format amount to show exactly 2 decimal places
+            return parseFloat(amount || 0).toFixed(2);
         }
     },
     async mounted(){
