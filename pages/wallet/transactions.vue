@@ -756,7 +756,7 @@ definePageMeta({
             } else if (meter.utilityType === 'Water') {
                 const litres = meter.latestReading.remainingTokens["Remaining Litres"];
                 if (litres !== null && litres !== undefined && litres >= 0) {
-                    return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
+                    return `${(parseFloat(litres) ).toFixed(2)} L`;
                 }
             }
             
