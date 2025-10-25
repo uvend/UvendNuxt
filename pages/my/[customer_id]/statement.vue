@@ -63,12 +63,12 @@
                                     <span class="text-sm font-semibold text-gray-900">{{ statement.startDate }} - {{ statement.endDate }}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-sm font-medium text-gray-700">Managed Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.managedAmount) }}</span>
+                                    <span class="text-sm font-medium text-gray-700">Amount Due To Customer</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.totalDueToCustomer) }}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-sm font-medium text-gray-700">Non Managed Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.nonManagedAmount) }}</span>
+                                    <span class="text-sm font-medium text-gray-700">Amount Due To Uvend</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.totalDueToUvend) }}</span>
                                 </div>
                             </div>
 
@@ -79,7 +79,7 @@
                                     <span class="text-sm font-semibold text-gray-900">{{ formatCurrency(statement.commissionPerc) }}%</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-sm font-medium text-gray-700">Service Fee</span>
+                                    <span class="text-sm font-medium text-gray-700">Vend Fee</span>
                                     <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.commissionAmount) }}</span>
                                 </div>
                                 <!-- <div class="flex justify-between items-center py-2 border-b border-gray-200">
@@ -87,8 +87,8 @@
                                     <span class="text-sm font-semibold text-gray-900">R {{ Math.round(statement.surchargeAmount) }}</span>
                                 </div> -->
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-sm font-medium text-gray-700">Total Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.totalValue) }}</span>
+                                    <span class="text-sm font-medium text-gray-700">Total Vend Amount</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.totalVendAMount) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -356,6 +356,10 @@ export default{
                 surchargePerc: null,
                 surchargeAmount: null,
                 refund: null,
+                totalVendAMount:null,
+                totalDueToCustomer:null,
+                totalDueToUvend:null,
+                vendFee:null,
                 stats: []
             },
             transactionResponseData: null,
@@ -491,6 +495,9 @@ export default{
             this.statement.startDate = this.dateRange.start
             this.statement.endDate = this.dateRange.end
             this.statement.name = this.customer
+            this.statement.totalVendAMount = this.summary.vendamount
+            this.statement.totalDueToCustomer = this.summary.vendRefund
+            this.statement.totalDueToUvend = this.summary.nonManagedTenderedAmountToVendor
 
             // Clear existing stats before adding new ones
             this.statement.stats = []
