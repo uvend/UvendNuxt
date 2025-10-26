@@ -24,7 +24,18 @@
     </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-0">
-    <RangeCalendar v-model="value" initial-focus :number-of-months="2" @update:start-value="(startDate) => value.start = startDate" />
+    <RangeCalendar v-model="value" initial-focus :number-of-months="2" @update:start-value="(startDate) => value.start = startDate">
+      <template #heading-value="{ headingValue }">
+        <div class="flex items-center gap-2">
+          <select v-model="internalSelectedMonth" @change="onMonthChange" class="border rounded px-2 py-1">
+            <option v-for="(month, idx) in monthsList" :key="month" :value="idx">{{ month }}</option>
+          </select>
+          <select v-model="internalSelectedYear" @change="onYearChange" class="border rounded px-2 py-1">
+            <option v-for="year in yearsList" :key="year" :value="year">{{ year }}</option>
+          </select>
+        </div>
+      </template>
+    </RangeCalendar>
     </PopoverContent>
 </Popover>
 </template>
@@ -33,14 +44,30 @@
 export default{
     props: {
         modelValue: Object,
-        months: Number
+        months: Number,
+        selectedMonth: {
+            type: Number,
+            default: null
+        },
+        selectedYear: {
+            type: Number,
+            default: null
+        }
     },
     data(){
+        const today = new Date();
         return {
             value : {
                 start: null,
                 end: null
-            }
+            },
+            internalSelectedMonth: this.selectedMonth !== null ? this.selectedMonth : today.getMonth(),
+            internalSelectedYear: this.selectedYear !== null ? this.selectedYear : today.getFullYear(),
+            monthsList: [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ],
+            yearsList: Array.from({length: 30}, (_, i) => today.getFullYear() - i)
         }
     },
     methods: {
@@ -66,11 +93,35 @@ export default{
                 month: date.getMonth() + 1,
                 day: date.getDate()
             }
+        },
+        onMonthChange() {
+            const newDate = new Date(this.internalSelectedYear, this.internalSelectedMonth, 1);
+            this.value.start = newDate;
+        },
+        onYearChange() {
+            const newDate = new Date(this.internalSelectedYear, this.internalSelectedMonth, 1);
+            this.value.start = newDate;
         }
     },
     mounted(){
     },
     watch:{
+        internalSelectedMonth(newVal) {
+            this.$emit('update:selectedMonth', newVal);
+        },
+        internalSelectedYear(newVal) {
+            this.$emit('update:selectedYear', newVal);
+        },
+        selectedMonth(newVal) {
+            if (newVal !== this.internalSelectedMonth) {
+                this.internalSelectedMonth = newVal;
+            }
+        },
+        selectedYear(newVal) {
+            if (newVal !== this.internalSelectedYear) {
+                this.internalSelectedYear = newVal;
+            }
+        },
         value(newValue){
             console.log(newValue)
             const value = {

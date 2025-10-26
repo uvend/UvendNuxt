@@ -8,24 +8,24 @@
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-3">
             <WalletCardBalance :addMoney="true"/>
             
-            <Card class="p-4 bg-white border shadow-sm">
+            <Card class="p-4 bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
               <div class="flex flex-col">
                   <div class="flex justify-between items-center mb-2">
-                    <p class="text-gray-600 text-sm">Active Meters</p>
+                    <p class="text-gray-600 text-base font-semibold">Active Meters</p>
                     <WalletPopup buttonLabel="Add Meter">
                       <WalletAddMeter @success="fetchDashboardData()"/>
                     </WalletPopup>
                   </div>
-                  <p class="text-2xl font-bold">{{ activeMeters }}</p>
-                  <p class="text-sm text-muted-foreground">Total meters: {{ totalMeters }}</p>
+                  <p class="text-4xl font-black">{{ activeMeters }}</p>
+                  <p class="text-base font-semibold text-muted-foreground">Total meters: {{ totalMeters }}</p>
               </div>
             </Card>
             
-            <Card class="p-4 bg-white border shadow-sm">
+            <Card class="p-4 bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
               <div class="flex flex-col">
-                  <p class="text-gray-600 text-sm">Total Transactions</p>
-                  <p class="text-2xl font-bold">{{ totalTransactions }}</p>
-                  <p class="text-sm text-muted-foreground">Last 30 days</p>
+                  <p class="text-gray-600 text-base font-semibold">Total Transactions</p>
+                  <p class="text-4xl font-black">{{ totalTransactions }}</p>
+                  <p class="text-base font-semibold text-muted-foreground">Last 30 days</p>
               </div>
             </Card>
         </div>
@@ -33,10 +33,10 @@
         <!-- Meter Vending Statistics -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <!-- Bar Chart -->
-            <Card class="bg-white border shadow-sm">              
+            <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">              
                 <CardHeader>
-                    <CardTitle>Meter Vending Distribution</CardTitle>
-                    <CardDescription>Vending amount by meter</CardDescription>
+                    <CardTitle class="text-xl font-black">Meter Vending Distribution</CardTitle>
+                    <CardDescription class="text-base font-semibold">Vending amount by meter</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div v-if="isLoading" class="py-8 flex justify-center">
@@ -67,17 +67,17 @@
                             }"
                         />
                     </div>
-                    <div v-else class="py-8 text-center text-gray-500">
+                    <div v-else class="py-8 text-center text-gray-500 text-base font-semibold">
                         No transaction data available
                     </div>
                 </CardContent>
             </Card>
 
             <!-- List View -->
-            <Card class="bg-white border shadow-sm">
+            <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardHeader>
-                    <CardTitle>Top Vending Meters</CardTitle>
-                    <CardDescription>Ranked by vending amount</CardDescription>
+                    <CardTitle class="text-xl font-black">Top Vending Meters</CardTitle>
+                    <CardDescription class="text-base font-semibold">Ranked by vending amount</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div v-if="isLoading" class="py-8 flex justify-center">
@@ -86,20 +86,20 @@
                     <div v-else-if="meterStats.length > 0" class="divide-y">
                         <div v-for="(meter, index) in meterStats" 
                              :key="meter.name"
-                             class="py-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
+                             class="py-3 flex items-center justify-between hover:bg-blue-50/50 cursor-pointer transition-colors duration-200"
                              >
                             <div class="flex items-center gap-3">
                                 <div>
-                                    <p class="font-medium">{{ meter.name }}</p>
-                                    <p class="text-sm text-gray-500">
+                                    <p class="font-black text-lg">{{ meter.name }}</p>
+                                    <p class="text-base font-semibold text-gray-500">
                                         {{ formatAmount(meter.amount) }}
-                                        <span class="text-xs text-gray-400 ml-2">({{ meter.transactionCount }} {{ meter.transactionCount === 1 ? 'purchase' : 'purchases' }})</span>
+                                        <span class="text-sm font-semibold text-gray-400 ml-2">({{ meter.transactionCount }} {{ meter.transactionCount === 1 ? 'purchase' : 'purchases' }})</span>
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div v-else class="py-8 text-center text-gray-500">
+                    <div v-else class="py-8 text-center text-gray-500 text-base font-semibold">
                         No transaction data available
                     </div>
                 </CardContent>

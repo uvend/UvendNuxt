@@ -37,6 +37,10 @@
                             <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
                             <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
                         </div>
+                        <Button variant="outline" @click="printBatches()" class="flex items-center gap-2">
+                            <Icon name="lucide:printer" class="w-4 h-4" />
+                            Print
+                        </Button>
                         <MyPaymentSortPopover />
                     </div>
                 </div>
@@ -129,6 +133,136 @@ export default{
                 month: 'short',
                 year: 'numeric'
             });
+        },
+        async printBatches() {
+            try {
+                // Show loading toast
+                this.$toast({
+                    title: 'Generating PDF',
+                    description: 'Please wait while we create your batch report...',
+                    variant: "default"
+                });
+                
+                // Generate PDF
+                await this.generateBatchPDF();
+                
+                // Show success toast
+                this.$toast({
+                    title: 'PDF Generated',
+                    description: 'Your batch report has been downloaded',
+                    variant: "success"
+                });
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                this.$toast({
+                    title: 'PDF Error',
+                    description: 'Failed to generate PDF report',
+                    variant: "destructive"
+                });
+            }
+        },
+        async generateBatchPDF() {
+            // Dynamically import jsPDF to avoid SSR issues
+            const { jsPDF } = await import('jspdf');
+            const { autoTable } = await import('jspdf-autotable');
+            
+            const currentDate = new Date().toLocaleDateString('en-ZA', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Calculate totals
+            const totalAmount = this.batches.reduce((sum, batch) => {
+                return sum + (parseFloat(batch.payeePayOutAmount) || 0);
+            }, 0).toFixed(2);
+            
+            // Generate status summary
+            const statusSummary = this.selectedStatus === -1 ? 'All Statuses' : 
+                this.status.find(s => s.value === this.selectedStatus)?.label || 'Unknown Status';
+            
+            // Create PDF document
+            const doc = new jsPDF();
+            
+            // Add header
+            doc.setFontSize(20);
+            doc.text('Batch Payment Report', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${currentDate}`, 20, 35);
+            doc.text(`Period: ${this.rangeStart} - ${this.rangeEnd}`, 20, 42);
+            doc.text(`Status Filter: ${statusSummary}`, 20, 49);
+            
+            // Add summary
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Summary:', 20, 65);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Total Batches: ${this.batches.length}`, 20, 75);
+            doc.text(`Total Amount: R ${totalAmount}`, 20, 82);
+            
+            // Prepare table data
+            const tableData = this.batches.map(batch => [
+                batch.batchPaymentID || 'N/A',
+                this.formatDate(batch.batchSubmissionDate),
+                this.getStatusLabel(batch.batchPaymentState),
+                batch.paymentCount || 0,
+                `R ${(parseFloat(batch.payeePayOutAmount) || 0).toFixed(2)}`,
+                batch.batchComment || ''
+            ]);
+            
+            // Add total row
+            tableData.push(['', '', 'TOTAL', this.batches.length, `R ${totalAmount}`, '']);
+            
+            // Add table
+            autoTable(doc, {
+                head: [['Batch ID', 'Submission Date', 'Status', 'Payments', 'Amount', 'Comments']],
+                body: tableData,
+                startY: 90,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 3
+                },
+                headStyles: {
+                    fillColor: [66, 66, 66],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                columnStyles: {
+                    4: { halign: 'right' } // Amount column right-aligned
+                },
+                didParseCell: function(data) {
+                    // Make total row bold
+                    if (data.row.index === tableData.length - 1) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fillColor = [240, 240, 240];
+                    }
+                }
+            });
+            
+            // Generate filename
+            const filename = `batch_report_${new Date().toISOString().split('T')[0]}.pdf`;
+            
+            // Save PDF
+            doc.save(filename);
+        },
+        formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString('en-ZA', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        },
+        getStatusLabel(statusValue) {
+            const status = this.status.find(s => s.value === statusValue);
+            return status ? status.label : 'Unknown';
         },
     },
     async mounted(){

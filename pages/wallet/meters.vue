@@ -14,10 +14,10 @@
       <div>
       </div>
       <div class="flex flex-col gap-2">
-        <Card class="bg-white border shadow-sm p-4">
+        <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 p-4">
           <CardHeader>
-            <CardTitle>Transaction History</CardTitle>
-            <CardDescription>Daily vending amounts</CardDescription>
+            <CardTitle class="text-xl font-black">Transaction History</CardTitle>
+            <CardDescription class="text-base font-semibold">Daily vending amounts</CardDescription>
           </CardHeader>
           <CardContent>
             <div class="h-[400px]">
@@ -37,7 +37,7 @@
       </div>
     </div>
     <div v-else>
-      <Card v-if="isLoading" class="bg-white border shadow-sm w-full">              
+      <Card v-if="isLoading" class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg w-full">              
         <CardContent class="p-0">
               <div  class="py-8 flex justify-center">
                   <MyLoader />
@@ -48,7 +48,7 @@
       <div v-if="meters" v-for="meter in meters">
         <WalletCardMeter :meter="meter" @click="selectedMeter = meter"/>
       </div>
-        <Card v-else class="py-8 text-center text-gray-500">
+        <Card v-else class="py-8 text-center text-gray-500 text-base font-semibold bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg">
             No meters found
         </Card>
       </div>
@@ -138,7 +138,7 @@
         this.graphTransactions = Array.from(transactionsByDate.values())
           .sort((a, b) => new Date(a.date) - new Date(b.date))
 
-        this.meterTransactions = response.transactions
+        this.meterTransactions = response.transactions.reverse()
       },
       async getMeterInfo(){
         const meterNumber = this.selectedMeter.meterNumber;

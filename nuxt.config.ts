@@ -37,6 +37,7 @@ export default defineNuxtConfig({
       APP_FONT_COLOR_2: JSON.stringify(process.env.APP_FONT_COLOR_2 || ''),
       APP_FONT_COLOR_3: JSON.stringify(process.env.APP_FONT_COLOR_3 || ''),
       APP_ENV: JSON.stringify(process.env.APP_ENV || ''),
+      CUSTOMER_API: JSON.stringify(process.env.CUSTOMER_API || ''),
     }
   },
   ssr: false,// Not required in Tailwind 3+, but useful for older versions
@@ -56,5 +57,29 @@ export default defineNuxtConfig({
         }
       ]
     }
+  },
+  runtimeConfig: {
+    // Private keys are only available on the server
+    // apiSecret: '123'
+
+    // Public keys that are exposed to the client
+    public: {
+      APP_ENV: process.env.APP_ENV || 'default'
+    }
+  },
+  routeRules: {
+    '/registration/**': { 
+      headers: {
+        'x-middleware-cache': 'no-cache'
+      }
+    }
+  },
+  router: {
+    options: {
+      sensitive: false // Make routes case-insensitive
+    }
+  },
+  experimental: {
+    payloadExtraction: false
   }
 })

@@ -2,30 +2,24 @@
     <Card class="p-4 hover:bg-gray-50 transition-colors" @click="togglePopup">
         <div class="card-grid gap-4">
             <div class="space-y-1">
-                <p class="text-sm text-muted-foreground">Meter Number</p>
-                <p class="font-medium">{{ data.meterNumber }}</p>
+                <p class="text-base font-semibold text-muted-foreground">Meter Number</p>
+                <p class="font-black text-lg">{{ data.meterNumber }}</p>
             </div>
             <div class="space-y-1">
-                <p class="">Token</p>
-                <p v-for="token in data.vendResponse.listOfTokenTransactions">
-                    <div v-for="tokens in token.tokens">
-                        <span v-for="keys in tokens.tokenKeys">
-                            <span class="font-medium">{{ keys }} &nbsp;</span>
-                        </span>
-                    </div>
-                </p>
+                <p class="text-base font-semibold">Token</p>
+                <p class="font-black text-lg">{{ vendToken }}</p>
             </div>
             <div class="text-right space-y-1">
-                <p class="text-sm text-muted-foreground">Amount</p>
-                <p class="font-medium">R {{ formatAmount(data.amount) }}</p>
+                <p class="text-base font-semibold text-muted-foreground">Amount</p>
+                <p class="font-black text-lg">R {{ formatAmount(data.amount) }}</p>
             </div>
             <div class="text-right space-y-1">
-                <p class="text-sm text-muted-foreground">Type</p>
-                <p class="font-medium">{{ formatUtilityType(data.utilityType) }}</p>
+                <p class="text-base font-semibold text-muted-foreground">Type</p>
+                <p class="font-black text-lg">{{ formatUtilityType(data.utilityType) }}</p>
             </div>
             <div class="text-right space-y-1">
-                <p class="text-sm text-muted-foreground">Date</p>
-                <p class="font-medium">{{ formattedDate(data.created) }}</p>
+                <p class="text-base font-semibold text-muted-foreground">Date</p>
+                <p class="font-black text-lg">{{ formattedDate(data.created) }}</p>
             </div>
         </div>
     </Card>
@@ -76,6 +70,17 @@ export default{
         },
         togglePopup(){
             this.isOpen = !this.isOpen;
+        }
+    },
+    computed:{
+        vendToken(){
+            if(this.data.vendResponse){
+                console.log(this.data.vendResponse)
+                var vendResponse = JSON.parse(this.data.vendResponse)
+                var tokenKeys = vendResponse.listOfTokenTransactions[0].tokens[0].tokenKeys
+                return tokenKeys.join('-')
+            }
+            return 'Unknown'
         }
     }
 }

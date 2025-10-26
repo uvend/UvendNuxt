@@ -1,7 +1,7 @@
 <template>
     <Card class="p-4 card-grid items-center">
         <div class="flex flex-col gap-1">
-            <div class="text-sm font-medium">
+            <div class="text-base font-semibold">
                 {{ data.payvault_data_1 }}
             </div>
             <div class="flex items-center gap-2">
@@ -10,10 +10,10 @@
                 </Badge>
             </div>
         </div>
-        <div class="text-right font-medium">
+        <div class="text-right font-black text-lg">
             R {{ formatAmount(data.amount) }}
         </div>
-        <div class="text-right text-sm text-muted-foreground">
+        <div class="text-right text-base font-semibold text-muted-foreground">
             {{ formattedDate(data.created) }}
         </div>
     </Card>

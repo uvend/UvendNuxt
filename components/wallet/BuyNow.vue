@@ -62,7 +62,6 @@ export default {
       this.isLoading = true;
       try {
         const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
-        console.log(response)
         this.meters = response.meters; // Will be populated by API in the future
       } catch (error) {
         console.error('Error fetching meters:', error);
@@ -98,7 +97,7 @@ export default {
         console.error('Error fetching vend response:', error);
         this.$toast({
           title: 'Error',
-          description: error.message, // Display the actual error message
+          description: 'Invalid meter number entered',
           variant: 'destructive'
         });
       } finally{

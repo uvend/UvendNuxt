@@ -1,6 +1,6 @@
 <template>
     <div class="main-grid">
-        <div :style="{ backgroundColor: bgColor }" class="bg-dynamic">
+        <div class="bg-image">
             <MyLogo />
         </div>
         <div class="profile-grid flex h-full">
@@ -16,132 +16,81 @@
                 <div class="">
                     <MySkeletenCardList v-if="isLoading" :columns="1"/>
                     <div v-else class="customer-container hide-scrollbar">
-                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in searchCustomers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueIdentification}/transactions`)"/> 
+                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in customers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueidentification}/transactions`)"/> 
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </template>
-<script setup>
-import { ref, onMounted, computed } from 'vue'
-import { BarChart } from '@/components/ui/chart-bar'
-
-const customers = ref([])
-const isLoading = ref(true)
-const search = ref('')
-const chartData = ref([])
-const chartIsLoading = ref(true)
-const chartError = ref(null)
-
-async function fetchDashboardData() {
-    chartIsLoading.value = true
-    try {
-        // Fetch meters data
-        const metersResponse = await useWalletAuthFetch(`${WALLET_API_URL}/meter`)
-        
-        // Fetch transactions data
-        const transactionsResponse = await useWalletAuthFetch(`${WALLET_API_URL}/meter/token/history`)
-        
-        // Process meter statistics
-        const meterTransactions = new Map()
-        transactionsResponse.transactions.forEach(transaction => {
-            const meterNumber = transaction.meterNumber
-            const amount = parseFloat(transaction.amount)
-            
-            if (meterTransactions.has(meterNumber)) {
-                meterTransactions.get(meterNumber).amount += amount
-            } else {
-                const meter = metersResponse.meters.find(m => m.meterNumber === meterNumber)
-                meterTransactions.set(meterNumber, {
-                    meterNumber: meterNumber,
-                    name: meter?.name || meterNumber,
-                    amount: amount
-                })
-            }
-        })
-
-        // Convert to array and sort by amount
-        chartData.value = Array.from(meterTransactions.values())
-            .sort((a, b) => b.amount - a.amount)
-            .slice(0, 5) // Show top 5 meters
-    } catch (error) {
-        console.error('Error fetching dashboard data:', error)
-        chartError.value = error.message
-    } finally {
-        chartIsLoading.value = false
-    }
-}
-
-async function getCustomers() {
-    isLoading.value = true
-    try {
-        const result = await useAuthFetch(`${API_URL}/AdminSystem/Customer/GetCustomerList`, {
-            method: "GET"
-        })
-        console.log(result)
-        customers.value = result.list.listOfDefinitions
-    } catch (error) {
-        console.error('Error fetching customers:', error)
-    } finally {
-        isLoading.value = false
-    }
-}
-
-function formatAmount(tick) {
-    if (typeof tick === 'number') {
-        return new Intl.NumberFormat('en-ZA', {
-            style: 'currency',
-            currency: 'ZAR',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(tick)
-    }
-    return ''
-}
-
-const searchCustomers = computed(() => {
-    let filtered = [...customers.value]
-    
-    // Sort by description
-    filtered = filtered.sort((a, b) => {
-        let descA = a.description.toLowerCase()
-        let descB = b.description.toLowerCase()
-        if (descA < descB) return -1
-        if (descA > descB) return 1
-        return 0
-    })
-    
-    // Filter active and non-deleted customers
-    filtered = filtered.filter(customer => {
-        if (customer.accountStatus != "Active") {
-            console.log(customer)
+<script>
+import { debounce } from 'lodash'
+export default {
+    data() {
+        return {
+            customers: [],
+            isLoading: true,
+            search: ''
         }
-        return customer.accountStatus === "Active" && !customer.is_deleted
-    })
-    
-    // Apply search filter
-    if (search.value !== '') {
-        filtered = filtered.filter(customer => {
-            return customer.description.toLowerCase().includes(search.value.toLowerCase())
-        })
+    },
+    mounted() {
+        this.getCustomers()
+    },
+    methods: {
+        async getCustomers() {
+            try {
+                // Fix malformed CUSTOMER_API URL
+                let baseUrl = CUSTOMER_API || 'https://customer-api.uatvend.co.za'
+                
+                // If the URL contains two domains concatenated, extract the first one
+                if (baseUrl.includes('https://') && baseUrl.indexOf('https://', 8) !== -1) {
+                    baseUrl = baseUrl.substring(0, baseUrl.indexOf('https://', 8))
+                }
+                
+                // Ensure it ends with a slash if needed
+                if (!baseUrl.endsWith('/')) {
+                    baseUrl += '/'
+                }
+                
+                const result = await useAuthFetch(`${baseUrl}customer`, {
+                    method: "GET",
+                    query: {
+                        page: 1,
+                        limit: 100,
+                        search: this.search
+                    }
+                })
+                this.customers = result.data
+                console.log(this.customers)
+            } catch (error) {
+                console.error('Error fetching customers:', error)
+            } finally {
+                this.isLoading = false
+            }
+        }
+    },
+    computed: {
+        // bgColor computed property removed since we're using the image
+    },
+    watch: {
+        search: {
+            handler: debounce(function (newVal, oldVal) {
+                if (newVal !== oldVal) {
+                    this.getCustomers()
+                }
+            }, 400),
+            immediate: false
+        }
     }
-    
-    return filtered
-})
-
-const bgColor = computed(() => {
-    return `#${APP_BG_1?.replace('#', '') || '172554'}`
-})
-
-onMounted(() => {
-    getCustomers()
-    fetchDashboardData()
-})
+}
 </script>
 <style scoped>
-.bg-dynamic {
-    transition: background-color 0.3s;
+.bg-image {
+    background-image: url('/assets/css/login/Background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s;
 }
 .main-grid {
     display: grid;

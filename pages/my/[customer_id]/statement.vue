@@ -1,5 +1,10 @@
 <template>
     <div>
+        <!-- Page Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Statement</h1>
+        </div>
+        
         <div class="flex justify-between">
             <div class="flex gap-1">
                 <div class="flex gap-2">
@@ -13,7 +18,13 @@
                         </SelectItem>
                     </SelectContent>
                 </Select>
-                <MyDateRangePicker  v-if="selectedStatementType" v-model="dateRange" :months="2"/>
+                <MyDateRangePicker
+                    v-if="selectedStatementType"
+                    v-model="dateRange"
+                    :months="2"
+                    :selected-month.sync="selectedMonth"
+                    :selected-year.sync="selectedYear"
+                />
                 <div v-else class="flex gap-1">
                     <Select v-model="selectedMonth" @update:model-value="monthUpdated">
                         <SelectTrigger class="w-[150px]">
