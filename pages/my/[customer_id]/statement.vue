@@ -37,7 +37,7 @@
                     class="flex items-center gap-2 rounded-xl"
                 >
                     <Icon :name="showStatementSummary ? 'lucide:eye-off' : 'lucide:eye'" class="w-4 h-4" />
-                    {{ showStatementSummary ? 'Hide' : 'Show' }} Summary
+                    {{ showStatementSummary ? 'Show Statement Details' : 'Show Statement Summary' }} 
                 </Button>
             </div>
 
@@ -63,12 +63,12 @@
                                     <span class="text-sm font-semibold text-gray-900">{{ statement.startDate }} - {{ statement.endDate }}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-sm font-medium text-gray-700">Managed Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.managedAmount*100)/100 }}</span>
+                                    <span class="text-sm font-medium text-gray-700">Amount Due To Customer</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.totalDueToCustomer) }}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-sm font-medium text-gray-700">Non Managed Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.nonManagedAmount*100)/100 }}</span>
+                                    <span class="text-sm font-medium text-gray-700">Amount Due To Uvend</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.totalDueToUvend) }}</span>
                                 </div>
                             </div>
 
@@ -76,35 +76,39 @@
                             <div class="space-y-4">
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Service Percentage</span>
-                                    <span class="text-sm font-semibold text-gray-900">{{ statement.commissionPerc }}%</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ statement.commissionPerc }}</span>
+                                    <!-- Debug: Raw summary value: {{ summary?.vendCommission?.percentage }} -->
+                                    <!-- Debug: Raw transactionResponseData value: {{ transactionResponseData?.commissionPercentage }} -->
+                                    <!-- Debug: {{ console.log('Final commissionPerc value:', statement.commissionPerc) }} -->
+                                    <!-- Calculated: {{ ((statement.commissionAmount / statement.totalValue) * 100).toFixed(2) }}% -->
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-sm font-medium text-gray-700">Service Fee</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.commissionAmount*100)/100 }}</span>
+                                    <span class="text-sm font-medium text-gray-700">Vend Fee</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.commissionAmount) }}</span>
                                 </div>
                                 <!-- <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Tenant Fee</span>
                                     <span class="text-sm font-semibold text-gray-900">R {{ Math.round(statement.surchargeAmount) }}</span>
                                 </div> -->
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-sm font-medium text-gray-700">Total Tendered Amount</span>
-                                    <span class="text-sm font-semibold text-gray-900">R {{Math.round( statement.totalValue*100)/100 }}</span>
+                                    <span class="text-sm font-medium text-gray-700">Total Vend Amount</span>
+                                    <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(statement.totalVendAMount) }}</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Utility Statistics -->
-                        <div v-if="statement.stats && statement.stats.length > 0" class="mt-6">
+                     <!--   <div v-if="statement.stats && statement.stats.length > 0" class="mt-6">
                             <h5 class="text-md font-semibold text-gray-800 mb-3">Utility Breakdown</h5>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div v-for="stat in statement.stats" :key="stat.utilityType" class="bg-white rounded-lg p-3 border border-gray-200">
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm font-medium text-gray-700">{{ stat.utilityType }}</span>
-                                        <span class="text-sm font-semibold text-gray-900">R {{ stat.tenderedamount }}</span>
+                                        <span class="text-sm font-semibold text-gray-900">R {{ formatCurrency(stat.tenderedamount) }}</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </CardContent>
             </Card>
@@ -148,6 +152,7 @@
                                     {{ transaction.complexName }}
                                     <p class="text-gray-500">{{ transaction.address0 }}</p>
                                 </td>
+<<<<<<< HEAD
                                     <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                         <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
                                         <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
@@ -168,6 +173,28 @@
                         </table>
                     </div>
                     
+=======
+                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                    <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
+                                    <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
+                                    <span v-else class="text-gray-600">{{ transaction.utilityType }}</span>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                    <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
+                                    <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
+                                    <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                </td>
+                                <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ formatCurrency(transaction.managedTenderAmount) }}</td>
+                                <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
+                                    <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
+                                    <div class="text-xs text-gray-400">{{ formattedDate(transaction.transactionDate) }}</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+>>>>>>> staging
                 <!-- Load More Button - Always visible at the end -->
                 <div v-if="hasMoreTransactions" class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
                         <div class="flex justify-center">
@@ -356,6 +383,10 @@ export default{
                 surchargePerc: null,
                 surchargeAmount: null,
                 refund: null,
+                totalVendAMount:null,
+                totalDueToCustomer:null,
+                totalDueToUvend:null,
+                vendFee:null,
                 stats: []
             },
             transactionResponseData: null,
@@ -487,10 +518,18 @@ export default{
             this.statement.totalValue = this.summary.tenderedamount
             this.statement.surchargeAmount = this.summary.surcharge0AmountInclVat
             this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
-            this.statement.commissionPerc = this.summary.vendCommission.percentage
+            this.statement.commissionPerc = this.summary.vendCommission.rate
+            console.log('Commission percentage from summary:', this.summary.vendCommission.percentage)
+            console.log('Full summary object:', this.summary)
+            console.log('Full vendCommission object:', this.summary.vendCommission)
+            console.log('Commission amount (VAT inc):', this.summary.vendCommissionAmountIncVat)
+            console.log('Total tendered amount:', this.summary.tenderedamount)
             this.statement.startDate = this.dateRange.start
             this.statement.endDate = this.dateRange.end
             this.statement.name = this.customer
+            this.statement.totalVendAMount = this.summary.vendamount
+            this.statement.totalDueToCustomer = this.summary.vendRefund
+            this.statement.totalDueToUvend = this.summary.nonManagedTenderedAmountToVendor
 
             // Clear existing stats before adding new ones
             this.statement.stats = []
@@ -572,7 +611,11 @@ export default{
             this.statement.totalValue = this.transactionResponseData.totalAmountTendered
             this.statement.managedAmount = this.transactionResponseData.managedTenderAmount
             this.statement.nonManagedAmount = this.transactionResponseData.nonManagedTenderAmount
-            this.statement.commissionPerc = this.transactionResponseData.commissionPercentage
+            // Keep the raw database value from summary, don't override with calculated value
+            // this.statement.commissionPerc = this.transactionResponseData.commissionPercentage
+            console.log('Commission percentage from transactionResponseData:', this.transactionResponseData.commissionPercentage)
+            console.log('Commission amount from transactionResponseData:', this.transactionResponseData.commissionAmount)
+            console.log('Total amount tendered from transactionResponseData:', this.transactionResponseData.totalAmountTendered)
             this.statement.commissionAmount = this.transactionResponseData.commissionAmount
             this.statement.surchargePerc = this.transactionResponseData.surchargeToCustomer
             this.statement.surchargeAmount = this.transactionResponseData.surchargeToServiceProvider
@@ -892,6 +935,10 @@ export default{
             this.$nextTick(() => {
                 this.performFiltering();
             });
+        },
+        formatCurrency(amount) {
+            // Format amount to show exactly 2 decimal places
+            return parseFloat(amount || 0).toFixed(2);
         }
     },
     async mounted(){
