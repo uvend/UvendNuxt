@@ -495,7 +495,25 @@ export default{
             this.statement.totalValue = this.summary.tenderedamount
             this.statement.surchargeAmount = this.summary.surcharge0AmountInclVat
             this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
-            this.statement.commissionPerc = this.summary.vendCommission.rate
+            
+            // Customer condition for ID 5480
+            const customerId = parseInt(this.$route.params.customer_id)
+            if (customerId === 5480) {
+                // Special logic for customer 5480
+                this.statement.commissionPerc = this.summary.surcharge0.percentage
+                this.statement.commissionAmount = this.summary.surcharge0AmountInclVat
+                this.statement.totalVendAMount = this.summary.grossvendamount || this.summary.vendamount
+                this.statement.totalDueToCustomer = (this.summary.grossvendamount || this.summary.vendamount) - this.summary.surcharge0AmountInclVat
+                this.statement.totalDueToUvend = this.summary.surcharge0AmountInclVat
+            } else {
+                // Default logic for all other customers
+                this.statement.commissionPerc = this.summary.vendCommission.rate
+                this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
+                this.statement.totalVendAMount = this.summary.vendamount
+                this.statement.totalDueToCustomer = this.summary.vendRefund
+                this.statement.totalDueToUvend = this.summary.vendCommissionAmountIncVat + this.summary.nonManagedTenderedAmountToVendor
+            }
+            
             console.log('Commission percentage from summary:', this.summary.vendCommission.percentage)
             console.log('Full summary object:', this.summary)
             console.log('Full vendCommission object:', this.summary.vendCommission)
@@ -504,9 +522,6 @@ export default{
             this.statement.startDate = this.dateRange.start
             this.statement.endDate = this.dateRange.end
             this.statement.name = this.customer
-            this.statement.totalVendAMount = this.summary.vendamount
-            this.statement.totalDueToCustomer = this.summary.vendRefund
-            this.statement.totalDueToUvend = this.summary.nonManagedTenderedAmountToVendor
 
             // Clear existing stats before adding new ones
             this.statement.stats = []
