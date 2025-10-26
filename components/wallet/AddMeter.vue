@@ -59,7 +59,7 @@ export default{
             this.isLoading = true
             const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/valid`,{
                 params: {
-                    meterNumber : this.meterNumber
+                    meterNumber : this.meterNumber.trim()
                 }
             })
             if(!response){
@@ -78,7 +78,7 @@ export default{
           const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`, {
             method: "POST",
             body: {
-              meterNumber : this.meterNumber,
+              meterNumber : this.meterNumber.trim(),
               name: this.meterName,
               favourite: 0
             }

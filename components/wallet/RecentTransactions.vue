@@ -301,7 +301,7 @@ async function fetchRecentTransactions() {
                 amount: parseFloat(transaction.amount),
                 latestReading: transaction.latestReading
             }})
-            console.log(recentTransactions.value)
+            // console.log(recentTransactions.value)
     } catch (error) {
         console.error('Error fetching recent transactions:', error)
         // Show sample data if API fails
