@@ -76,7 +76,11 @@
                             <div class="space-y-4">
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Service Percentage</span>
-                                    <span class="text-sm font-semibold text-gray-900">{{ formatCurrency(statement.commissionPerc) }}%</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ statement.commissionPerc }}</span>
+                                    <!-- Debug: Raw summary value: {{ summary?.vendCommission?.percentage }} -->
+                                    <!-- Debug: Raw transactionResponseData value: {{ transactionResponseData?.commissionPercentage }} -->
+                                    <!-- Debug: {{ console.log('Final commissionPerc value:', statement.commissionPerc) }} -->
+                                    <!-- Calculated: {{ ((statement.commissionAmount / statement.totalValue) * 100).toFixed(2) }}% -->
                                 </div>
                                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                                     <span class="text-sm font-medium text-gray-700">Vend Fee</span>
@@ -94,7 +98,7 @@
                         </div>
 
                         <!-- Utility Statistics -->
-                        <div v-if="statement.stats && statement.stats.length > 0" class="mt-6">
+                     <!--   <div v-if="statement.stats && statement.stats.length > 0" class="mt-6">
                             <h5 class="text-md font-semibold text-gray-800 mb-3">Utility Breakdown</h5>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div v-for="stat in statement.stats" :key="stat.utilityType" class="bg-white rounded-lg p-3 border border-gray-200">
@@ -104,7 +108,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </CardContent>
             </Card>
@@ -491,7 +495,12 @@ export default{
             this.statement.totalValue = this.summary.tenderedamount
             this.statement.surchargeAmount = this.summary.surcharge0AmountInclVat
             this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
-            this.statement.commissionPerc = this.summary.vendCommission.percentage
+            this.statement.commissionPerc = this.summary.vendCommission.rate
+            console.log('Commission percentage from summary:', this.summary.vendCommission.percentage)
+            console.log('Full summary object:', this.summary)
+            console.log('Full vendCommission object:', this.summary.vendCommission)
+            console.log('Commission amount (VAT inc):', this.summary.vendCommissionAmountIncVat)
+            console.log('Total tendered amount:', this.summary.tenderedamount)
             this.statement.startDate = this.dateRange.start
             this.statement.endDate = this.dateRange.end
             this.statement.name = this.customer
@@ -579,7 +588,11 @@ export default{
             this.statement.totalValue = this.transactionResponseData.totalAmountTendered
             this.statement.managedAmount = this.transactionResponseData.managedTenderAmount
             this.statement.nonManagedAmount = this.transactionResponseData.nonManagedTenderAmount
-            this.statement.commissionPerc = this.transactionResponseData.commissionPercentage
+            // Keep the raw database value from summary, don't override with calculated value
+            // this.statement.commissionPerc = this.transactionResponseData.commissionPercentage
+            console.log('Commission percentage from transactionResponseData:', this.transactionResponseData.commissionPercentage)
+            console.log('Commission amount from transactionResponseData:', this.transactionResponseData.commissionAmount)
+            console.log('Total amount tendered from transactionResponseData:', this.transactionResponseData.totalAmountTendered)
             this.statement.commissionAmount = this.transactionResponseData.commissionAmount
             this.statement.surchargePerc = this.transactionResponseData.surchargeToCustomer
             this.statement.surchargeAmount = this.transactionResponseData.surchargeToServiceProvider
