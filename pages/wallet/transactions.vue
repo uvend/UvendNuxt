@@ -503,7 +503,7 @@ definePageMeta({
           })
           this.transactions = response.transactions;
           this.summary.totalSpent = Number(response.totalAmount).toFixed(2)
-          this.summary.transactionCount = response.totalCount
+          this.summary.transactionCount = this.transactions.length;
          
                 // Store the totals from the response instead of calculating
                 this.transactionTotals = {

@@ -22,7 +22,7 @@
             <div v-if="isLoading" class="py-8 flex justify-center">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
-            <div v-else-if="chartData.length === 0" class="py-8 text-center">
+                                     <div v-else-if="chartData.length === 0" class="py-8 text-center">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <Icon name="lucide:bar-chart-3" class="w-8 h-8 text-gray-400" />
                 </div>
@@ -125,7 +125,25 @@ export default {
                     type: 'line',
                     height: 300,
                     toolbar: {
-                        show: false
+                        show: true,
+                        tools: {
+                            download: true,
+                            selection: true,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true,
+                            pan: true,
+                            reset: true
+                        }
+                    },
+                    zoom: {
+                        enabled: true,
+                        type: 'x',
+                        autoScaleYaxis: true
+                    },
+                    pan: {
+                        enabled: true,
+                        type: 'x'
                     },
                     animations: {
                         enabled: true,
@@ -135,7 +153,7 @@ export default {
                 },
                 stroke: {
                     curve: 'smooth',
-                    width: 3
+                    width: 4
                 },
                 fill: {
                     type: 'gradient',
@@ -151,15 +169,15 @@ export default {
                     }
                 },
                 markers: {
-                    size: 4,
-                    strokeWidth: 2,
+                    size: 5,
+                    strokeWidth: 3,
                     strokeColors: ['#f97316', '#3b82f6'],
-                    fillColors: ['#ffffff', '#ffffff'],
+                    fillColors: ['#f97316', '#3b82f6'],
                     hover: {
-                        size: 6
+                        size: 7
                     }
                 },
-                xaxis: {
+                                                 xaxis: {
                     type: 'datetime',
                     categories: this.chartData.map(day => day.x),
                     labels: {
