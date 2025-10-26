@@ -162,7 +162,7 @@ export default{
 
                 if(userType === 'Customer'){
                     localStorage.setItem('customer',result.userInfo.userParent.uniqueIdentification);
-                    return navigateTo(`/my/${result.userInfo.userParent.uniqueIdentification}/transactions`)
+                    return navigateTo(`/my/${result.userInfo.userParent.uniqueIdentification}/dashboard`)
                 }
                 
                 if(userType == "Administration"){
