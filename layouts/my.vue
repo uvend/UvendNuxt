@@ -176,9 +176,6 @@
         </aside>
         <main class="flex-1 flex flex-col bg-gray-50">
             <div class="flex-1 overflow-auto">
-                <div class="p-4">
-                    <WalletTopUpCard />
-                </div>
                 <slot />
             </div>
         </main>

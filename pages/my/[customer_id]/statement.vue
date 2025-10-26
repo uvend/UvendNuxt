@@ -152,28 +152,6 @@
                                     {{ transaction.complexName }}
                                     <p class="text-gray-500">{{ transaction.address0 }}</p>
                                 </td>
-<<<<<<< HEAD
-                                    <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
-                                        <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
-                                        <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
-                                        <span v-else class="text-gray-600">{{ transaction.utilityType }}</span>
-                                    </td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
-                                        <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
-                                        <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
-                                        <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
-                                    </td>
-                                    <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
-                                    <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
-                                        <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
-                                        <div class="text-xs text-gray-400">{{ formattedDate(transaction.transactionDate) }}</div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-=======
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                     <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
                                     <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
@@ -194,7 +172,6 @@
                     </table>
                 </div>
                 
->>>>>>> staging
                 <!-- Load More Button - Always visible at the end -->
                 <div v-if="hasMoreTransactions" class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
                         <div class="flex justify-center">

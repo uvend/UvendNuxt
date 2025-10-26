@@ -7,6 +7,18 @@
             <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
             
             <div class="relative z-10">
+                <!-- UVend Logo -->
+                <div class="flex items-center gap-3 mb-6">
+                    <h1 class="text-white font-bold text-2xl leading-tight tracking-wide" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        U-Vend
+                    </h1>
+                    <div class="text-orange-400 font-semibold text-xs leading-tight tracking-wider">
+                        <div>PREPAID</div>
+                        <div>UTILITIES</div>
+                        <div>MANAGEMENT</div>
+                    </div>
+                </div>
+                
                 <div class="flex items-center gap-3 mb-2">
                     <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                         <Icon name="lucide:lock" class="h-5 w-5 text-white"/>
