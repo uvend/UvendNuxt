@@ -680,38 +680,31 @@ export default{
         async getStatementPDF(){
             this.isGeneratingPDF = true;
             try {
-                const payload = {
-                    data: this.transactionResponseData
-                }
+                console.log('Generating PDF with UtilityType:', this.selectedUtility);
                 
-                // Request PDF as a blob with proper headers
-                const response = await fetch(`${STATEMENT_API}/export/pdf?template=statement`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/pdf'
+                // Request HTML content
+                const htmlContent = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
+                    method: "GET",
+                    params:{
+                        IncludeMetersWithNoActivity : false,
+                        StartDate : this.dateRange.start,
+                        EndDate: this.dateRange.end,
+                        ReportParentType: this.selectedMeterComplex ? 6 : 4,  // customer
+                        ResponseFormatType: 0,
+                        ParentUniqueID: this.selectedMeterComplex ? this.selectedMeterComplex : this.$route.params.customer_id,
+                        UtilityType: this.selectedUtility,
+                        html:true
                     },
-                    body: JSON.stringify(payload)
                 })
 
-                // Check if the response is ok
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                // Validate that we actually got HTML content
+                if (!htmlContent || htmlContent.length === 0) {
+                    throw new Error('Received empty or invalid HTML content');
                 }
 
-                // Get the blob from the response
-                const blob = await response.blob();
+                // Create a blob from the HTML content
+                const blob = new Blob([htmlContent], { type: 'text/html' });
                 
-                // Validate that we actually got a PDF blob
-                if (!blob || blob.size === 0) {
-                    throw new Error('Received empty or invalid PDF blob');
-                }
-
-                // Check if it's actually a PDF by looking at the content type
-                if (!blob.type.includes('pdf') && !blob.type.includes('application/octet-stream')) {
-                    console.warn('Unexpected content type:', blob.type);
-                }
-
                 // Create a blob URL
                 const url = URL.createObjectURL(blob);
                 
@@ -723,7 +716,7 @@ export default{
                     console.log('Popup blocked, falling back to download');
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.pdf`;
+                    link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.html`;
                     link.style.display = 'none';
                     document.body.appendChild(link);
                     link.click();
@@ -737,13 +730,13 @@ export default{
                     // Clean up the blob URL after a longer delay for new tab
                     setTimeout(() => {
                         URL.revokeObjectURL(url);
-                    }, 10000); // 10 seconds should be enough for the PDF to load
+                    }, 10000); // 10 seconds should be enough for the HTML to load
                 }
                 
             } catch (err) {
-                console.error('Failed to generate PDF:', err);
+                console.error('Failed to generate statement:', err);
                 // You might want to show a user-friendly error message here
-                alert('Failed to generate PDF. Please try again or check your internet connection.');
+                alert('Failed to generate statement. Please try again or check your internet connection.');
             } finally {
                 this.isGeneratingPDF = false;
             }
