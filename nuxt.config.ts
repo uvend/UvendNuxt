@@ -1,5 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-const pagesDir = process.env.APP_ENV != '' 
+const pagesDir = process.env.APP_ENV 
   ? `pages/${process.env.APP_ENV}` 
   : 'pages'
 
