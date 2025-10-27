@@ -217,7 +217,7 @@ function getRemainingUnits(transaction) {
     } else if (transaction.type === 'water') {
         const litres = transaction.latestReading.remainingTokens["Remaining Litres"];
         if (litres !== null && litres !== undefined && litres >= 0) {
-            return `${(parseFloat(litres) / 1000).toFixed(2)} KL`;
+            return `${(parseFloat(litres) ).toFixed(2)} L`;
         }
     }
     
