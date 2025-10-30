@@ -696,14 +696,12 @@ export default{
             };
         },
         returnFormatDate(date){
-            const formattedDate = new Intl.DateTimeFormat('en-US', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            }).format(new Date(date));
-
-            // Replace slashes with hyphens
-            return formattedDate.replace(/\//g, '-');
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            // Return ISO-like YYYY-MM-DD to satisfy the API
+            return `${year}-${month}-${day}`;
         },
         async getStatementPDF(){
             this.isGeneratingPDF = true;
@@ -961,10 +959,10 @@ export default{
     watch:{
         dateRange(newValue) {
             // Parse the END date to get the correct month (since billing period ends on 25th of the target month)
-            const dateParts = this.dateRange.end.split('-');
+            const dateParts = this.dateRange.end.split('-'); // YYYY-MM-DD
             // Month in dateParts is 1-indexed, convert to 0-indexed for JavaScript
-            this.selectedMonth = parseInt(dateParts[0]) - 1;
-            this.selectedYear = parseInt(dateParts[2]);
+            this.selectedMonth = parseInt(dateParts[1]) - 1;
+            this.selectedYear = parseInt(dateParts[0]);
             
             // Update date inputs when dateRange changes
             if (newValue && newValue.start && newValue.end) {
