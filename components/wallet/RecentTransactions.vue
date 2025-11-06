@@ -43,7 +43,7 @@
                                 <p class="text-sm font-bold text-gray-900">
                                     {{ transaction.type === 'electricity' ? 'Electricity prepaid purchase' : 'Water prepaid purchase' }}
                                 </p>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 flex-wrap">
                                     <p class="text-xs text-gray-600 font-medium">
                                         {{ formatDate(transaction.date) }}
                                     </p>
@@ -51,6 +51,12 @@
                                     <p class="text-xs text-gray-600 font-medium">
                                         {{ transaction.meterNumber }}
                                     </p>
+                                    <div v-if="transaction.tokenNumber && transaction.tokenNumber !== 'N/A'" class="flex items-center gap-1">
+                                        <div class="w-1 h-1 rounded-full bg-gray-400"></div>
+                                        <p class="text-xs text-gray-600 font-medium font-mono">
+                                            Token: {{ transaction.tokenNumber }}
+                                        </p>
+                                    </div>
                                 </div>
                                 <p v-if="getRemainingUnits(transaction)" class="text-xs text-gray-500 font-medium">
                                     {{ getRemainingUnits(transaction) }}
@@ -110,6 +116,9 @@
                                 <div>
                                     <p class="text-xs font-mono text-gray-700 font-medium">{{ transaction.meterNumber }}</p>
                                     <p class="text-xs text-gray-500">{{ formatDate(transaction.date) }}</p>
+                                    <p v-if="transaction.tokenNumber && transaction.tokenNumber !== 'N/A'" class="text-xs text-gray-500 font-mono mt-1">
+                                        Token: {{ transaction.tokenNumber }}
+                                    </p>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -193,11 +202,18 @@ function formatDate(dateString) {
         if (isNaN(date.getTime())) {
             return 'Invalid Date'
         }
-    return date.toLocaleDateString('en-ZA', {
+    const dateStr = date.toLocaleDateString('en-ZA', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
     })
+    const timeStr = date.toLocaleTimeString('en-ZA', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    })
+    return `${dateStr} ${timeStr}`
     } catch (error) {
         console.warn('Error formatting date:', dateString, error)
         return 'Invalid Date'
@@ -290,13 +306,17 @@ async function fetchRecentTransactions() {
         recentTransactions.value = transactionsResponse.transactions
             .slice(0, 4)
             .map(transaction => {
+                const vendResponse = JSON.parse(transaction.vendResponse)
+                const totalUnitsPaid = vendResponse.listOfTokenTransactions[0]?.tokens[0]?.units || ""
+                const tokenKeys = vendResponse.listOfTokenTransactions[0]?.tokens[0]?.tokenKeys || []
+                const tokenNumber = tokenKeys.length > 0 ? tokenKeys.join('-') : 'N/A'
                 
-                const totalUnitsPaid = JSON.parse(transaction.vendResponse).listOfTokenTransactions[0]?.tokens[0]?.units || ""
                 return {
                 id: transaction.id || transaction.meterNumber + transaction.created,
                 type: transaction.utilityType === 'Electricity' ? 'electricity' : 'water',
                 date: transaction.created,
                 meterNumber: transaction.meterNumber,
+                tokenNumber: tokenNumber,
                 totalUnits:totalUnitsPaid,
                 amount: parseFloat(transaction.amount),
                 latestReading: transaction.latestReading

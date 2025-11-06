@@ -120,7 +120,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-xl font-semibold text-gray-800">Statement Details</h2>
-                    <p class="text-gray-600 text-sm">Detailed breakdown of your utility transactions</p>
+                            <p class="text-gray-600 text-sm">Detailed breakdown of your utility transactions</p>
                         </div>
                         <div class="text-right">
                             <div class="text-sm text-gray-600">Total Records</div>
@@ -131,23 +131,23 @@
                 </div>
 
                 <!-- Table Content -->
-                    <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
-                        <table class="w-full">
-                            <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
-                                <tr>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">ID</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Utility Type</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Units</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
-                                    <th class="text-left py-4 px-6 font-semibold text-gray-700">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                    <table class="w-full">
+                        <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">ID</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter Number</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Utility Type</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Units</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             <tr v-for="transaction in displayedTransactions" :key="transaction.transactionUniqueId" class="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group">
-                                    <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
-                                    <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
+                                <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.transactionUniqueId }}</td>
+                                <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">{{ transaction.meterNumber }}</td>
                                 <td class="py-4 px-6 text-sm text-gray-700 group-hover:text-gray-700">
                                     {{ transaction.complexName }}
                                     <p class="text-gray-500">{{ transaction.address0 }}</p>
@@ -174,13 +174,13 @@
                 
                 <!-- Load More Button - Always visible at the end -->
                 <div v-if="hasMoreTransactions" class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
-                        <div class="flex justify-center">
-                            <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
-                                <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                    <div class="flex justify-center">
+                        <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
+                            <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
                             Load More ({{ remainingTransactions }} remaining)
-                            </Button>
-                        </div>
+                        </Button>
                     </div>
+                </div>
             </div>
         </div>
 
@@ -267,31 +267,23 @@
                     </Select>
                 </div>
 
-                <!-- Complex
+                <!-- Complex -->
                 <div class="mb-4">
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Complex</Label>
                     <div class="flex gap-2">
-                        <Button 
-                            v-if="selectedMeterComplex != null" 
-                            @click="selectedMeterComplex = null"
-                            variant="outline" 
-                            size="sm"
-                            class="rounded-lg"
-                        >
-                            <Icon name="lucide:x" class="w-4 h-4"/>
-                        </Button>
                         <Select v-model="selectedMeterComplex" class="flex-1">
                             <SelectTrigger class="w-full bg-white border-gray-200 rounded-lg">
                                 <SelectValue placeholder="Select complex" />
                             </SelectTrigger>
-                            <SelectContent>
+                             <SelectContent>
+                                <SelectItem value="ALL">All complexes</SelectItem>
                                 <SelectItem v-for="complex in meterComplexes" :value="complex.complexUniqueId">
                                     {{ complex.complexName }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- Sort Order -->
                 <div class="mb-4">
@@ -432,12 +424,15 @@ export default{
                     IncludeMetersWithNoActivity : false,
                     StartDate : this.dateRange.start,
                     EndDate: this.dateRange.end,
-                    ReportParentType: this.selectedMeterComplex ? 6 : 4,  // customer
+                    ReportParentType: 4,  // always customer
                     ResponseFormatType: 0,
-                    ParentUniqueID: this.selectedMeterComplex ? this.selectedMeterComplex : this.$route.params.customer_id,
-                    UtilityType: this.selectedUtility
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: this.selectedUtility,
+                    // If a specific complex is selected, scope the statement to it
+                    ...(this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL' ? { ComplexUniqueID: Number(this.selectedMeterComplex) } : {})
                 },
             })
+            
             
             // Store the complete API response
             this.transactionResponseData = result.data
@@ -455,6 +450,7 @@ export default{
                             ...transaction,
                             meterNumber: transaction.meternumber || meterNumber,
                             complexName: transaction.complexDescription || 'Unknown',
+                            complexUniqueId: transaction.complexuniqueid || transaction.complexUniqueId || null,
                             address: transaction.address0 || 'Unknown',
                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
                             managedTenderAmount: transaction.tenderedamount || 0,
@@ -495,18 +491,29 @@ export default{
             this.statement.totalValue = this.summary.tenderedamount
             this.statement.surchargeAmount = this.summary.surcharge0AmountInclVat
             this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
-            this.statement.commissionPerc = this.summary.vendCommission.rate
-            console.log('Commission percentage from summary:', this.summary.vendCommission.percentage)
-            console.log('Full summary object:', this.summary)
-            console.log('Full vendCommission object:', this.summary.vendCommission)
-            console.log('Commission amount (VAT inc):', this.summary.vendCommissionAmountIncVat)
-            console.log('Total tendered amount:', this.summary.tenderedamount)
+            
+            // Customer condition for ID 5480
+            const customerId = parseInt(this.$route.params.customer_id)
+            if (customerId === 5480) {
+                // Special logic for customer 5480
+                this.statement.commissionPerc = this.summary.surcharge0.percentage
+                this.statement.commissionAmount = this.summary.surcharge0AmountInclVat
+                this.statement.totalVendAMount = this.summary.grossvendamount || this.summary.vendamount
+                this.statement.totalDueToCustomer = (this.summary.grossvendamount || this.summary.vendamount) - this.summary.surcharge0AmountInclVat
+                this.statement.totalDueToUvend = this.summary.surcharge0AmountInclVat
+            } else {
+                // Default logic for all other customers
+                this.statement.commissionPerc = this.summary.vendCommission.rate
+                this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
+                this.statement.totalVendAMount = this.summary.vendamount
+                this.statement.totalDueToCustomer = this.summary.vendRefund
+                this.statement.totalDueToUvend = this.summary.vendCommissionAmountIncVat + this.summary.nonManagedTenderedAmountToVendor
+            }
+            
+            
             this.statement.startDate = this.dateRange.start
             this.statement.endDate = this.dateRange.end
             this.statement.name = this.customer
-            this.statement.totalVendAMount = this.summary.vendamount
-            this.statement.totalDueToCustomer = this.summary.vendRefund
-            this.statement.totalDueToUvend = this.summary.nonManagedTenderedAmountToVendor
 
             // Clear existing stats before adding new ones
             this.statement.stats = []
@@ -535,7 +542,7 @@ export default{
             this.isLoading = false;
         },
         async getTransactions(){
-                await this.getAdminTransactions()
+            await this.getAdminTransactions()
             // if(localStorage.getItem('customer') === 'admin'){
             // }else{
             //     await this.getVendTransactions()
@@ -543,7 +550,7 @@ export default{
 
         },
         async hydrateStatementData(result){
-            console.log('hydrate')
+            
             this.transactionResponseData = result.responseData
 
             // Flatten vend transactions to match admin structure
@@ -556,6 +563,7 @@ export default{
                             ...transaction,
                             meterNumber: transaction.meternumber || meterNumber,
                             complexName: transaction.complexDescription || 'Unknown',
+                            complexUniqueId: transaction.complexuniqueid || transaction.complexUniqueId || null,
                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
                             managedTenderAmount: transaction.tenderedamount || 0,
                             totalUnitsIssued: transaction.totalunitsissued || 0,
@@ -590,9 +598,7 @@ export default{
             this.statement.nonManagedAmount = this.transactionResponseData.nonManagedTenderAmount
             // Keep the raw database value from summary, don't override with calculated value
             // this.statement.commissionPerc = this.transactionResponseData.commissionPercentage
-            console.log('Commission percentage from transactionResponseData:', this.transactionResponseData.commissionPercentage)
-            console.log('Commission amount from transactionResponseData:', this.transactionResponseData.commissionAmount)
-            console.log('Total amount tendered from transactionResponseData:', this.transactionResponseData.totalAmountTendered)
+            
             this.statement.commissionAmount = this.transactionResponseData.commissionAmount
             this.statement.surchargePerc = this.transactionResponseData.surchargeToCustomer
             this.statement.surchargeAmount = this.transactionResponseData.surchargeToServiceProvider
@@ -612,9 +618,37 @@ export default{
                     Authorization : `Basic ${ADMIN_AUTH}`
                 }
             })
-            this.customer =  result.customer.description
-            this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
-            //console.log(this.customerStatementPeriod);
+            this.customer =  result.customer?.description || this.customer
+            if (result.customer?.billingStartDays && result.customer.billingStartDays.length > 0) {
+                this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
+            }
+
+            // Build complexes list from DB response
+            const possibleLists = [
+                result.installations,
+                result.meterInstallations,
+                result.customerMeters,
+                result.list,
+                result?.customer?.installations,
+                result?.customer?.meterInstallations
+            ].filter(Boolean)
+
+            this.meterComplexes = []
+            const seen = new Set()
+            possibleLists.forEach(list => {
+                if (Array.isArray(list)) {
+                    list.forEach(item => {
+                        const id = item.complexUniqueId || item.complexuniqueid || item.complexUniqueID || item.complexId || item.complexid
+                        const name = item.complexDescription || item.complexdescription || item.complexName || item.complex || item.description
+                        if (id && name && !seen.has(id)) {
+                            seen.add(id)
+                            this.meterComplexes.push({ complexUniqueId: id, complexName: name })
+                        }
+                    })
+                }
+            })
+
+            // Fallback: if API didn’t return complexes, we’ll derive from transactions later
         },
         filteredTransactions(){
             try {
@@ -681,24 +715,65 @@ export default{
             };
         },
         returnFormatDate(date){
-            const formattedDate = new Intl.DateTimeFormat('en-US', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            }).format(new Date(date));
-
-            // Replace slashes with hyphens
-            return formattedDate.replace(/\//g, '-');
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            // Return ISO-like YYYY-MM-DD to satisfy the API
+            return `${year}-${month}-${day}`;
         },
         async getStatementPDF(){
             this.isGeneratingPDF = true;
             try {
+                const includeComplex = this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL'
+                const complexId = includeComplex ? Number(this.selectedMeterComplex) : undefined
+                const plainData = JSON.parse(JSON.stringify(this.transactionResponseData || {}))
+
+                // If a complex is selected, hard-filter the export data to that complex only
+                if (complexId && plainData && plainData.transactionData) {
+                    const filteredTransactionData = {}
+                    for (const [meterNumber, meterData] of Object.entries(plainData.transactionData)) {
+                        if (meterData && Array.isArray(meterData.transactions)) {
+                            const txForComplex = meterData.transactions.filter(tx =>
+                                Number(tx.complexuniqueid || tx.complexUniqueId) === complexId
+                            )
+                            if (txForComplex.length > 0) {
+                                filteredTransactionData[meterNumber] = {
+                                    ...meterData,
+                                    transactions: txForComplex
+                                }
+                            }
+                        }
+                    }
+                    plainData.transactionData = filteredTransactionData
+                }
+
+                const qs = new URLSearchParams({
+                    template: 'statement',
+                    StartDate: this.dateRange?.start || '',
+                    EndDate: this.dateRange?.end || '',
+                    ReportParentType: '4',
+                    ParentUniqueID: String(this.$route.params.customer_id || ''),
+                    UtilityType: String(this.selectedUtility ?? -1),
+                    IncludeMetersWithNoActivity: 'true',
+                })
+                if (complexId) qs.append('ComplexUniqueID', String(complexId))
+
                 const payload = {
-                    data: this.transactionResponseData
+                    data: plainData,
+                    filters: {
+                        StartDate: this.dateRange?.start,
+                        EndDate: this.dateRange?.end,
+                        ReportParentType: 4,
+                        ParentUniqueID: this.$route.params.customer_id,
+                        UtilityType: this.selectedUtility,
+                        IncludeMetersWithNoActivity: true,
+                        ComplexUniqueID: complexId,
+                    }
                 }
                 
                 // Request PDF as a blob with proper headers
-                const response = await fetch(`${STATEMENT_API}/export/pdf?template=statement`, {
+                const response = await fetch(`${STATEMENT_API}/export/pdf?${qs.toString()}`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -706,6 +781,8 @@ export default{
                     },
                     body: JSON.stringify(payload)
                 })
+
+                
 
                 // Check if the response is ok
                 if (!response.ok) {
@@ -733,7 +810,7 @@ export default{
                 
                 // If popup was blocked or failed, fallback to download
                 if (!newTab || newTab.closed || typeof newTab.closed == 'undefined') {
-                    console.log('Popup blocked, falling back to download');
+                    
                     const link = document.createElement('a');
                     link.href = url;
                     link.download = `Statement_${this.statement.startDate}_${this.statement.endDate}.pdf`;
@@ -837,7 +914,7 @@ export default{
             let filtered = JSON.parse(JSON.stringify(this.originalTransactions || []))
 
             // Filter by complex
-            if (this.selectedMeterComplex) {
+            if (this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL') {
                 filtered = filtered.filter(t => t.complexUniqueId === this.selectedMeterComplex || t.complexName === this.selectedMeterComplex)
             }
 
@@ -946,10 +1023,10 @@ export default{
     watch:{
         dateRange(newValue) {
             // Parse the END date to get the correct month (since billing period ends on 25th of the target month)
-            const dateParts = this.dateRange.end.split('-');
+            const dateParts = this.dateRange.end.split('-'); // YYYY-MM-DD
             // Month in dateParts is 1-indexed, convert to 0-indexed for JavaScript
-            this.selectedMonth = parseInt(dateParts[0]) - 1;
-            this.selectedYear = parseInt(dateParts[2]);
+            this.selectedMonth = parseInt(dateParts[1]) - 1;
+            this.selectedYear = parseInt(dateParts[0]);
             
             // Update date inputs when dateRange changes
             if (newValue && newValue.start && newValue.end) {
@@ -960,15 +1037,12 @@ export default{
             this.getTransactions();
         },
         selectedMeterComplex(newValue){
-            console.log('selected complex',newValue)
             this.getTransactions()
         },
         selectedUtility(newValue){
-            console.log('selected utlity', newValue)
             this.getTransactions()
         },
         selectedStatementType(newValue){
-            console.log('dateType', newValue)
             this.dateRange = this.calculateStatementPeriod(this.customerStatementPeriod);
         }
     }
