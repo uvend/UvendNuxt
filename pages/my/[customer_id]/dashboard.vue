@@ -206,6 +206,7 @@ export default {
             chartDateRange: null, // Date range from chart component
             selectedTransaction: null,
             expandedRow: null, // Track expanded row index
+            summaryData: {} // Store summary data from API
         }
     },
     methods: {
@@ -223,6 +224,9 @@ export default {
                 }
             })
             
+            // Store summary data for refund calculation
+            this.summaryData = result.data.summary || {}
+            
             // Clear existing transactions
             this.originalTransactions = []
             
@@ -239,7 +243,8 @@ export default {
                             managedTenderAmount: transaction.tenderedamount || 0,
                             totalUnitsIssued: transaction.totalunitsissued || 0,
                             transactionDate: transaction.row_creation_date || new Date().toISOString(),
-                            transactionID: transaction.uniqueidentification || Date.now()
+                            transactionID: transaction.uniqueidentification || Date.now(),
+                            commissionAmount: transaction.vendCommissionAmount || 0
                         })
                     })
                 }
@@ -326,9 +331,12 @@ export default {
                 .toFixed(2);
         },
         totalRefunds() {
-            return this.filteredTransactionsForKPI
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                .toFixed(2);
+            // Use refund from summary data (vendRefund field from API)
+            if (this.summaryData && this.summaryData.vendRefund !== undefined) {
+                return parseFloat(this.summaryData.vendRefund || 0).toFixed(2);
+            }
+            
+            return '0.00';
         },
         klVended() {
             try {
