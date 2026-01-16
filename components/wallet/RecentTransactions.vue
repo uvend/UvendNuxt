@@ -306,7 +306,7 @@ async function fetchRecentTransactions() {
         recentTransactions.value = transactionsResponse.transactions
             .slice(0, 4)
             .map(transaction => {
-                const vendResponse = JSON.parse(transaction.vendResponse)
+                const vendResponse = transaction.vendResponse
                 const totalUnitsPaid = vendResponse.listOfTokenTransactions[0]?.tokens[0]?.units || ""
                 const tokenKeys = vendResponse.listOfTokenTransactions[0]?.tokens[0]?.tokenKeys || []
                 const tokenNumber = tokenKeys.length > 0 ? tokenKeys.join('-') : 'N/A'
