@@ -105,7 +105,7 @@
             <div v-if="metersLoading" class="py-8 flex justify-center">
                 <MyLoader />
             </div>
-            <div v-else-if="meters && meters.length > 0" class="divide-y divide-gray-100">
+            <div v-else-if="meters && meters.length > 0" class="h-96 overflow-y-auto scrollbar-thin divide-y divide-gray-100">
                 <div v-for="meter in meters" :key="meter.meterNumber" class="p-6">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <!-- Meter Info -->
@@ -169,8 +169,17 @@
                             </div>
                         </div>
                         
-                        <!-- Buy Button -->
+                        <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                class="px-4 py-2 text-sm border-gray-300 hover:border-blue-400 hover:bg-blue-50 text-gray-700 transition-colors duration-200"
+                                @click="openEditMeterDialog(meter)"
+                            >
+                                Edit Meter
+                            </Button>
+
                             <Button 
                                 @click="openPurchaseDialog(meter)"
                                 size="sm"
@@ -192,6 +201,19 @@
             </div>
         </CardContent>
     </Card>
+
+    <!-- Edit Meter Popup -->
+    <WalletPopup
+        v-model="editMeterDialogOpen"
+        :hasButton="false"
+    >
+        <WalletEditMeter 
+            mode="edit"
+            :meter="selectedMeterForEdit"
+            @updated="handleMeterUpdated"
+            @close="editMeterDialogOpen = false"
+        />
+    </WalletPopup>
 
     <!-- Spending Trends Chart -->
     <SpendingTrendsChart :transactions="transactions" :isLoading="isLoading" />
@@ -492,7 +514,9 @@ definePageMeta({
             },
             // Meter filter
             selectedMeterFilter: 'all',
-            allMeters: []
+            allMeters: [],
+            editMeterDialogOpen: false,
+            selectedMeterForEdit: null
         }
     },
     methods: {
@@ -514,8 +538,8 @@ definePageMeta({
          
                 // Add unitsIssued to each transaction
                 this.transactions = this.transactions.map(transaction => {
-                    const unitsIssued = JSON.parse(transaction.vendResponse).listOfTokenTransactions[0]?.tokens[0]?.units || ""
-                    const delimitedTokenNumber = JSON.parse(transaction.vendResponse).listOfTokenTransactions[0]?.tokens[0]?.delimitedTokenNumber || ""
+                    const unitsIssued = transaction.vendResponse.listOfTokenTransactions[0]?.tokens[0]?.units || ""
+                    const delimitedTokenNumber = transaction.vendResponse.listOfTokenTransactions[0]?.tokens[0]?.delimitedTokenNumber || ""
                     return {
                         ...transaction,
                         unitsIssued: unitsIssued,
@@ -668,6 +692,20 @@ definePageMeta({
             } finally {
                 this.metersLoading = false;
             }
+        },
+
+        setSelectedMeter(meter) {
+            this.$store.selectedMeter = meter;
+        },
+
+        async handleMeterUpdated() {
+            await this.fetchMeters();
+        },
+
+        openEditMeterDialog(meter) {
+            this.setSelectedMeter(meter);
+            this.selectedMeterForEdit = meter;
+            this.editMeterDialogOpen = true;
         },
         
         openPurchaseDialog(meter) {
@@ -944,4 +982,4 @@ definePageMeta({
     scrollbar-color: #cbd5e1 #f1f5f9;
 }
 </style>
-  
+   
