@@ -214,6 +214,21 @@
                   <span class="hidden sm:inline">Purchase Token</span>
                   <span class="sm:hidden">Buy</span>
                 </Button>
+                <Button
+                  @click="deleteMeter(meter)"
+                  size="sm"
+                  variant="destructive"
+                  :disabled="deletingMeterNumber === meter.meterNumber"
+                  class="px-3 py-2 text-xs sm:text-sm"
+                >
+                  <Icon name="lucide:trash-2" class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2"/>
+                  <span class="hidden sm:inline">
+                    {{ deletingMeterNumber === meter.meterNumber ? 'Deleting...' : 'Delete' }}
+                  </span>
+                  <span class="sm:hidden">
+                    {{ deletingMeterNumber === meter.meterNumber ? '...' : 'Del' }}
+                  </span>
+                </Button>
               </div>
             </div>
           </div>
@@ -287,7 +302,8 @@
         meterInfo: null,
         selectedServiceType: null,
         showPurchaseDialog: false,
-        selectedMeterForPurchase: null
+        selectedMeterForPurchase: null,
+        deletingMeterNumber: null
       }
     },
     computed: {
@@ -441,6 +457,46 @@
       openPurchaseDialog(meter) {
         this.selectedMeterForPurchase = meter;
         this.showPurchaseDialog = true;
+      },
+      async deleteMeter(meter) {
+        const meterNumber = meter?.meterNumber;
+        if (!meterNumber) return;
+
+        const confirmed = window.confirm(
+          `Remove ${meter?.name || 'this meter'} from your wallet?`
+        );
+        if (!confirmed) return;
+
+        this.deletingMeterNumber = meterNumber;
+        try {
+          await useWalletAuthFetch(`${WALLET_API_URL}/meter/${meterNumber}`, {
+            method: 'PATCH',
+            body: {
+              name: meter?.name || '',
+              favourite: meter?.favourite ?? 0,
+              active: 0
+            }
+          });
+
+          this.$toast({
+            title: 'Meter removed',
+            description: 'The meter was deleted from your wallet.'
+          });
+
+          if (this.selectedMeter?.meterNumber === meterNumber) {
+            this.selectedMeter = null;
+          }
+          await this.fetchMeters();
+        } catch (error) {
+          console.error('Error deleting meter:', error);
+          this.$toast({
+            title: 'Error',
+            description: 'Failed to delete meter',
+            variant: 'destructive'
+          });
+        } finally {
+          this.deletingMeterNumber = null;
+        }
       },
       
       // Validation methods

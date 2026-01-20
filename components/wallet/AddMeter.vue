@@ -51,7 +51,8 @@ export default{
             meterNumber: null,
             meterName: null,
             dialogOpen: false,
-            meterAddedSuccessfully: false
+            meterAddedSuccessfully: false,
+            shouldRestore: false
         } 
     },
     methods:{
@@ -62,8 +63,13 @@ export default{
                     meterNumber : this.meterNumber.trim()
                 }
             })
+            const status = response?.response?.status
             if(!response){
               this.isValid = true;
+              this.shouldRestore = false;
+            }else if (status === 403 || status === 409) {
+              this.isValid = true;
+              this.shouldRestore = true;
             }else{
               this.$toast({
                 title: 'Uh oh! Something went wrong.',
@@ -75,20 +81,41 @@ export default{
         },
         async addNewMeter(){
           this.isLoading = true
-          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`, {
-            method: "POST",
-            body: {
-              meterNumber : this.meterNumber.trim(),
-              name: this.meterName,
-              favourite: 0
+          try {
+            const meterNumber = this.meterNumber.trim()
+            if (this.shouldRestore) {
+              const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/${meterNumber}`, {
+                method: "PATCH",
+                body: {
+                  name: this.meterName,
+                  favourite: 0,
+                  active: 1
+                }
+              })
+              if (response) {
+                this.dialogOpen = false;
+                this.meterAddedSuccessfully = true;
+                this.$emit('success')
+              }
+              return;
             }
-          })
-          if(response.id){
-            this.dialogOpen = false;
-            this.meterAddedSuccessfully = true;
-            this.$emit('success')
+
+            const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`, {
+              method: "POST",
+              body: {
+                meterNumber,
+                name: this.meterName,
+                favourite: 0
+              }
+            })
+            if(response?.id){
+              this.dialogOpen = false;
+              this.meterAddedSuccessfully = true;
+              this.$emit('success')
+            }
+          } finally {
+            this.isLoading = false
           }
-          this.isLoading = false
         },
     },
     watch: {
@@ -98,6 +125,7 @@ export default{
         this.meterNumber = null;
         this.meterName = null;
         this.isValid = false;
+        this.shouldRestore = false;
       }
     }
   }
