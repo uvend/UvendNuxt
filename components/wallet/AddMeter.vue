@@ -71,6 +71,8 @@ export default{
               this.isValid = true;
               this.shouldRestore = true;
             }else{
+              this.isValid = false;
+              this.shouldRestore = false;
               this.$toast({
                 title: 'Uh oh! Something went wrong.',
                 description: 'There was a problem with your request.',

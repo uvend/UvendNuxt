@@ -201,7 +201,9 @@ export default{
 	},
 	data(){
 		return {
-			showPurchaseDialog: false
+			showPurchaseDialog: false,
+			isNavOpen: false,
+			isMobile: false
 		}
 	},
 	computed:{
@@ -254,12 +256,25 @@ export default{
 			return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`
 		}
 	},
+	mounted() {
+		this.checkMobile()
+		window.addEventListener('resize', this.checkMobile)
+	},
+	beforeUnmount() {
+		window.removeEventListener('resize', this.checkMobile)
+	},
 	methods: {
 		isActive(path){
 			return this.$route.path === path
 		},
+		checkMobile() {
+			this.isMobile = window.innerWidth < 768
+			if (!this.isMobile) {
+				this.isNavOpen = false
+			}
+		},
 		toggleNav(){
-			this.isNavOpen = false
+			this.isNavOpen = !this.isNavOpen
 		}
 	}
 }

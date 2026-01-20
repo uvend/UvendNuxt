@@ -58,7 +58,7 @@
         <CardFooter class="p-6 pt-0 flex flex-col gap-3">
             <Button 
                 class="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold shadow-lg shadow-blue-500/30 transition-all duration-200" 
-                @click="resetPassword"
+                @click="debounceResetPassword"
                 :disabled="isLoading"
             >
                 <Icon v-if="!isLoading" name="lucide:send" class="mr-2 h-4 w-4"/>
