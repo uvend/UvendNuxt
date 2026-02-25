@@ -6,7 +6,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">Wallet Support Dashboard</h1>
-                        <p class="text-sm text-gray-600 mt-1">Search transactions by account number (email or user ID)</p>
+                        <p class="text-sm text-gray-600 mt-1">Search transactions by meter number</p>
                     </div>
                 </div>
                 
@@ -50,8 +50,8 @@
                             <Icon name="lucide:search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                             <Input 
                                 type="text" 
-                                placeholder="Search by account number (email, user ID, or meter number)..." 
-                                v-model="searchAccount" 
+                                placeholder="Enter meter number to search transactions..." 
+                                v-model="searchMeter" 
                                 @input="debouncedSearch"
                                 @keyup.enter="searchTransactions"
                                 class="pl-10 w-full"
@@ -69,16 +69,28 @@
                         <Button 
                             variant="outline" 
                             @click="checkMeterBalance"
-                            :disabled="!searchAccount || isLoading"
-                            v-if="isMeterNumber(searchAccount)"
+                            :disabled="!searchMeter || isLoading"
+                            v-if="searchMeter"
                         >
                             <Icon name="lucide:wallet" class="w-4 h-4 mr-2" />
                             Check Balance
                         </Button>
+                        <div v-if="searchMeter" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 border border-gray-200">
+                            <span class="text-sm text-gray-600">Wallet balance:</span>
+                            <span v-if="meterBalanceLoading" class="text-sm text-gray-500 flex items-center gap-1">
+                                <Icon name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                                Loading...
+                            </span>
+                            <span v-else-if="meterBalance !== null" class="text-sm font-semibold text-gray-900">
+                                R {{ formatCurrency(meterBalance) }}
+                                <span v-if="meterBalanceSource === 'calculated'" class="text-xs text-gray-500 font-normal">(from loaded transactions)</span>
+                            </span>
+                            <span v-else class="text-sm text-gray-500">Click "Check Balance"</span>
+                        </div>
                         <Button 
                             variant="outline" 
                             @click="clearSearch"
-                            v-if="searchAccount"
+                            v-if="searchMeter"
                         >
                             Clear
                         </Button>
@@ -112,7 +124,7 @@
                         <Icon name="lucide:wallet" class="w-12 h-12 text-blue-600" />
                     </div>
                     <h2 class="text-xl font-semibold text-gray-900 mb-2">Search Wallet Transactions</h2>
-                    <p class="text-gray-600">Enter an account number (email or user ID) above to search for transactions, or click "Load All" to view all transactions.</p>
+                    <p class="text-gray-600">Enter a meter number above to search for transactions, or click "Load All" to view all transactions.</p>
                 </div>
             </div>
 
@@ -123,7 +135,7 @@
                         <Icon name="lucide:file-x" class="w-12 h-12 text-gray-400" />
                     </div>
                     <h2 class="text-xl font-semibold text-gray-900 mb-2">No Transactions Found</h2>
-                    <p class="text-gray-600 mb-4">No transactions found for account: <span class="font-semibold">{{ searchAccount }}</span></p>
+                    <p class="text-gray-600 mb-4">No transactions found for meter: <span class="font-semibold">{{ searchMeter }}</span></p>
                     <Button variant="outline" @click="clearSearch">Try Another Search</Button>
                 </div>
             </div>
@@ -171,6 +183,14 @@
 
                 <!-- Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-4 text-sm text-gray-500 flex flex-col md:flex-row md:items-center md:justify-between gap-1">
+                        <span>
+                            Showing transactions from {{ startDateInput }} to {{ endDateInput }}
+                        </span>
+                        <span class="italic">
+                            Totals are based on currently loaded transactions only.
+                        </span>
+                    </div>
                     <Card class="bg-white border border-gray-200 shadow-lg">
                         <CardContent class="pt-6">
                             <div class="flex flex-col">
@@ -404,7 +424,7 @@ export default {
         lastWeek.setDate(today.getDate() - 7);
         
         return {
-            searchAccount: '',
+            searchMeter: '',
             transactions: [],
             isLoading: false,
             hasSearched: false,
@@ -418,27 +438,38 @@ export default {
                 end: today.toISOString()
             },
             startDateInput: lastWeek.toISOString().split('T')[0],
-            endDateInput: today.toISOString().split('T')[0]
+            endDateInput: today.toISOString().split('T')[0],
+            meterBalance: null,
+            meterBalanceLoading: false,
+            meterBalanceSource: null
         }
     },
     methods: {
         async searchTransactions() {
-            if (!this.searchAccount || this.searchAccount.trim() === '') {
+            console.log('🔍 [SEARCH] searchTransactions() called');
+            console.log('🔍 [SEARCH] searchMeter value:', this.searchMeter);
+            console.log('🔍 [SEARCH] searchMeter type:', typeof this.searchMeter);
+            console.log('🔍 [SEARCH] searchMeter trimmed:', this.searchMeter?.trim());
+            
+            if (!this.searchMeter || this.searchMeter.trim() === '') {
+                console.warn('⚠️ [SEARCH] Invalid search - empty meter number');
                 this.$toast({
                     title: 'Invalid Search',
-                    description: 'Please enter an account number (email or user ID)',
+                    description: 'Please enter a meter number',
                     variant: "destructive"
                 });
                 return;
             }
 
+            console.log('✅ [SEARCH] Starting search for meter:', this.searchMeter.trim());
             this.isLoading = true;
             this.hasSearched = true;
             this.currentPage = 1;
 
             try {
-                await this.fetchTransactions(this.searchAccount);
+                await this.fetchTransactions(this.searchMeter);
             } catch (error) {
+                console.error('❌ [SEARCH] Error in searchTransactions:', error);
                 this.$toast({
                     title: 'Search Failed',
                     description: 'There was a problem searching for transactions.',
@@ -449,14 +480,17 @@ export default {
             }
         },
         async loadAllTransactions() {
+            console.log('📂 [LOAD] loadAllTransactions() called');
             this.isLoading = true;
             this.hasSearched = true;
             this.currentPage = 1;
-            this.searchAccount = '';
+            this.searchMeter = '';
+            console.log('📂 [LOAD] Cleared searchMeter, now:', this.searchMeter);
 
             try {
                 await this.fetchTransactions(null);
             } catch (error) {
+                console.error('❌ [LOAD] Error in loadAllTransactions:', error);
                 this.$toast({
                     title: 'Load Failed',
                     description: 'There was a problem loading transactions.',
@@ -466,21 +500,27 @@ export default {
                 this.isLoading = false;
             }
         },
-        async fetchTransactions(accountNumber) {
+        async fetchTransactions(meterNumber) {
+            console.log('📡 [FETCH] fetchTransactions() called');
+            console.log('📡 [FETCH] meterNumber parameter:', meterNumber);
+            console.log('📡 [FETCH] meterNumber type:', typeof meterNumber);
+            
             this.transactions = [];
             
             // Use date range from component state
             const startDate = this.dateRange?.start ? new Date(this.dateRange.start).toISOString().split('T')[0] : null;
             const endDate = this.dateRange?.end ? new Date(this.dateRange.end).toISOString().split('T')[0] : null;
 
+            console.log('📡 [FETCH] Date range:', { start: startDate, end: endDate });
+            console.log('📡 [FETCH] dateRange object:', this.dateRange);
+
             // Build params object
             const params = {};
-            if (accountNumber) {
-                if (accountNumber.includes('@')) {
-                    params.email = accountNumber;
-                } else {
-                    params.userId = accountNumber;
-                }
+            if (meterNumber) {
+                params.meterNumber = meterNumber.trim();
+                console.log('📡 [FETCH] Added meterNumber to params:', params.meterNumber);
+            } else {
+                console.log('📡 [FETCH] No meterNumber provided - fetching all transactions');
             }
             if (startDate) {
                 params.startDate = startDate;
@@ -492,20 +532,69 @@ export default {
             params.page = 1;
             params.pageSize = 1000; // Request large page size to get more records
 
+            console.log('📡 [FETCH] Final params object:', params);
+            console.log('📡 [FETCH] API URL:', `${WALLET_API_URL}/admin/getalltransactions`);
+
             try {
-                // Fetch all transactions with date range
-                const allTransactionsPromise = useAuthFetch(`${WALLET_API_URL}/admin/getalltransactions`, {
-                    method: "GET",
-                    params: params
-                }).catch((error) => {
-                    return { transactions: [], data: [] };
-                });
+                // If meter number is provided, try using /meter/token/history endpoint which properly supports meter filtering
+                let allTransactionsPromise;
+                if (meterNumber) {
+                    console.log('📡 [FETCH] Using /meter/token/history endpoint for meter-specific search...');
+                    const meterHistoryParams = {};
+                    if (startDate) meterHistoryParams.startDate = startDate;
+                    if (endDate) meterHistoryParams.endDate = endDate;
+                    meterHistoryParams.meterNumber = meterNumber.trim();
+                    
+                    console.log('📡 [FETCH] Meter history params:', meterHistoryParams);
+                    allTransactionsPromise = useAuthFetch(`${WALLET_API_URL}/meter/token/history`, {
+                        method: "GET",
+                        params: meterHistoryParams
+                    }).catch((error) => {
+                        console.error('❌ [FETCH] Error fetching meter token history:', error);
+                        console.error('❌ [FETCH] Error details:', {
+                            message: error?.message,
+                            status: error?.response?.status,
+                            statusText: error?.response?.statusText,
+                            data: error?.response?.data
+                        });
+                        // Fallback to admin endpoint if meter history fails
+                        console.log('📡 [FETCH] Falling back to /admin/getalltransactions...');
+                        return useAuthFetch(`${WALLET_API_URL}/admin/getalltransactions`, {
+                            method: "GET",
+                            params: params
+                        }).catch(() => ({ transactions: [], data: [] }));
+                    });
+                } else {
+                    // Fetch all transactions with date range
+                    console.log('📡 [FETCH] Calling getalltransactions API...');
+                    allTransactionsPromise = useAuthFetch(`${WALLET_API_URL}/admin/getalltransactions`, {
+                        method: "GET",
+                        params: params
+                    }).catch((error) => {
+                        console.error('❌ [FETCH] Error fetching all transactions:', error);
+                        console.error('❌ [FETCH] Error details:', {
+                            message: error?.message,
+                            status: error?.response?.status,
+                            statusText: error?.response?.statusText,
+                            data: error?.response?.data
+                        });
+                        return { transactions: [], data: [] };
+                    });
+                }
 
                 // Fetch payment/paygate requests with date range
+                console.log('📡 [FETCH] Calling paygate/requests API...');
                 const paygateRequestsPromise = useAuthFetch(`${WALLET_API_URL}/admin/paygate/requests`, {
                     method: "GET",
                     params: params
                 }).catch((error) => {
+                    console.error('❌ [FETCH] Error fetching paygate requests:', error);
+                    console.error('❌ [FETCH] Paygate error details:', {
+                        message: error?.message,
+                        status: error?.response?.status,
+                        statusText: error?.response?.statusText,
+                        data: error?.response?.data
+                    });
                     return { requests: [], data: [] };
                 });
 
@@ -514,41 +603,81 @@ export default {
                     paygateRequestsPromise
                 ]);
 
+                console.log('📥 [RESPONSE] Raw allTransactionsResponse:', allTransactionsResponse);
+                console.log('📥 [RESPONSE] Response type:', typeof allTransactionsResponse);
+                console.log('📥 [RESPONSE] Response keys:', Object.keys(allTransactionsResponse || {}));
+                console.log('📥 [RESPONSE] Is array?', Array.isArray(allTransactionsResponse));
+                
+                console.log('📥 [RESPONSE] Raw paygateResponse:', paygateResponse);
+                console.log('📥 [RESPONSE] Paygate response type:', typeof paygateResponse);
+                console.log('📥 [RESPONSE] Paygate response keys:', Object.keys(paygateResponse || {}));
+
                 // Extract transactions from response (handle different response structures)
                 let allTxns = [];
                 if (Array.isArray(allTransactionsResponse)) {
+                    console.log('✅ [EXTRACT] Response is array, length:', allTransactionsResponse.length);
                     allTxns = allTransactionsResponse;
                 } else if (allTransactionsResponse?.transactions) {
+                    console.log('✅ [EXTRACT] Found transactions property, length:', allTransactionsResponse.transactions?.length);
                     allTxns = Array.isArray(allTransactionsResponse.transactions) 
                         ? allTransactionsResponse.transactions 
                         : [];
                 } else if (allTransactionsResponse?.data) {
+                    console.log('✅ [EXTRACT] Found data property, length:', allTransactionsResponse.data?.length);
                     allTxns = Array.isArray(allTransactionsResponse.data) 
                         ? allTransactionsResponse.data 
                         : [];
                 } else if (allTransactionsResponse?.results) {
+                    console.log('✅ [EXTRACT] Found results property, length:', allTransactionsResponse.results?.length);
                     allTxns = Array.isArray(allTransactionsResponse.results) 
                         ? allTransactionsResponse.results 
                         : [];
+                } else {
+                    console.warn('⚠️ [EXTRACT] Unknown response structure:', allTransactionsResponse);
+                }
+
+                console.log('📊 [EXTRACT] Extracted meter transactions:', allTxns.length);
+                if (allTxns.length > 0) {
+                    console.log('📊 [EXTRACT] Sample meter transaction:', allTxns[0]);
+                    console.log('📊 [EXTRACT] Sample meter transaction keys:', Object.keys(allTxns[0]));
+                    console.log('📊 [EXTRACT] Sample meter transaction meterNumber:', allTxns[0]?.meterNumber || allTxns[0]?.meter_number || allTxns[0]?.meternumber);
+                    console.log('📊 [EXTRACT] Sample meter transaction - checking all possible meter fields:', {
+                        meterNumber: allTxns[0]?.meterNumber,
+                        meter_number: allTxns[0]?.meter_number,
+                        meternumber: allTxns[0]?.meternumber,
+                        meter: allTxns[0]?.meter,
+                        meterId: allTxns[0]?.meterId,
+                        meter_id: allTxns[0]?.meter_id,
+                        utilityMeterNumber: allTxns[0]?.utilityMeterNumber,
+                        utility_meter_number: allTxns[0]?.utility_meter_number
+                    });
                 }
 
                 // Extract paygate requests
                 let paygateRequests = [];
                 if (Array.isArray(paygateResponse)) {
+                    console.log('✅ [EXTRACT] Paygate response is array, length:', paygateResponse.length);
                     paygateRequests = paygateResponse;
                 } else if (paygateResponse?.requests) {
+                    console.log('✅ [EXTRACT] Found requests property, length:', paygateResponse.requests?.length);
                     paygateRequests = Array.isArray(paygateResponse.requests) 
                         ? paygateResponse.requests 
                         : [];
                 } else if (paygateResponse?.data) {
+                    console.log('✅ [EXTRACT] Found data property, length:', paygateResponse.data?.length);
                     paygateRequests = Array.isArray(paygateResponse.data) 
                         ? paygateResponse.data 
                         : [];
                 } else if (paygateResponse?.results) {
+                    console.log('✅ [EXTRACT] Found results property, length:', paygateResponse.results?.length);
                     paygateRequests = Array.isArray(paygateResponse.results) 
                         ? paygateResponse.results 
                         : [];
+                } else {
+                    console.warn('⚠️ [EXTRACT] Unknown paygate response structure:', paygateResponse);
                 }
+
+                console.log('📊 [EXTRACT] Extracted paygate requests:', paygateRequests.length);
 
                 // Check if pagination is needed
                 const totalTransactions = allTransactionsResponse?.total || allTransactionsResponse?.totalCount || allTransactionsResponse?.totalRecords || 0;
@@ -582,15 +711,69 @@ export default {
                 }
 
                 // Format meter/utility transactions
-                const meterTxns = allTxns.map(tx => ({
-                    ...tx,
-                    transactionType: 'meter',
-                    type: tx.utilityType || tx.type || 'meter',
-                    accountNumber: tx.email || tx.userEmail || tx.accountNumber || accountNumber,
-                    userId: tx.userId || tx.user_id,
-                    created: tx.created || tx.transactionDate || tx.date || tx.created_at,
-                    amount: tx.amount || tx.totalAmount || 0
-                }));
+                console.log('🔄 [FORMAT] Formatting meter transactions...');
+                if (allTxns.length > 0) {
+                    console.log('🔄 [FORMAT] First raw transaction before formatting:', JSON.stringify(allTxns[0], null, 2));
+                    console.log('🔄 [FORMAT] First raw transaction keys:', Object.keys(allTxns[0]));
+                    // Log all field names that might contain "meter" (case insensitive)
+                    const meterFields = Object.keys(allTxns[0]).filter(key => 
+                        key.toLowerCase().includes('meter') || 
+                        key.toLowerCase().includes('metr')
+                    );
+                    console.log('🔄 [FORMAT] Fields containing "meter":', meterFields);
+                    if (meterFields.length > 0) {
+                        meterFields.forEach(field => {
+                            console.log(`🔄 [FORMAT] ${field}:`, allTxns[0][field]);
+                        });
+                    }
+                }
+                const meterTxns = allTxns.map(tx => {
+                    // Try to find meter number in various possible fields
+                    // Priority: 
+                    // 1. Top-level fields (meterNumber, meter_number, meternumber)
+                    // 2. Nested in details (details.meterNumber)
+                    // 3. Reference field (often contains meter number)
+                    // 4. Other variations
+                    const meterNumber = tx.meterNumber || 
+                                      tx.meter_number || 
+                                      tx.meternumber ||
+                                      (tx.details && (tx.details.meterNumber || tx.details.meter_number || tx.details.meternumber)) ||
+                                      tx.reference || // Reference field often contains meter number
+                                      tx.meter || 
+                                      tx.meterId || 
+                                      tx.meter_id ||
+                                      tx.utilityMeterNumber || 
+                                      tx.utility_meter_number || null;
+                    
+                    // Only log first few to avoid console spam
+                    if (allTxns.indexOf(tx) < 3) {
+                        console.log('🔄 [FORMAT] Extracting meter number for transaction:', {
+                            id: tx.id,
+                            topLevel: tx.meterNumber,
+                            details: tx.details?.meterNumber,
+                            reference: tx.reference,
+                            extracted: meterNumber
+                        });
+                    }
+                    
+                    const formatted = {
+                        ...tx,
+                        transactionType: 'meter',
+                        type: tx.utilityType || (tx.details && tx.details.utilityType) || tx.type || 'meter',
+                        accountNumber: tx.email || tx.userEmail || tx.accountNumber || null,
+                        userId: tx.userId || tx.user_id || tx.user || null,
+                        meterNumber: meterNumber, // Ensure meterNumber is set
+                        created: tx.created || tx.transactionDate || tx.date || tx.created_at,
+                        amount: tx.amount || tx.totalAmount || 0
+                    };
+                    return formatted;
+                });
+                console.log('🔄 [FORMAT] Formatted meter transactions:', meterTxns.length);
+                if (meterTxns.length > 0) {
+                    console.log('🔄 [FORMAT] Sample formatted meter transaction:', meterTxns[0]);
+                    console.log('🔄 [FORMAT] Sample meter number in formatted:', meterTxns[0]?.meterNumber);
+                    console.log('🔄 [FORMAT] All meter numbers in formatted:', meterTxns.map(tx => tx.meterNumber || tx.meter_number || tx.meternumber));
+                }
 
                 // Format paygate/payment transactions
                 // Payment amounts are stored in cents, so divide by 100
@@ -610,7 +793,7 @@ export default {
                         ...tx,
                         transactionType: 'payment',
                         type: 'funding',
-                        accountNumber: tx.email || tx.userEmail || tx.accountNumber || accountNumber,
+                        accountNumber: tx.email || tx.userEmail || tx.accountNumber || null,
                         userId: tx.userId || tx.user_id,
                         created: tx.created || tx.transactionDate || tx.date || tx.created_at,
                         amount: amount, // Store in rands
@@ -620,35 +803,68 @@ export default {
                     };
                 });
 
-                // Combine and sort by date (newest first)
-                this.transactions = [...meterTxns, ...paymentTxns].sort((a, b) => {
+                // Combine transactions
+                console.log('🔗 [COMBINE] Combining transactions...');
+                console.log('🔗 [COMBINE] Meter transactions:', meterTxns.length);
+                console.log('🔗 [COMBINE] Payment transactions:', paymentTxns.length);
+                let combinedTxns = [...meterTxns, ...paymentTxns];
+                console.log('🔗 [COMBINE] Total combined before filtering:', combinedTxns.length);
+
+                // Filter by meter number if provided (strict client-side filtering)
+                if (meterNumber && meterNumber.trim() !== '') {
+                    const searchMeterStr = meterNumber.trim().toString();
+                    console.log('🔍 [FILTER] Filtering by meter number:', searchMeterStr);
+                    console.log('🔍 [FILTER] Search meter type:', typeof searchMeterStr);
+                    
+                    const beforeFilter = combinedTxns.length;
+                    combinedTxns = combinedTxns.filter(tx => {
+                        const txMeterNumber = (tx.meterNumber || tx.meter_number || tx.meternumber || '').toString();
+                        const matches = txMeterNumber === searchMeterStr || txMeterNumber.includes(searchMeterStr);
+                        
+                        if (combinedTxns.indexOf(tx) < 5) { // Log first 5 for debugging
+                            console.log('🔍 [FILTER] Transaction check:', {
+                                txMeterNumber,
+                                searchMeterStr,
+                                matches,
+                                txMeterNumberType: typeof txMeterNumber,
+                                searchMeterStrType: typeof searchMeterStr
+                            });
+                        }
+                        
+                        return matches;
+                    });
+                    console.log('🔍 [FILTER] After filtering:', combinedTxns.length, 'of', beforeFilter);
+                    console.log('🔍 [FILTER] Filtered transactions:', combinedTxns);
+                } else {
+                    console.log('🔍 [FILTER] No meter number provided - showing all transactions');
+                }
+
+                // Sort by date (newest first)
+                console.log('📅 [SORT] Sorting transactions by date...');
+                this.transactions = combinedTxns.sort((a, b) => {
                     const dateA = new Date(a.created || a.transactionDate || a.date || 0);
                     const dateB = new Date(b.created || b.transactionDate || b.date || 0);
                     return dateB - dateA;
                 });
+                console.log('✅ [FINAL] Final transactions array length:', this.transactions.length);
+                console.log('✅ [FINAL] First transaction:', this.transactions[0]);
+                console.log('✅ [FINAL] All transaction meter numbers:', this.transactions.map(tx => tx.meterNumber || tx.meter_number || tx.meternumber));
 
-                // Filter by account number if provided (client-side filtering as backup)
-                if (accountNumber && this.transactions.length > 0) {
-                    const searchLower = accountNumber.toLowerCase();
-                    this.transactions = this.transactions.filter(tx => {
-                        const email = (tx.email || tx.userEmail || tx.accountNumber || '').toLowerCase();
-                        const userId = (tx.userId || tx.user_id || '').toLowerCase();
-                        return email.includes(searchLower) || userId.includes(searchLower);
-                    });
-                }
-
-                if (this.transactions.length === 0 && accountNumber) {
+                if (this.transactions.length === 0 && meterNumber) {
                     this.$toast({
                         title: 'No Transactions Found',
-                        description: `No transactions found for account: ${accountNumber} in the selected date range`,
+                        description: `No transactions found for meter: ${meterNumber} in the selected date range`,
                         variant: "default"
                     });
                 } else if (this.transactions.length > 0) {
                     this.$toast({
                         title: 'Transactions Loaded',
-                        description: `Found ${this.transactions.length} transaction(s) from ${startDate} to ${endDate}`,
+                        description: `Found ${this.transactions.length} transaction(s)${meterNumber ? ` for meter ${meterNumber}` : ''} from ${startDate} to ${endDate}`,
                         variant: "success"
                     });
+                }
+                if (meterNumber) {
+                    this.loadMeterBalance(meterNumber.trim());
                 }
             } catch (error) {
                 this.$toast({
@@ -663,10 +879,12 @@ export default {
             this.showDetailsDialog = true;
         },
         clearSearch() {
-            this.searchAccount = '';
+            this.searchMeter = '';
             this.transactions = [];
             this.hasSearched = false;
             this.currentPage = 1;
+            this.meterBalance = null;
+            this.meterBalanceSource = null;
         },
         formatCurrency(amount) {
             if (!amount && amount !== 0) return '0.00';
@@ -713,18 +931,9 @@ export default {
             return status;
         },
         getTransactionAmount(transaction) {
-            // Handle different amount formats
             if (transaction.amount !== undefined && transaction.amount !== null) {
-                // For funding transactions, amount should already be in rands (converted during fetch)
-                // But double-check: if amount seems too large (likely in cents), convert it
                 const rawAmount = parseFloat(transaction.amount);
-                
-                if (transaction.transactionType === 'payment' || transaction.type === 'funding') {
-                    // Funding amounts: if greater than 1000, likely in cents, otherwise already in rands
-                    return rawAmount >= 1000 ? rawAmount / 100 : rawAmount;
-                }
-                // Meter transactions are already in rands
-                return rawAmount;
+                return isNaN(rawAmount) ? 0 : rawAmount;
             }
             return 0;
         },
@@ -764,40 +973,6 @@ export default {
                 return jsonString;
             }
         },
-        async checkMeterBalance() {
-            if (!this.searchAccount) return;
-            
-            const meterNumber = this.searchAccount.trim();
-            this.isLoading = true;
-            
-            try {
-                const response = await useAuthFetch(`${WALLET_API_URL}/account/balance/${meterNumber}`, {
-                    method: "GET"
-                });
-                
-                const balance = response?.balance || response?.data?.balance || response?.amount || 0;
-                
-                this.$toast({
-                    title: 'Meter Balance',
-                    description: `Meter ${meterNumber} balance: R ${this.formatCurrency(balance)}`,
-                    variant: "success"
-                });
-            } catch (error) {
-                this.$toast({
-                    title: 'Balance Check Failed',
-                    description: `Could not fetch balance for meter: ${meterNumber}`,
-                    variant: "destructive"
-                });
-            } finally {
-                this.isLoading = false;
-            }
-        },
-        isMeterNumber(input) {
-            if (!input) return false;
-            // Check if it looks like a meter number (typically numeric or alphanumeric, not an email)
-            const trimmed = input.trim();
-            return !trimmed.includes('@') && (trimmed.match(/^[A-Z0-9]+$/i) || trimmed.match(/^\d+$/));
-        },
         updateDateRangeFromInputs() {
             if (this.startDateInput && this.endDateInput) {
                 this.dateRange = {
@@ -822,34 +997,163 @@ export default {
             this.endDateInput = today.toISOString().split('T')[0];
             this.updateDateRangeFromInputs();
         },
+        isMeterNumber(input) {
+            if (!input) return false;
+            // Check if it looks like a meter number (typically numeric or alphanumeric, not an email)
+            const trimmed = input.trim();
+            return !trimmed.includes('@') && (trimmed.match(/^[A-Z0-9]+$/i) || trimmed.match(/^\d+$/));
+        },
+        async checkMeterBalance() {
+            if (!this.searchMeter) return;
+            const meterNumber = this.searchMeter.trim();
+            this.isLoading = true;
+            this.meterBalanceLoading = true;
+            try {
+                const { balance, source } = await this.fetchMeterBalance(meterNumber);
+                if (balance !== null) {
+                    this.meterBalance = balance;
+                    this.meterBalanceSource = source;
+                    this.$toast({
+                        title: source === 'api' ? 'Meter Balance' : 'Meter Balance (Calculated)',
+                        description: `Meter ${meterNumber} balance: R ${this.formatCurrency(balance)}${source === 'calculated' ? ' (from loaded transactions)' : ''}`,
+                        variant: "success"
+                    });
+                } else {
+                    this.meterBalance = null;
+                    this.meterBalanceSource = null;
+                    this.$toast({
+                        title: 'Balance Not Available',
+                        description: `No admin endpoint available for meter balance. Load transactions and try again, or query the database directly.`,
+                        variant: "default"
+                    });
+                }
+            } catch (error) {
+                this.meterBalance = null;
+                this.meterBalanceSource = null;
+                this.$toast({
+                    title: 'Balance Check Failed',
+                    description: error?.message || `Could not fetch balance for meter: ${meterNumber}.`,
+                    variant: "destructive"
+                });
+            } finally {
+                this.isLoading = false;
+                this.meterBalanceLoading = false;
+            }
+        },
+        async loadMeterBalance(meterNumber) {
+            if (!meterNumber || this.searchMeter?.trim() !== meterNumber) return;
+            this.meterBalanceLoading = true;
+            this.meterBalance = null;
+            this.meterBalanceSource = null;
+            try {
+                const { balance, source } = await this.fetchMeterBalance(meterNumber);
+                if (this.searchMeter?.trim() === meterNumber) {
+                    this.meterBalance = balance;
+                    this.meterBalanceSource = source;
+                }
+            } finally {
+                if (this.searchMeter?.trim() === meterNumber) {
+                    this.meterBalanceLoading = false;
+                }
+            }
+        },
+        async fetchMeterBalance(meterNumber) {
+            if (!meterNumber) return { balance: null, source: null };
+            try {
+                let response = null;
+                try {
+                    response = await useAuthFetch(`${WALLET_API_URL}/admin/account/balance/${meterNumber}`, { method: "GET" });
+                } catch {
+                    response = await useAuthFetch(`${WALLET_API_URL}/admin/balance/${meterNumber}`, { method: "GET" });
+                }
+                const balance = response?.balance ?? response?.data?.balance ?? response?.amount ?? 0;
+                return { balance: Number(balance), source: 'api' };
+            } catch {
+                const balance = this.calculateBalanceFromTransactions(meterNumber);
+                return { balance: balance !== null ? balance : null, source: balance !== null ? 'calculated' : null };
+            }
+        },
+        calculateBalanceFromTransactions(meterNumber) {
+            // Calculate balance from loaded transactions for this meter
+            if (!meterNumber || this.transactions.length === 0) {
+                return null;
+            }
+            
+            const meterTransactions = this.transactions.filter(tx => 
+                (tx.meterNumber || tx.meter_number || '').toString() === meterNumber.toString()
+            );
+            
+            if (meterTransactions.length === 0) {
+                return null;
+            }
+            
+            // Calculate: funding - spending
+            let balance = 0;
+            meterTransactions.forEach(tx => {
+                if (tx.transactionType === 'payment' || tx.type === 'funding') {
+                    balance += this.getTransactionAmount(tx); // Add funding
+                } else if (tx.transactionType === 'meter') {
+                    balance -= this.getTransactionAmount(tx); // Subtract spending
+                }
+            });
+            
+            return balance;
+        },
         debouncedSearch: debounce(function() {
             // Auto-search can be enabled here if needed
         }, 500)
     },
     computed: {
         filteredTransactions() {
+            console.log('🎯 [COMPUTED] filteredTransactions() called');
+            console.log('🎯 [COMPUTED] this.transactions length:', this.transactions.length);
+            console.log('🎯 [COMPUTED] this.searchMeter:', this.searchMeter);
+            console.log('🎯 [COMPUTED] this.transactionTypeFilter:', this.transactionTypeFilter);
+            
             let filtered = this.transactions;
+            console.log('🎯 [COMPUTED] Initial filtered length:', filtered.length);
             
             // Filter by transaction type
             if (this.transactionTypeFilter === 'meter') {
+                const beforeTypeFilter = filtered.length;
                 filtered = filtered.filter(tx => tx.transactionType === 'meter');
+                console.log('🎯 [COMPUTED] After meter type filter:', filtered.length, 'of', beforeTypeFilter);
             } else if (this.transactionTypeFilter === 'funding') {
+                const beforeTypeFilter = filtered.length;
                 filtered = filtered.filter(tx => tx.transactionType === 'payment' || tx.type === 'funding');
+                console.log('🎯 [COMPUTED] After funding type filter:', filtered.length, 'of', beforeTypeFilter);
             }
             
-            // Filter by search account if provided
-            if (this.searchAccount && this.searchAccount.trim() !== '') {
-                const searchLower = this.searchAccount.toLowerCase();
+            // Filter by search meter number if provided (strict matching)
+            if (this.searchMeter && this.searchMeter.trim() !== '') {
+                const searchMeterStr = this.searchMeter.trim().toString();
+                console.log('🎯 [COMPUTED] Filtering by search meter:', searchMeterStr);
+                console.log('🎯 [COMPUTED] Search meter type:', typeof searchMeterStr);
+                
+                const beforeMeterFilter = filtered.length;
                 filtered = filtered.filter(tx => {
-                    const email = (tx.email || tx.userEmail || tx.accountNumber || '').toLowerCase();
-                    const userId = (tx.userId || tx.user_id || '').toLowerCase();
-                    const meterNumber = (tx.meterNumber || tx.meter_number || '').toLowerCase();
-                    return email.includes(searchLower) || 
-                           userId.includes(searchLower) || 
-                           meterNumber.includes(searchLower);
+                    const txMeterNumber = (tx.meterNumber || tx.meter_number || tx.meternumber || '').toString();
+                    const matches = txMeterNumber === searchMeterStr || txMeterNumber.includes(searchMeterStr);
+                    
+                    if (filtered.indexOf(tx) < 3) { // Log first 3 for debugging
+                        console.log('🎯 [COMPUTED] Transaction filter check:', {
+                            txMeterNumber,
+                            searchMeterStr,
+                            matches,
+                            fullTx: tx
+                        });
+                    }
+                    
+                    // Only show transactions that match the searched meter number
+                    return matches;
                 });
+                console.log('🎯 [COMPUTED] After meter filter:', filtered.length, 'of', beforeMeterFilter);
+                console.log('🎯 [COMPUTED] Filtered meter numbers:', filtered.map(tx => tx.meterNumber || tx.meter_number || tx.meternumber));
+            } else {
+                console.log('🎯 [COMPUTED] No search meter - showing all transactions');
             }
             
+            console.log('🎯 [COMPUTED] Final filtered length:', filtered.length);
             return filtered;
         },
         paginatedTransactions() {
@@ -885,19 +1189,23 @@ export default {
         }
     },
     watch: {
-        searchAccount() {
+        searchMeter(newVal, oldVal) {
+            console.log('👀 [WATCH] searchMeter changed:', { from: oldVal, to: newVal });
             this.currentPage = 1;
         },
-        transactionTypeFilter() {
+        transactionTypeFilter(newVal, oldVal) {
+            console.log('👀 [WATCH] transactionTypeFilter changed:', { from: oldVal, to: newVal });
             this.currentPage = 1;
         },
         dateRange: {
             handler(newRange, oldRange) {
+                console.log('👀 [WATCH] dateRange changed:', { from: oldRange, to: newRange });
                 if (newRange && oldRange && 
                     (newRange.start !== oldRange.start || newRange.end !== oldRange.end)) {
                     // Reload transactions when date range changes
                     if (this.hasSearched || this.transactions.length > 0) {
-                        this.fetchTransactions(this.searchAccount || null);
+                        console.log('👀 [WATCH] Reloading transactions due to date range change');
+                        this.fetchTransactions(this.searchMeter || null);
                     }
                 }
             },
@@ -905,6 +1213,10 @@ export default {
         }
     },
     async mounted() {
+        console.log('🚀 [MOUNT] Component mounted');
+        console.log('🚀 [MOUNT] Initial searchMeter:', this.searchMeter);
+        console.log('🚀 [MOUNT] Initial dateRange:', this.dateRange);
+        
         // Initialize date range if not set
         if (!this.dateRange) {
             const today = new Date();
@@ -914,6 +1226,7 @@ export default {
                 start: lastWeek.toISOString(),
                 end: today.toISOString()
             };
+            console.log('🚀 [MOUNT] Initialized dateRange:', this.dateRange);
         }
         // Auto-load all transactions on mount with default date range
         await this.loadAllTransactions();
