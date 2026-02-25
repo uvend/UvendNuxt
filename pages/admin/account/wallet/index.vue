@@ -69,7 +69,7 @@
                         <Button 
                             variant="outline" 
                             @click="checkMeterBalance"
-                            :disabled="!searchMeter || isLoading"
+                            :disabled="!searchMeter || isLoading || meterBalanceLoading"
                             v-if="searchMeter"
                         >
                             <Icon name="lucide:wallet" class="w-4 h-4 mr-2" />
@@ -776,19 +776,14 @@ export default {
                 }
 
                 // Format paygate/payment transactions
-                // Payment amounts are stored in cents, so divide by 100
+                // Prefer explicit amountInCents when present; otherwise treat amount as rands (no heuristic).
                 const paymentTxns = paygateRequests.map(tx => {
-                    // Handle amount conversion - amounts are in cents
                     let amount = 0;
-                    if (tx.amount) {
-                        // If amount is already in rands (less than 1000), it might be incorrectly formatted
-                        // Otherwise, divide by 100 to convert from cents
-                        const rawAmount = parseFloat(tx.amount);
-                        amount = rawAmount >= 1000 ? rawAmount / 100 : rawAmount;
-                    } else if (tx.amountInCents) {
+                    if (tx.amountInCents != null && tx.amountInCents !== '') {
                         amount = parseFloat(tx.amountInCents) / 100;
+                    } else if (tx.amount != null && tx.amount !== '') {
+                        amount = parseFloat(tx.amount);
                     }
-                    
                     return {
                         ...tx,
                         transactionType: 'payment',
@@ -991,8 +986,7 @@ export default {
         },
         setLastMonth() {
             const today = new Date();
-            const lastMonth = new Date();
-            lastMonth.setDate(today.getDate() - 30);
+            const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
             this.startDateInput = lastMonth.toISOString().split('T')[0];
             this.endDateInput = today.toISOString().split('T')[0];
             this.updateDateRangeFromInputs();
@@ -1006,7 +1000,6 @@ export default {
         async checkMeterBalance() {
             if (!this.searchMeter) return;
             const meterNumber = this.searchMeter.trim();
-            this.isLoading = true;
             this.meterBalanceLoading = true;
             try {
                 const { balance, source } = await this.fetchMeterBalance(meterNumber);
@@ -1036,7 +1029,6 @@ export default {
                     variant: "destructive"
                 });
             } finally {
-                this.isLoading = false;
                 this.meterBalanceLoading = false;
             }
         },
@@ -1052,9 +1044,7 @@ export default {
                     this.meterBalanceSource = source;
                 }
             } finally {
-                if (this.searchMeter?.trim() === meterNumber) {
-                    this.meterBalanceLoading = false;
-                }
+                this.meterBalanceLoading = false;
             }
         },
         async fetchMeterBalance(meterNumber) {
