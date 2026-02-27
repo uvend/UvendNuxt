@@ -81,21 +81,35 @@
         <MySkeletenCardList v-if="isLoading" :columns="8"/>
         <div v-else>
             <div class="flex flex-row justify-between w-full items-center bg-gray-50 p-1 my-1 rounded">
-                        <div class="flex flex-col items-start gap-1.5">
-                            <p class="font-bold">
-                                {{ rangeStart }} - {{ rangeEnd }}
-                            </p>
-                            <!--<p class="text-sm flex justify-end">Selected</p>-->
-                            <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ totalSelectedAmount }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm flex justify-end">Due</p>
-                            <p class="w-full text-center font-bold"><Badge>{{ totalRepsonse  }}</Badge>
-                                {{ totalAmount }}</p>
-                        </div>
-                    </div>
-            <div class="">
-                <MyPaymentCard v-for="payment in paginatedPayments" :key="payment.uniqueIdentification" :payment="payment" @click="toggleSelectedCard(payment)" :class="[ selectedPayments.includes(payment) ? 'bg-blue-100 shadow' : '' ]" class="cursor-pointer"/>
+                <div class="flex flex-col items-start gap-1.5">
+                    <p class="font-bold">
+                        {{ rangeStart }} - {{ rangeEnd }}
+                    </p>
+                    <!--<p class="text-sm flex justify-end">Selected</p>-->
+                    <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ totalSelectedAmount }}</p>
+                </div>
+                <div>
+                    <p class="text-sm flex justify-end">Due</p>
+                    <p class="w-full text-center font-bold">
+                        <Badge>{{ totalRepsonse  }}</Badge>
+                        {{ totalAmount }}
+                    </p>
+                </div>
+            </div>
+            <div>
+                <MyPaymentCard
+                    v-for="payment in paginatedPayments"
+                    :key="payment.uniqueIdentification"
+                    :payment="payment"
+                    @click="toggleSelectedCard(payment)"
+                    :class="[ selectedPayments.includes(payment) ? 'bg-blue-100 shadow' : '' ]"
+                    class="cursor-pointer"
+                />
+            </div>
+            <div class="mt-4 flex justify-end">
+                <Button :disabled="disableBatch" @click="batch()">
+                    Batch
+                </Button>
             </div>
         </div>
     </div>
