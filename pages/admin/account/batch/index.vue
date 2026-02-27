@@ -56,11 +56,27 @@
                     {{ rangeStart }} - {{ rangeEnd }}
                 </p>
                 <p class="w-fit text-center font-bold">
-                    <Badge>{{ totalBatches  }}</Badge>
+                    <Badge>{{ totalBatches }}</Badge>
                     {{ totalBatchesAmount }}
                 </p>
             </div>
-            <MyBatchCard v-for="batch in paginatedBatch" :batch="batch"/>
+            <MyBatchCard v-for="batch in paginatedBatch" :batch="batch" />
+            <div class="mt-4 flex items-center justify-between">
+                <div class="flex flex-row w-fit gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5" />
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5" />
+                    </Button>
+                </div>
+                <div>
+                    <Button variant="outline" @click="printBatches()" class="flex items-center gap-2">
+                        <Icon name="lucide:printer" class="w-4 h-4" />
+                        Print
+                    </Button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
