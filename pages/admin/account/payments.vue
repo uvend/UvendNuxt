@@ -106,10 +106,20 @@
                     class="cursor-pointer"
                 />
             </div>
-            <div class="mt-4 flex justify-end">
-                <Button :disabled="disableBatch" @click="batch()">
-                    Batch
-                </Button>
+            <div class="mt-4 flex items-center justify-between">
+                <div class="flex flex-row w-fit gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                    </Button>
+                </div>
+                <div class="flex justify-end">
+                    <Button :disabled="disableBatch" @click="batch()">
+                        Batch
+                    </Button>
+                </div>
             </div>
         </div>
     </div>
