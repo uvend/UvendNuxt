@@ -39,6 +39,7 @@
     "shadcn-vue": "^1.0.0",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
+    "unstorage": "^1.17.4",
     "vaul-vue": "^0.4.1",
     "vue": "latest",
     "vue-router": "latest",
