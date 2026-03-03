@@ -11,7 +11,10 @@
                         </NumberFieldContent>
                     </NumberField>
                     <div class="flex flex-row gap-1">
-                        <Button variant="secondary" @click="toggleSearch"><Icon name="lucide:search"/></Button>
+                        <Button variant="secondary" @click="toggleSearch" class="flex items-center gap-2">
+                            <Icon name="lucide:search" class="w-5 h-5"/>
+                            Search
+                        </Button>
                         <Input type="text" placeholder="Search" v-if="searchActive" v-model="search" @input="debouncedSearch"/>
                         <Input type="number" placeholder="Min Amount" v-if="searchActive" v-model="minAmount" @input="debouncedSearch" class="w-32"/>
                         <Input type="number" placeholder="Max Amount" v-if="searchActive" v-model="maxAmount" @input="debouncedSearch" class="w-32"/>
@@ -38,8 +41,9 @@
                 </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
-                        <Button variant="ghost" class="rounded-full px-2 py-3">
+                        <Button variant="ghost" class="rounded-full px-2 py-3 flex items-center gap-2">
                             <Icon name="lucide:sliders-horizontal" class="w-5 h-5"/>
+                            Filters
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -71,9 +75,15 @@
                 </Select>
                 </div>
 
-                <div class="flex flex-row w-fit">
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                <div class="flex flex-row w-fit gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                        Previous
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                        Next
+                    </Button>
                 </div>
                 <MyPaymentSortPopover />
             </div>
@@ -108,11 +118,13 @@
             </div>
             <div class="mt-4 flex items-center justify-between">
                 <div class="flex flex-row w-fit gap-2">
-                    <Button variant="secondary" @click="changePage(currentPage-1)">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
                         <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                        Previous
                     </Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)">
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
                         <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                        Next
                     </Button>
                 </div>
                 <div class="flex justify-end">

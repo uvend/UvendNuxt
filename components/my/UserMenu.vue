@@ -1,8 +1,9 @@
 <template>
     <DropdownMenu>
     <DropdownMenuTrigger as-child>
-        <Button variant="ghost" class="rounded-full px-2 py-3">
+        <Button variant="ghost" class="rounded-full px-2 py-3 flex items-center gap-2">
             <Icon name="lucide:user" class="w-5 h-5"/>
+            Account
         </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">

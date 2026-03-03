@@ -1,10 +1,17 @@
 <template>
     <div class="h-screen">
         <div class="flex flex-row justify-between items-center">
-            <div class="">
+            <div class="flex items-center gap-2">
+                <Button variant="outline" @click="goBack" class="flex items-center gap-2">
+                    <Icon name="lucide:arrow-left" class="w-5 h-5"/>
+                    Return
+                </Button>
                 <div class="flex flex-row gap-1.5 w-fit items-bottom">
                     <div class="flex flex-row gap-1">
-                        <Button variant="secondary" @click="toggleSearch"><Icon name="lucide:search"/></Button>
+                        <Button variant="secondary" @click="toggleSearch" class="flex items-center gap-2">
+                            <Icon name="lucide:search" class="w-5 h-5"/>
+                            Search
+                        </Button>
                         <Input type="text" placeholder="Search" v-if="searchActive" v-model="search" @input="debouncedSearch"/>
                     </div>
                 </div>
@@ -25,9 +32,15 @@
                         </SelectItem>
                     </SelectContent>
                 </Select>
-                <div>
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                <div class="flex flex-row gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                        Previous
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                        Next
+                    </Button>
                 </div>
                 <!--<MyPaymentSortPopover />-->
             </div>
@@ -53,8 +66,9 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <Button @click="getBankFile()">
-                            <Icon name="lucide:landmark"/>
+                        <Button @click="getBankFile()" class="flex items-center gap-2">
+                            <Icon name="lucide:landmark" class="w-5 h-5"/>
+                            Bank File
                         </Button>
                         <div v-if="paymentState != 'Settled'">
                             <MyBatchFinaliseDialog :batch="this.$route.params.batch_id"/>
@@ -114,6 +128,15 @@ export default{
             this.totalBatch = result.listOfPeriodTotalsEntry.length
             this.paymentState = this.batch[0].periodTotals.batchPaymentState
             this.isLoading = false;
+        },
+        goBack() {
+            const params = new URLSearchParams()
+            const page = parseInt(this.$route.query?.fromPage, 10)
+            const months = parseInt(this.$route.query?.fromMonths, 10)
+            if (page >= 1) params.set('page', page)
+            if (months >= 1) params.set('monthsBack', months)
+            const query = params.toString() ? '?' + params.toString() : ''
+            this.$router.push('/admin/account/batch' + query)
         },
         toggleSearch(){
             this.searchActive = !this.searchActive;
