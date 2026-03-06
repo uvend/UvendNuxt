@@ -11,7 +11,10 @@
                         </NumberFieldContent>
                     </NumberField>
                     <div class="flex flex-row gap-1">
-                        <Button variant="secondary" @click="toggleSearch"><Icon name="lucide:search"/></Button>
+                        <Button variant="secondary" @click="toggleSearch" class="flex items-center gap-2">
+                            <Icon name="lucide:search" class="w-5 h-5"/>
+                            Search
+                        </Button>
                         <Input type="text" placeholder="Search" v-if="searchActive" v-model="search" @input="debouncedSearch"/>
                         <Input type="number" placeholder="Min Amount" v-if="searchActive" v-model="minAmount" @input="debouncedSearch" class="w-32"/>
                         <Input type="number" placeholder="Max Amount" v-if="searchActive" v-model="maxAmount" @input="debouncedSearch" class="w-32"/>
@@ -38,8 +41,9 @@
                 </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
-                        <Button variant="ghost" class="rounded-full px-2 py-3">
+                        <Button variant="ghost" class="rounded-full px-2 py-3 flex items-center gap-2">
                             <Icon name="lucide:sliders-horizontal" class="w-5 h-5"/>
+                            Filters
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -71,9 +75,15 @@
                 </Select>
                 </div>
 
-                <div class="flex flex-row w-fit">
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                <div class="flex flex-row w-fit gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                        Previous
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                        Next
+                    </Button>
                 </div>
                 <MyPaymentSortPopover />
             </div>
@@ -81,21 +91,47 @@
         <MySkeletenCardList v-if="isLoading" :columns="8"/>
         <div v-else>
             <div class="flex flex-row justify-between w-full items-center bg-gray-50 p-1 my-1 rounded">
-                        <div class="flex flex-col items-start gap-1.5">
-                            <p class="font-bold">
-                                {{ rangeStart }} - {{ rangeEnd }}
-                            </p>
-                            <!--<p class="text-sm flex justify-end">Selected</p>-->
-                            <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ totalSelectedAmount }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm flex justify-end">Due</p>
-                            <p class="w-full text-center font-bold"><Badge>{{ totalRepsonse  }}</Badge>
-                                {{ totalAmount }}</p>
-                        </div>
-                    </div>
-            <div class="">
-                <MyPaymentCard v-for="payment in paginatedPayments" :key="payment.uniqueIdentification" :payment="payment" @click="toggleSelectedCard(payment)" :class="[ selectedPayments.includes(payment) ? 'bg-blue-100 shadow' : '' ]" class="cursor-pointer"/>
+                <div class="flex flex-col items-start gap-1.5">
+                    <p class="font-bold">
+                        {{ rangeStart }} - {{ rangeEnd }}
+                    </p>
+                    <!--<p class="text-sm flex justify-end">Selected</p>-->
+                    <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ totalSelectedAmount }}</p>
+                </div>
+                <div>
+                    <p class="text-sm flex justify-end">Due</p>
+                    <p class="w-full text-center font-bold">
+                        <Badge>{{ totalRepsonse  }}</Badge>
+                        {{ totalAmount }}
+                    </p>
+                </div>
+            </div>
+            <div>
+                <MyPaymentCard
+                    v-for="payment in paginatedPayments"
+                    :key="payment.uniqueIdentification"
+                    :payment="payment"
+                    @click="toggleSelectedCard(payment)"
+                    :class="[ selectedPayments.includes(payment) ? 'bg-blue-100 shadow' : '' ]"
+                    class="cursor-pointer"
+                />
+            </div>
+            <div class="mt-4 flex items-center justify-between">
+                <div class="flex flex-row w-fit gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                        Previous
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                        Next
+                    </Button>
+                </div>
+                <div class="flex justify-end">
+                    <Button :disabled="disableBatch" @click="batch()">
+                        Batch
+                    </Button>
+                </div>
             </div>
         </div>
     </div>

@@ -33,9 +33,15 @@
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                        <div>
-                            <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                            <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                        <div class="flex flex-row gap-2">
+                            <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                                <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                                Previous
+                            </Button>
+                            <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                                <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                                Next
+                            </Button>
                         </div>
                         <Button variant="outline" @click="printBatches()" class="flex items-center gap-2">
                             <Icon name="lucide:printer" class="w-4 h-4" />
@@ -56,11 +62,29 @@
                     {{ rangeStart }} - {{ rangeEnd }}
                 </p>
                 <p class="w-fit text-center font-bold">
-                    <Badge>{{ totalBatches  }}</Badge>
+                    <Badge>{{ totalBatches }}</Badge>
                     {{ totalBatchesAmount }}
                 </p>
             </div>
-            <MyBatchCard v-for="batch in paginatedBatch" :batch="batch"/>
+            <MyBatchCard v-for="batch in paginatedBatch" :key="batch.paymentBatchId" :batch="batch" :current-page="currentPage" :months-back="monthsBack" />
+            <div class="mt-4 flex items-center justify-between">
+                <div class="flex flex-row w-fit gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5" />
+                        Previous
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5" />
+                        Next
+                    </Button>
+                </div>
+                <div>
+                    <Button variant="outline" @click="printBatches()" class="flex items-center gap-2">
+                        <Icon name="lucide:printer" class="w-4 h-4" />
+                        Print
+                    </Button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -266,6 +290,10 @@ export default{
         },
     },
     async mounted(){
+        const page = parseInt(this.$route.query?.page, 10)
+        const months = parseInt(this.$route.query?.monthsBack, 10)
+        if (page >= 1) this.currentPage = page
+        if (months >= 1) this.monthsBack = months
         await this.getBatch()
     },
     computed:{

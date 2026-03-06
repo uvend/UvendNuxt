@@ -40,6 +40,18 @@
                         </NuxtLink>
                     </nav>
                 </nav>
+                <nav>
+                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white font-medium" >
+                        <Icon name="lucide:wallet" class="mr-2 h-5 w-5" />
+                        <p class="">Wallet</p>
+                    </NuxtLink>
+                    <nav class="sub-group">
+                        <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/wallet')">
+                            <Icon name="lucide:search" class="mr-2 h-5 w-5" />
+                            <p class="">Support Dashboard</p>
+                        </NuxtLink>
+                    </nav>
+                </nav>
             </nav>
             <ul>
             </ul>

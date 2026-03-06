@@ -1,5 +1,5 @@
 <template>
-    <Card class="batch-card w-full p-2 my-2 items-center" @click="navigateTo('/admin/account/batch/'+batch.paymentBatchId)">
+    <Card class="batch-card w-full p-2 my-2 items-center" @click="openBatch">
         <div>
             <p class="text-sm font-light">Batch</p>
             <p class="text-base font-bold">{{ batch.paymentBatchId }}</p>
@@ -28,7 +28,19 @@
 <script>
 export default{
     props:{
-        batch: Object
+        batch: Object,
+        currentPage: { type: Number, default: 1 },
+        monthsBack: { type: Number, default: 1 }
+    },
+    methods: {
+        openBatch() {
+            const url = '/admin/account/batch/' + this.batch.paymentBatchId
+            const params = new URLSearchParams()
+            if (this.currentPage >= 1) params.set('fromPage', this.currentPage)
+            if (this.monthsBack >= 1) params.set('fromMonths', this.monthsBack)
+            const query = params.toString() ? '?' + params.toString() : ''
+            this.$router.push(url + query)
+        }
     },
     data(){
         return {
