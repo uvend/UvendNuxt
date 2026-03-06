@@ -85,7 +85,8 @@
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                     <span class="font-medium">{{ meter.totalUnitsIssued }}</span>
                                     <span v-if="meter.utilityType === 'Water'" class="text-blue-600">KL</span>
-                                    <span v-else-if="meter.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                    <span v-else-if="meter.utilityType === 'Gas'" class="text-emerald-600">m³</span>
+                                    <span v-else class="text-yellow-600">KWh</span>
                                 </td>
                                 <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ meter.managedTenderAmount }}</td>
                             </tr>
@@ -154,7 +155,7 @@
                     <Label class="text-sm font-medium text-gray-700 mb-2 block">Type</Label>
                     <Select v-model="selectedUtility">
                         <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Electricity & Water" />
+                            <SelectValue placeholder="All utilities" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem v-for="utility in utilityType" :key="utility.value" :value="utility.value">
@@ -249,7 +250,8 @@ export default{
             utilityType: [
                 { label: 'Any', value: -1 },
                 { label: 'Electricity', value: 0 },
-                { label: 'Water', value: 1 }
+                { label: 'Water', value: 1 },
+                { label: 'Gas', value: 2 }
             ],
             selectedActivityStatus: -1,
             activityStatusOptions: [
@@ -344,7 +346,11 @@ export default{
                     })
                 }
                 if(firstTxn){
-                    utilityType = firstTxn.utilitytype === 1 ? 'Water' : 'Electricity'
+                    utilityType = firstTxn.utilitytype === 1
+                        ? 'Water'
+                        : firstTxn.utilitytype === 2
+                            ? 'Gas'
+                            : 'Electricity'
                     meterNumber = firstTxn.meternumber || meterNumber
                     installationId = firstTxn.meterinstallationuniqueid || firstTxn.installationUniqueId || null
                     complexName = firstTxn.complexDescription || firstTxn.complexName || null
@@ -468,6 +474,7 @@ export default{
                 data = data.filter(m => {
                     if(this.selectedUtility === 0) return m.utilityType === 'Electricity'
                     if(this.selectedUtility === 1) return m.utilityType === 'Water'
+                    if(this.selectedUtility === 2) return m.utilityType === 'Gas'
                     return true
                 })
             }

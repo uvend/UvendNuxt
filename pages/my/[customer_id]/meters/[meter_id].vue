@@ -75,10 +75,11 @@
                                     {{ transaction.complexName }}
                                     <p class="text-gray-500">{{ transaction.address0 }}</p>
                                 </td>
-                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                             <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                      <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
                                      <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
-                                     <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                     <span v-else-if="transaction.utilityType === 'Gas'" class="text-emerald-600">m³</span>
+                                     <span v-else class="text-yellow-600">KWh</span>
                                  </td>
                                  <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
                                  <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">R {{ transaction.commissionAmountEx }}</td>
@@ -377,7 +378,8 @@ const selectedUtility = ref(-1)
 const utilityType = ref([
     { label: "Any", value: -1 },
     { label: "Electricity", value: 0 },
-    { label: "Water", value: 1 }
+    { label: "Water", value: 1 },
+    { label: "Gas", value: 2 }
 ])
 const meterComplexes = ref([])
 const selectedMeterComplex = ref(null)
@@ -415,7 +417,11 @@ const getAdminMeterActivity = async () => {
                         meterNumber: transaction.meternumber || meterNumber,
                         complexName: transaction.complexDescription || 'Unknown',
                         address: transaction.address0 || 'Unknown',
-                        utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                        utilityType: transaction.utilitytype === 1
+                            ? 'Water'
+                            : transaction.utilitytype === 2
+                                ? 'Gas'
+                                : 'Electricity',
                         managedTenderAmount: transaction.tenderedamount || 0,
                         totalUnitsIssued: transaction.totalunitsissued || 0,
                         transactionDate: transaction.row_creation_date || new Date().toISOString(),
@@ -483,7 +489,11 @@ const getVendMeterActivity = async () => {
                         ...transaction,
                         meterNumber: transaction.meternumber || meterNumber,
                         complexName: transaction.complexDescription || 'Unknown',
-                        utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                        utilityType: transaction.utilitytype === 1
+                            ? 'Water'
+                            : transaction.utilitytype === 2
+                                ? 'Gas'
+                                : 'Electricity',
                         managedTenderAmount: transaction.tenderedamount || 0,
                         totalUnitsIssued: transaction.totalunitsissued || 0,
                         transactionDate: transaction.row_creation_date || new Date().toISOString(),
@@ -721,6 +731,8 @@ const performFiltering = () => {
                 return transaction.utilityType === 'Electricity'
             } else if (selectedUtility.value === 1) {
                 return transaction.utilityType === 'Water'
+            } else if (selectedUtility.value === 2) {
+                return transaction.utilityType === 'Gas'
             }
             return true
         })

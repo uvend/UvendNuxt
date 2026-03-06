@@ -155,12 +155,14 @@
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                     <span v-if="transaction.utilityType === 'Water'" class="text-blue-600 font-medium">Water</span>
                                     <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600 font-medium">Electricity</span>
+                                    <span v-else-if="transaction.utilityType === 'Gas'" class="text-emerald-600 font-medium">Gas</span>
                                     <span v-else class="text-gray-600">{{ transaction.utilityType }}</span>
                                 </td>
                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                     <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
                                     <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
-                                    <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                    <span v-else-if="transaction.utilityType === 'Gas'" class="text-emerald-600">m³</span>
+                                    <span v-else class="text-yellow-600">KWh</span>
                                 </td>
                                 <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ formatCurrency(transaction.managedTenderAmount) }}</td>
                                 <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
@@ -372,6 +374,10 @@ export default{
                 {
                     label: "Water",
                     value: 1
+                },
+                {
+                    label: "Gas",
+                    value: 2
                 }
             ],
             statementType: [
@@ -452,7 +458,11 @@ export default{
                             complexName: transaction.complexDescription || 'Unknown',
                             complexUniqueId: transaction.complexuniqueid || transaction.complexUniqueId || null,
                             address: transaction.address0 || 'Unknown',
-                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            utilityType: transaction.utilitytype === 1
+                                ? 'Water'
+                                : transaction.utilitytype === 2
+                                    ? 'Gas'
+                                    : 'Electricity',
                             managedTenderAmount: transaction.tenderedamount || 0,
                             totalUnitsIssued: transaction.totalunitsissued || 0,
                             transactionDate: transaction.row_creation_date || new Date().toISOString(),
@@ -564,7 +574,11 @@ export default{
                             meterNumber: transaction.meternumber || meterNumber,
                             complexName: transaction.complexDescription || 'Unknown',
                             complexUniqueId: transaction.complexuniqueid || transaction.complexUniqueId || null,
-                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            utilityType: transaction.utilitytype === 1
+                                ? 'Water'
+                                : transaction.utilitytype === 2
+                                    ? 'Gas'
+                                    : 'Electricity',
                             managedTenderAmount: transaction.tenderedamount || 0,
                             totalUnitsIssued: transaction.totalunitsissued || 0,
                             transactionDate: transaction.row_creation_date || new Date().toISOString(),
@@ -923,6 +937,7 @@ export default{
                 filtered = filtered.filter(t => {
                     if (this.selectedUtility === 0) return t.utilityType === 'Electricity'
                     if (this.selectedUtility === 1) return t.utilityType === 'Water'
+                    if (this.selectedUtility === 2) return t.utilityType === 'Gas'
                     return true
                 })
             }

@@ -3,7 +3,7 @@
         <!-- Main Content Area -->
         <div class="flex-1 p-6 lg:p-8 flex flex-col min-h-0">
             <!-- KPI Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 mb-6 flex-shrink-0">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-6 flex-shrink-0">
                 <!-- Water Utility -->
                 <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -25,6 +25,33 @@
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Vended:</span>
                             <span class="text-sm font-semibold text-blue-600">{{ klVended }} KL</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Gas Utility (only if gas exists) -->
+                <Card
+                    class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group"
+                >
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-emerald-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardHeader class="pb-2 relative z-10">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                                    <Icon name="lucide:flame" class="w-4 h-4 lg:w-5 lg:h-5 text-emerald-600" />
+                                </div>
+                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Gas</CardTitle>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent class="pt-0 relative z-10 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Spending:</span>
+                            <span class="text-sm font-semibold text-gray-900">R {{ gasSpending }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Vended:</span>
+                            <span class="text-sm font-semibold text-emerald-600">{{ gasVended }} m³</span>
                         </div>
                     </CardContent>
                 </Card>
@@ -82,7 +109,7 @@
                         <Trend 
                             :transactions="originalTransactions" 
                             title="Utility Spending Trend"
-                            description="Track your water and electricity spending over time"
+                            description="Track your water, electricity, and gas spending over time"
                             @dateRangeChanged="onChartDateRangeChanged"
                         />
                     </div>
@@ -126,7 +153,12 @@
                                                     </div>
                                                 </td>
                                                 <td class="py-2 px-1 lg:px-2 font-semibold text-green-600 whitespace-nowrap ">R {{ parseFloat(transaction.managedTenderAmount).toFixed(2) }}</td>
-                                                <td class="py-2 px-1 lg:px-2 text-gray-600 whitespace-nowrap hidden 2xl::table-cell">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</td>
+                                                <td class="py-2 px-1 lg:px-2 text-gray-600 whitespace-nowrap hidden 2xl::table-cell">
+                                                    {{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }}
+                                                    <span v-if="transaction.utilityType === 'Water'">KL</span>
+                                                    <span v-else-if="transaction.utilityType === 'Gas'">m³</span>
+                                                    <span v-else>KWh</span>
+                                                </td>
                                                 <td class="py-2 px-1 lg:px-2 text-gray-500 whitespace-nowrap ">{{ formattedTime(transaction.transactionDate) }}</td>
                                             </tr>
                                             
@@ -145,7 +177,12 @@
                                                             </div>
                                                             <div class="bg-white/60 rounded-lg p-2">
                                                                 <span class="font-semibold text-gray-700">Units:</span>
-                                                                <div class="text-gray-900 mt-1">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</div>
+                                                                <div class="text-gray-900 mt-1">
+                                                                    {{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }}
+                                                                    <span v-if="transaction.utilityType === 'Water'">KL</span>
+                                                                    <span v-else-if="transaction.utilityType === 'Gas'">m³</span>
+                                                                    <span v-else>KWh</span>
+                                                                </div>
                                                             </div>
                                                             <div class="bg-white/60 rounded-lg p-2">
                                                                 <span class="font-semibold text-gray-700">Time:</span>
@@ -239,7 +276,11 @@ export default {
                             meterNumber: transaction.meternumber || meterNumber,
                             complexName: transaction.complexDescription || 'Unknown',
                             address: transaction.address0 || 'N/A',
-                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            utilityType: transaction.utilitytype === 1
+                                ? 'Water'
+                                : transaction.utilitytype === 2
+                                    ? 'Gas'
+                                    : 'Electricity',
                             managedTenderAmount: transaction.tenderedamount || 0,
                             totalUnitsIssued: transaction.totalunitsissued || 0,
                             transactionDate: transaction.row_creation_date || new Date().toISOString(),
@@ -330,6 +371,12 @@ export default {
                 .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
                 .toFixed(2);
         },
+        gasSpending() {
+            return this.filteredTransactionsForKPI
+                .filter(t => t.utilityType === 'Gas')
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
+                .toFixed(2);
+        },
         totalRefunds() {
             // Use refund from summary data (vendRefund field from API)
             if (this.summaryData && this.summaryData.vendRefund !== undefined) {
@@ -365,6 +412,26 @@ export default {
                 console.error('Error in electricityVended:', error);
                 return '0.0';
             }
+        },
+        gasVended() {
+            try {
+                if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
+                    return '0.0';
+                }
+                return this.filteredTransactionsForKPI
+                    .filter(t => t && t.utilityType === 'Gas')
+                    .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
+                    .toFixed(1);
+            } catch (error) {
+                console.error('Error in gasVended:', error);
+                return '0.0';
+            }
+        },
+        hasGasTransactions() {
+            if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
+                return false;
+            }
+            return this.filteredTransactionsForKPI.some(t => t && t.utilityType === 'Gas');
         },
         todayTransactions() {
             if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {

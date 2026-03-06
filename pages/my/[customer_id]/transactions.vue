@@ -76,7 +76,8 @@
                                  <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
                                      <span class="font-medium">{{ transaction.totalUnitsIssued }}</span>
                                      <span v-if="transaction.utilityType === 'Water'" class="text-blue-600">KL</span>
-                                     <span v-else-if="transaction.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                     <span v-else-if="transaction.utilityType === 'Gas'" class="text-emerald-600">m³</span>
+                                     <span v-else class="text-yellow-600">KWh</span>
                                  </td>
                                  <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
                                  <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">R {{ transaction.commissionAmountEx }}</td>
@@ -328,6 +329,10 @@ export default{
                      {
                          label: "Water",
                          value: 1
+                     },
+                     {
+                         label: "Gas",
+                         value: 2
                      }
                  ],
                  search: null,
@@ -374,7 +379,11 @@ export default{
                              meterNumber: transaction.meternumber || meterNumber,
                              complexName: transaction.complexDescription || 'Unknown',
                              address: transaction.address0 || 'N/A',
-                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                             utilityType: transaction.utilitytype === 1
+                                 ? 'Water'
+                                 : transaction.utilitytype === 2
+                                     ? 'Gas'
+                                     : 'Electricity',
                              managedTenderAmount: transaction.tenderedamount || 0,
                              totalUnitsIssued: transaction.totalunitsissued || 0,
                              transactionDate: transaction.row_creation_date || new Date().toISOString(),
@@ -428,7 +437,11 @@ export default{
                              ...transaction,
                              meterNumber: transaction.meternumber || meterNumber,
                              complexName: transaction.complexDescription || 'Unknown',
-                             utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                             utilityType: transaction.utilitytype === 1
+                                 ? 'Water'
+                                 : transaction.utilitytype === 2
+                                     ? 'Gas'
+                                     : 'Electricity',
                              managedTenderAmount: transaction.tenderedamount || 0,
                              totalUnitsIssued: transaction.totalunitsissued || 0,
                              transactionDate: transaction.row_creation_date || new Date().toISOString(),
@@ -595,6 +608,8 @@ export default{
                          return transaction.utilityType === 'Electricity';
                      } else if (this.selectedUtility === 1) {
                          return transaction.utilityType === 'Water';
+                     } else if (this.selectedUtility === 2) {
+                         return transaction.utilityType === 'Gas';
                      }
                      return true;
                  });

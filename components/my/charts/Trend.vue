@@ -25,11 +25,18 @@
                   Electricity
                 </Button>
                 <Button 
-                  :variant="selectedUtility === 'Both' ? 'default' : 'outline'" 
+                  :variant="selectedUtility === 'Gas' ? 'default' : 'outline'" 
                   size="sm"
-                  @click="selectedUtility = 'Both'"
+                  @click="selectedUtility = 'Gas'"
                 >
-                  Both
+                  Gas
+                </Button>
+                <Button 
+                  :variant="selectedUtility === 'All' ? 'default' : 'outline'" 
+                  size="sm"
+                  @click="selectedUtility = 'All'"
+                >
+                  All
                 </Button>
               </div>
               
@@ -128,7 +135,7 @@ const props = defineProps({
 
 const emit = defineEmits(['dateRangeChanged'])
 
-const selectedUtility = ref('Both')
+const selectedUtility = ref('All')
 const chartRef = ref(null)
 const selectedDateRange = ref('lastMonth')
 const startDate = ref(null)
@@ -137,7 +144,7 @@ const endDate = ref(null)
 const chartData = computed(() => {
   // console.log('Trend component received transactions:', props.transactions)
   if (!props.transactions || props.transactions.length === 0) {
-    return { water: [], electricity: [] }
+    return { water: [], electricity: [], gas: [] }
   }
 
   // Filter transactions by date range
@@ -153,6 +160,7 @@ const chartData = computed(() => {
 
   const waterGrouped = {}
   const electricityGrouped = {}
+  const gasGrouped = {}
   
   filteredTransactions.forEach(transaction => {
     const date = new Date(transaction.transactionDate)
@@ -172,13 +180,19 @@ const chartData = computed(() => {
         electricityGrouped[dayKey] = 0
       }
       electricityGrouped[dayKey] += amount
+    } else if (transaction.utilityType === 'Gas') {
+      if (!gasGrouped[dayKey]) {
+        gasGrouped[dayKey] = 0
+      }
+      gasGrouped[dayKey] += amount
     }
   })
   
   // Get all unique days
   const allDays = new Set([
     ...Object.keys(waterGrouped),
-    ...Object.keys(electricityGrouped)
+    ...Object.keys(electricityGrouped),
+    ...Object.keys(gasGrouped)
   ])
   
   // Sort days
@@ -194,31 +208,51 @@ const chartData = computed(() => {
     x: new Date(day),
     y: electricityGrouped[day] || 0
   }))
+
+  const gasData = sortedDays.map(day => ({
+    x: new Date(day),
+    y: gasGrouped[day] || 0
+  }))
   
   return {
     water: waterData,
-    electricity: electricityData
+    electricity: electricityData,
+    gas: gasData
   }
 })
 
 const hasData = computed(() => {
-  return chartData.value.water.length > 0 || chartData.value.electricity.length > 0
+  return (
+    chartData.value.water.length > 0 ||
+    chartData.value.electricity.length > 0 ||
+    chartData.value.gas.length > 0
+  )
 })
 
 const chartSeries = computed(() => {
   const series = []
   
-  if (selectedUtility.value === 'Water' || selectedUtility.value === 'Both') {
+  if (selectedUtility.value === 'Water' || selectedUtility.value === 'All') {
     series.push({
       name: 'Water',
-      data: chartData.value.water
+      data: chartData.value.water,
+      color: '#3b82f6'
     })
   }
   
-  if (selectedUtility.value === 'Electricity' || selectedUtility.value === 'Both') {
+  if (selectedUtility.value === 'Electricity' || selectedUtility.value === 'All') {
     series.push({
       name: 'Electricity',
-      data: chartData.value.electricity
+      data: chartData.value.electricity,
+      color: '#f59e0b'
+    })
+  }
+
+  if (selectedUtility.value === 'Gas' || selectedUtility.value === 'All') {
+    series.push({
+      name: 'Gas',
+      data: chartData.value.gas,
+      color: '#ef4444'
     })
   }
   
@@ -257,7 +291,7 @@ const chartOptions = computed(() => ({
     curve: 'smooth',
     width: 2
   },
-  colors: ['#3b82f6', '#f59e0b'], // Blue for Water, Yellow for Electricity
+  colors: ['#3b82f6', '#f59e0b', '#ef4444'], // Water (blue), Electricity (yellow), Gas (red)
   fill: {
     type: 'gradient',
     gradient: {
@@ -325,13 +359,14 @@ const downloadCSV = () => {
   if (!hasData.value) return
   
   const csvData = []
-  const headers = ['Date', 'Water (R)', 'Electricity (R)', 'Total (R)']
+  const headers = ['Date', 'Water (R)', 'Electricity (R)', 'Gas (R)', 'Total (R)']
   csvData.push(headers.join(','))
   
   // Get all unique dates
   const allDates = new Set()
   chartData.value.water.forEach(item => allDates.add(item.x))
   chartData.value.electricity.forEach(item => allDates.add(item.x))
+  chartData.value.gas.forEach(item => allDates.add(item.x))
   
   // Sort dates
   const sortedDates = Array.from(allDates).sort()
@@ -340,12 +375,14 @@ const downloadCSV = () => {
   sortedDates.forEach(date => {
     const waterAmount = chartData.value.water.find(item => item.x.getTime() === date.getTime())?.y || 0
     const electricityAmount = chartData.value.electricity.find(item => item.x.getTime() === date.getTime())?.y || 0
-    const total = waterAmount + electricityAmount
+    const gasAmount = chartData.value.gas.find(item => item.x.getTime() === date.getTime())?.y || 0
+    const total = waterAmount + electricityAmount + gasAmount
     
     const row = [
       date.toISOString().split('T')[0],
       waterAmount.toFixed(2),
       electricityAmount.toFixed(2),
+      gasAmount.toFixed(2),
       total.toFixed(2)
     ]
     csvData.push(row.join(','))
