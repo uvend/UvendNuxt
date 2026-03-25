@@ -3,9 +3,31 @@
         <!-- Main Content Area -->
         <div class="flex-1 p-6 lg:p-8 flex flex-col">
             <!-- Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Meters</h1>
-                <p class="text-gray-600">Overview of meters and their vending totals</p>
+            <div class="mb-8 flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Meters</h1>
+                    <p class="text-gray-600">Overview of meters and their vending totals</p>
+                </div>
+                <Button 
+                    v-if="!demoSimulate40Days"
+                    variant="outline" 
+                    size="sm" 
+                    @click="enableDemoSimulate40"
+                    class="text-amber-600 border-amber-300 hover:bg-amber-50"
+                >
+                    <Icon name="lucide:test-tube" class="w-4 h-4 mr-1" />
+                    Simulate 40 days no purchase
+                </Button>
+                <Button 
+                    v-else
+                    variant="outline" 
+                    size="sm" 
+                    @click="disableDemoSimulate40"
+                    class="text-green-600 border-green-300 hover:bg-green-50"
+                >
+                    <Icon name="lucide:check" class="w-4 h-4 mr-1" />
+                    Demo mode ON – click to disable
+                </Button>
             </div>
 
             <!-- Search Bar -->
@@ -40,7 +62,7 @@
                                 </div>
                                 <div class="flex items-center gap-1">
                                     <Icon name="lucide:x-circle" class="w-4 h-4 text-red-500" />
-                                    <span class="text-xs text-gray-600">Inactive (No vending)</span>
+                                    <span class="text-xs text-gray-600">Inactive (No vending in 30+ days)</span>
                                 </div>
                             </div>
                         </div>
@@ -73,7 +95,7 @@
                                             :name="meter.isActive ? 'lucide:check-circle' : 'lucide:x-circle'" 
                                             :class="meter.isActive ? 'text-green-500' : 'text-red-500'"
                                             class="w-4 h-4"
-                                            :title="meter.isActive ? 'Active (Has vended)' : 'Inactive (No vending)'"
+                                            :title="meter.isActive ? 'Active (Has vended in last 30 days)' : 'Inactive (No vending in last 30 days)'"
                                         />
                                     </div>
                                 </td>
@@ -87,7 +109,7 @@
                                     <span v-if="meter.utilityType === 'Water'" class="text-blue-600">KL</span>
                                     <span v-else-if="meter.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
                                 </td>
-                                <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ meter.managedTenderAmount }}</td>
+                                <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">{{ formatMoney(meter.managedTenderAmount) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -230,6 +252,10 @@ definePageMeta({
     layout: 'my'
 })
 export default{
+    setup() {
+        const { formatMoney } = useCurrency()
+        return { formatMoney }
+    },
     data(){
         return{
             isLoading: true,
@@ -262,18 +288,23 @@ export default{
             dateRange: null,
             startDate: null,
             endDate: null,
-            selectedDateRange: 'lastMonth'
+            selectedDateRange: 'lastMonth',
+            demoSimulate40Days: false
         }
     },
     methods:{
         async getAdminMeters(){
             try{
                 this.isLoading = true
+                // Fetch 90 days for activity check (last vend date); totals filtered by user date range
+                const today = new Date()
+                const activityStart = new Date(today)
+                activityStart.setDate(today.getDate() - 90)
                 const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
                     method: 'GET',
                     params:{
                         IncludeMetersWithNoActivity : true,
-                        StartDate : this.dateRange.start,
+                        StartDate : activityStart.toISOString(),
                         EndDate: this.dateRange.end,
                         ReportParentType: 4,  // customer
                         ResponseFormatType: 0,
@@ -281,7 +312,7 @@ export default{
                         UtilityType: this.selectedUtility
                     }
                 })
-                this._buildFromTransactionData(result.data.transactionData)
+                this._buildFromTransactionData(result.data.transactionData, this.dateRange)
                 await this.getMeterComplex()
                 this.isLoading = false
             }catch(e){
@@ -317,10 +348,16 @@ export default{
                 this.isLoading = false
             }
         },
-        _buildFromTransactionData(transactionData){
+        _buildFromTransactionData(transactionData, userDateRange){
             // Reset
             this.metersTotals = []
             this.originalMetersTotals = []
+
+            const todayTime = new Date().getTime()
+            const DAYS_INACTIVE = 30
+            const range = userDateRange || this.dateRange
+            const userStart = range?.start ? new Date(range.start).getTime() : 0
+            const userEnd = range?.end ? new Date(range.end).getTime() : Infinity
 
             for(const [meterKey, meterData] of Object.entries(transactionData || {})){
                 let totalAmount = 0
@@ -330,19 +367,23 @@ export default{
                 let installationId = null
                 let complexName = null
                 let firstTxn = null
-                let isActive = false
+                let lastVendDate = null
                 let address0 = null
                 if(meterData && Array.isArray(meterData.transactions)){
                     meterData.transactions.forEach(txn => {
-                        totalAmount += parseFloat(txn.tenderedamount || txn.transactionAmount || txn.amount || 0) || 0
-                        totalUnits += parseFloat(txn.totalunitsissued || txn.unitsIssued || txn.units || 0) || 0
-                        if(!firstTxn) firstTxn = txn
-                        // Check if meter has vended by looking for start and end dates
-                        if(txn.StartDate && txn.EndDate){
-                            isActive = true
+                        const txnDate = txn.row_creation_date || txn.transactionDate || txn.StartDate
+                        const txnTime = txnDate ? new Date(txnDate).getTime() : 0
+                        if(txnTime && (!lastVendDate || txnTime > lastVendDate)) lastVendDate = txnTime
+                        // Totals only for user-selected period
+                        if(txnTime >= userStart && txnTime <= userEnd){
+                            totalAmount += parseFloat(txn.tenderedamount || txn.transactionAmount || txn.amount || 0) || 0
+                            totalUnits += parseFloat(txn.totalunitsissued || txn.unitsIssued || txn.units || 0) || 0
                         }
+                        if(!firstTxn) firstTxn = txn
                     })
                 }
+                const daysSinceLastVend = lastVendDate ? (todayTime - lastVendDate) / (24 * 60 * 60 * 1000) : 999
+                const isActive = daysSinceLastVend <= DAYS_INACTIVE
                 if(firstTxn){
                     utilityType = firstTxn.utilitytype === 1 ? 'Water' : 'Electricity'
                     meterNumber = firstTxn.meternumber || meterNumber
@@ -362,6 +403,29 @@ export default{
                 }
                 this.metersTotals.push(row)
                 this.originalMetersTotals.push(row)
+            }
+            // Demo: simulate 40 days no purchase
+            if (process.client && localStorage.getItem('demoSimulate40Days') === 'true') {
+                this.metersTotals.push({
+                    meterNumber: 'DEMO_SIMULATE_40',
+                    complexName: 'Demo (Simulated)',
+                    utilityType: 'Electricity',
+                    address: 'Simulated meter for demo',
+                    totalUnitsIssued: 0,
+                    managedTenderAmount: '0.00',
+                    installationUniqueId: 'demo-40',
+                    isActive: false
+                })
+                this.originalMetersTotals.push({
+                    meterNumber: 'DEMO_SIMULATE_40',
+                    complexName: 'Demo (Simulated)',
+                    utilityType: 'Electricity',
+                    address: 'Simulated meter for demo',
+                    totalUnitsIssued: 0,
+                    managedTenderAmount: '0.00',
+                    installationUniqueId: 'demo-40',
+                    isActive: false
+                })
             }
             this.filteredMeters = JSON.parse(JSON.stringify(this.originalMetersTotals))
             // sort by complex name first, then by address, then by meter number
@@ -515,6 +579,18 @@ export default{
             this.currentPage = 1
             this.performFiltering()
         }, 300),
+        enableDemoSimulate40(){
+            localStorage.setItem('demoSimulate40Days', 'true')
+            this.demoSimulate40Days = true
+            this.getAdminMeters()
+            window.dispatchEvent(new Event('demoSimulate40Toggled'))
+        },
+        disableDemoSimulate40(){
+            localStorage.removeItem('demoSimulate40Days')
+            this.demoSimulate40Days = false
+            this.getAdminMeters()
+            window.dispatchEvent(new Event('demoSimulate40Toggled'))
+        },
         // Date handling
         updateDateRange(){
             if(this.startDate && this.endDate){
@@ -554,6 +630,7 @@ export default{
         }
     },
     async mounted(){
+        this.demoSimulate40Days = process.client && localStorage.getItem('demoSimulate40Days') === 'true'
         const today = new Date()
         const lastMonth = new Date()
         lastMonth.setDate(today.getDate() - 30)

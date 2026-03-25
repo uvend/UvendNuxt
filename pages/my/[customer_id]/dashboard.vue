@@ -2,7 +2,32 @@
     <div class="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
         <!-- Main Content Area -->
         <div class="flex-1 p-6 lg:p-8 flex flex-col min-h-0">
-            <!-- KPI Cards -->
+            <!-- KPI Cards - Monthly vending trend with month cycle -->
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-800">Monthly Vending Trend</h2>
+                <div class="flex items-center gap-2">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        @click="prevKpiMonth"
+                        class="rounded-xl"
+                    >
+                        <Icon name="lucide:chevron-left" class="w-4 h-4" />
+                        Previous
+                    </Button>
+                    <span class="text-sm font-medium text-gray-700 min-w-[140px] text-center">{{ kpiMonthLabel }}</span>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        @click="nextKpiMonth"
+                        :disabled="kpiMonthOffset >= 0"
+                        class="rounded-xl"
+                    >
+                        Next
+                        <Icon name="lucide:chevron-right" class="w-4 h-4" />
+                    </Button>
+                </div>
+            </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 mb-6 flex-shrink-0">
                 <!-- Water Utility -->
                 <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
@@ -20,7 +45,7 @@
                     <CardContent class="pt-0 relative z-10 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Spending:</span>
-                            <span class="text-sm font-semibold text-gray-900">R {{ waterSpending }}</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ formatMoney(waterSpending) }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Vended:</span>
@@ -45,7 +70,7 @@
                     <CardContent class="pt-0 relative z-10 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Spending:</span>
-                            <span class="text-sm font-semibold text-gray-900">R {{ electricitySpending }}</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ formatMoney(electricitySpending) }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Vended:</span>
@@ -68,7 +93,7 @@
                         </div>
                     </CardHeader>
                     <CardContent class="pt-0 relative z-10">
-                        <div class="text-lg lg:text-2xl font-bold text-orange-600">R {{ totalRefunds }}</div>
+                        <div class="text-lg lg:text-2xl font-bold text-orange-600">{{ formatMoney(totalRefunds) }}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -125,7 +150,7 @@
                                                         <p class="text-[12px] text-gray-500">{{ transaction.address }}</p>
                                                     </div>
                                                 </td>
-                                                <td class="py-2 px-1 lg:px-2 font-semibold text-green-600 whitespace-nowrap ">R {{ parseFloat(transaction.managedTenderAmount).toFixed(2) }}</td>
+                                                <td class="py-2 px-1 lg:px-2 font-semibold text-green-600 whitespace-nowrap ">{{ formatMoney(transaction.managedTenderAmount) }}</td>
                                                 <td class="py-2 px-1 lg:px-2 text-gray-600 whitespace-nowrap hidden 2xl::table-cell">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</td>
                                                 <td class="py-2 px-1 lg:px-2 text-gray-500 whitespace-nowrap ">{{ formattedTime(transaction.transactionDate) }}</td>
                                             </tr>
@@ -195,6 +220,10 @@ definePageMeta({
 })
 
 export default {
+    setup() {
+        const { formatMoney } = useCurrency()
+        return { formatMoney }
+    },
     components: {
         Trend,
         ComplexSpendingBar
@@ -206,7 +235,8 @@ export default {
             chartDateRange: null, // Date range from chart component
             selectedTransaction: null,
             expandedRow: null, // Track expanded row index
-            summaryData: {} // Store summary data from API
+            summaryData: {}, // Store summary data from API
+            kpiMonthOffset: 0 // 0 = current month, -1 = last month, etc.
         }
     },
     methods: {
@@ -290,32 +320,45 @@ export default {
             this.chartDateRange = dateRange;
             // Also update the main dateRange to trigger API calls
             this.dateRange = dateRange;
+        },
+        prevKpiMonth() {
+            this.kpiMonthOffset -= 1;
+        },
+        nextKpiMonth() {
+            if (this.kpiMonthOffset < 0) this.kpiMonthOffset += 1;
         }
     },
     async mounted() {
         const today = new Date()
-        const lastMonth = new Date()
-        lastMonth.setDate(today.getDate() - 30)
+        const ninetyDaysAgo = new Date()
+        ninetyDaysAgo.setDate(today.getDate() - 90)
         
-        // Set initial date range for KPI cards (this will be used for initial data load)
+        // Fetch 90 days so we have data for multiple months when cycling
         this.dateRange = {
-            start: lastMonth.toISOString(),
+            start: ninetyDaysAgo.toISOString(),
             end: today.toISOString()
         }
         await this.getTransactions()
     },
     computed: {
+        kpiMonthRange() {
+            const today = new Date();
+            const d = new Date(today.getFullYear(), today.getMonth() + this.kpiMonthOffset, 1);
+            const start = new Date(d.getFullYear(), d.getMonth(), 1);
+            const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+            return { start, end };
+        },
+        kpiMonthLabel() {
+            const d = new Date();
+            d.setMonth(d.getMonth() + this.kpiMonthOffset);
+            return d.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
+        },
         filteredTransactionsForKPI() {
-            if (!this.chartDateRange) {
-                return this.originalTransactions;
-            }
-            
-            const startDate = new Date(this.chartDateRange.start);
-            const endDate = new Date(this.chartDateRange.end);
-            
+            if (!this.kpiMonthRange) return this.originalTransactions;
+            const { start, end } = this.kpiMonthRange;
             return this.originalTransactions.filter(transaction => {
                 const transactionDate = new Date(transaction.transactionDate);
-                return transactionDate >= startDate && transactionDate <= endDate;
+                return transactionDate >= start && transactionDate <= end;
             });
         },
         waterSpending() {

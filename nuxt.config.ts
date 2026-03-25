@@ -41,6 +41,7 @@ export default defineNuxtConfig({
       APP_FONT_COLOR_2: JSON.stringify(process.env.APP_FONT_COLOR_2 || ''),
       APP_FONT_COLOR_3: JSON.stringify(process.env.APP_FONT_COLOR_3 || ''),
       APP_ENV: JSON.stringify(process.env.APP_ENV || ''),
+      APP_CURRENCY: JSON.stringify((process.env.APP_CURRENCY || 'ZAR').trim().toUpperCase()),
       CUSTOMER_API: JSON.stringify(process.env.CUSTOMER_API || ''),
     }
   },
@@ -69,7 +70,8 @@ export default defineNuxtConfig({
 
     // Public keys that are exposed to the client
     public: {
-      APP_ENV: process.env.APP_ENV || 'default'
+      APP_ENV: process.env.APP_ENV || 'default',
+      APP_CURRENCY: (process.env.APP_CURRENCY || 'ZAR').trim().toUpperCase()
     }
   },
   routeRules: {
