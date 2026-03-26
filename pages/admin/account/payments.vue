@@ -120,7 +120,7 @@
             <div>
                 <MyPaymentCard
                     v-for="payment in paginatedPayments"
-                    :key="payment.uniqueIdentification"
+                    :key="payment.periodTotals?.uniqueIdentification ?? payment.uniqueIdentification"
                     :payment="payment"
                     :highlight-prev-month="highlightPrevMonthRollback && isPrevPeriodRollback(payment)"
                     @click="toggleSelectedCard(payment)"
@@ -197,7 +197,7 @@ export default{
             this.currentPage = 1;
         }, 500), // Delay of 500ms after the user stops typing
         isPrevPeriodRollback(payment) {
-            const id = payment?.uniqueIdentification;
+            const id = payment?.periodTotals?.uniqueIdentification;
             return Boolean(id && this.prevPeriodRollbackIds[id]);
         },
         buildPrevPeriodRollbackMap(prevList) {
@@ -205,8 +205,9 @@ export default{
             if (!Array.isArray(prevList)) return map;
             for (const p of prevList) {
                 const comment = p?.periodTotals?.cancellationComment;
-                if (comment != null && String(comment).trim() !== '' && p.uniqueIdentification != null) {
-                    map[p.uniqueIdentification] = true;
+                const id = p?.periodTotals?.uniqueIdentification;
+                if (comment != null && String(comment).trim() !== '' && id != null) {
+                    map[id] = true;
                 }
             }
             return map;
