@@ -48,20 +48,31 @@
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem  @click="toggleFilter('onRollback')" class="flex justify-between" >
-                            <p>Rollback</p>
+                            <p>Current period rollback only</p>
                             <Icon v-if="filters.onRollback" name="lucide:check" class="mr-1 h-4 w-4" />
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="toggleFilter('hasValidBank')" class="flex justify-between">
-                            <p>Valid Bank</p>
+                            <p>Valid banking details only</p>
                             <Icon v-if="filters.hasValidBank" name="lucide:check" class="mr-1 h-4 w-4" />
                         </DropdownMenuItem>
                         <DropdownMenuItem  @click="toggleFilter('hasEmail')" class="flex justify-between">
-                            <p>Email</p>
+                            <p>Valid email only</p>
                             <Icon v-if="filters.hasEmail" name="lucide:check" class="mr-1 h-4 w-4" />
                         </DropdownMenuItem>
 
                     </DropdownMenuContent>
                 </DropdownMenu>
+                <Button
+                    variant="outline"
+                    type="button"
+                    title="Highlights payees who had a rollback in the reporting period immediately before the one you are viewing (one month back relative to the period selector)"
+                    :class="highlightPrevMonthRollback ? 'border-amber-500 bg-amber-50' : ''"
+                    class="flex items-center gap-2 shrink-0"
+                    @click="highlightPrevMonthRollback = !highlightPrevMonthRollback"
+                >
+                    <Icon name="lucide:history" class="w-4 h-4" />
+                    Prev period rollback
+                </Button>
                 <div>
                     <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
@@ -111,6 +122,7 @@
                     v-for="payment in paginatedPayments"
                     :key="payment.uniqueIdentification"
                     :payment="payment"
+                    :highlight-prev-month="highlightPrevMonthRollback && isPrevPeriodRollback(payment)"
                     @click="toggleSelectedCard(payment)"
                     :class="[ selectedPayments.includes(payment) ? 'bg-blue-100 shadow' : '' ]"
                     class="cursor-pointer"
@@ -164,10 +176,11 @@ export default{
             maxBatch: null,
             monthsBack: 1,
             isLoading: true,
-            disableBatch: true,
             selectedDifference: "0.00",
             rangeStart: '',
             rangeEnd: '',
+            highlightPrevMonthRollback: false,
+            prevPeriodRollbackIds: {},
             filters: {
                 onRollback: false,
                 hasValidBank: false,
@@ -183,18 +196,55 @@ export default{
         debouncedSearch: debounce(function () {
             this.currentPage = 1;
         }, 500), // Delay of 500ms after the user stops typing
+        isPrevPeriodRollback(payment) {
+            const id = payment?.uniqueIdentification;
+            return Boolean(id && this.prevPeriodRollbackIds[id]);
+        },
+        buildPrevPeriodRollbackMap(prevList) {
+            const map = {};
+            if (!Array.isArray(prevList)) return map;
+            for (const p of prevList) {
+                const comment = p?.periodTotals?.cancellationComment;
+                if (comment != null && String(comment).trim() !== '' && p.uniqueIdentification != null) {
+                    map[p.uniqueIdentification] = true;
+                }
+            }
+            return map;
+        },
         async getPayments(){
             this.isLoading = true
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
-                method: "GET",
-                params: {
-                    "GoBackMonths" : this.monthsBack
-                }
-            });
+            const [mainRes, prevRes] = await Promise.allSettled([
+                useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
+                    method: "GET",
+                    params: {
+                        "GoBackMonths" : this.monthsBack
+                    }
+                }),
+                useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
+                    method: "GET",
+                    params: {
+                        "GoBackMonths" : this.monthsBack + 1
+                    }
+                })
+            ]);
+
+            if (mainRes.status !== 'fulfilled') {
+                this.isLoading = false;
+                throw mainRes.reason;
+            }
+
+            const result = mainRes.value;
             this.payments = result.value.listOfPeriodTotalsEntry
             this.totalRepsonse = this.payments.length;
             this.rangeStart = this.dateFormatter(result.value.reportPeriodStartDate)
             this.rangeEnd = this.dateFormatter(result.value.reportPeriodEndDate)
+
+            if (prevRes.status === 'fulfilled') {
+                const prevList = prevRes.value?.value?.listOfPeriodTotalsEntry ?? prevRes.value?.listOfPeriodTotalsEntry;
+                this.prevPeriodRollbackIds = this.buildPrevPeriodRollbackMap(prevList);
+            } else {
+                this.prevPeriodRollbackIds = {};
+            }
 
             // Calculate total payments
             this.totalAmount = this.payments.reduce((total, payment) => {
@@ -391,9 +441,9 @@ export default{
             if (this.search) activeFilters.push(`Search: "${this.search}"`);
             if (this.minAmount) activeFilters.push(`Min Amount: R ${this.minAmount}`);
             if (this.maxAmount) activeFilters.push(`Max Amount: R ${this.maxAmount}`);
-            if (this.filters.onRollback) activeFilters.push('Rollback Only');
-            if (this.filters.hasValidBank) activeFilters.push('Valid Bank Only');
-            if (this.filters.hasEmail) activeFilters.push('Email Only');
+            if (this.filters.onRollback) activeFilters.push('Current period rollback only');
+            if (this.filters.hasValidBank) activeFilters.push('Valid banking details only');
+            if (this.filters.hasEmail) activeFilters.push('Valid email only');
             
             const filterSummary = activeFilters.length > 0 ? `Filters: ${activeFilters.join(', ')}` : 'No filters applied';
             
