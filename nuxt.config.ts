@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-const pagesDir = process.env.APP_ENV != '' 
-  ? `pages/${process.env.APP_ENV}` 
-  : 'pages'
+// When APP_ENV is unset/undefined, `undefined != ''` is true in JS — must not resolve to `pages/undefined`.
+const appEnv = (process.env.APP_ENV ?? '').trim()
+const pagesDir = appEnv ? `pages/${appEnv}` : 'pages'
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -40,7 +40,7 @@ export default defineNuxtConfig({
       APP_FONT_COLOR_1: JSON.stringify(process.env.APP_FONT_COLOR_1 || ''),
       APP_FONT_COLOR_2: JSON.stringify(process.env.APP_FONT_COLOR_2 || ''),
       APP_FONT_COLOR_3: JSON.stringify(process.env.APP_FONT_COLOR_3 || ''),
-      APP_ENV: JSON.stringify(process.env.APP_ENV || ''),
+      APP_ENV: JSON.stringify(appEnv),
       APP_CURRENCY: JSON.stringify((process.env.APP_CURRENCY || 'ZAR').trim().toUpperCase()),
       CUSTOMER_API: JSON.stringify(process.env.CUSTOMER_API || ''),
     }
@@ -70,7 +70,7 @@ export default defineNuxtConfig({
 
     // Public keys that are exposed to the client
     public: {
-      APP_ENV: process.env.APP_ENV || 'default',
+      APP_ENV: appEnv,
       APP_CURRENCY: (process.env.APP_CURRENCY || 'ZAR').trim().toUpperCase()
     }
   },
