@@ -112,10 +112,46 @@ export default{
             ],
             currentPage: 1,
             isLoading: true,
-            bankFileCreatedLocal: false
+            bankFileCreatedLocal: false,
+            /** Survives refetch/reload in-session; cleared when API settles or confirms BankFileCreated */
+            bankFilePersisted: false
         }
     },
     methods:{
+        bankFileSessionKey(batchId) {
+            return `uvend:batchBankFileCreated:${batchId}`;
+        },
+        readBankFilePersisted(batchId) {
+            if (!import.meta.client) return false;
+            try {
+                return sessionStorage.getItem(this.bankFileSessionKey(batchId)) === '1';
+            } catch {
+                return false;
+            }
+        },
+        persistBankFileCreated(batchId) {
+            if (!import.meta.client) return;
+            try {
+                sessionStorage.setItem(this.bankFileSessionKey(batchId), '1');
+            } catch { /* ignore quota */ }
+            this.bankFilePersisted = true;
+        },
+        clearBankFilePersisted() {
+            const batchId = this.$route.params.batch_id;
+            if (import.meta.client && batchId) {
+                try {
+                    sessionStorage.removeItem(this.bankFileSessionKey(batchId));
+                } catch { /* ignore */ }
+            }
+            this.bankFilePersisted = false;
+            this.bankFileCreatedLocal = false;
+        },
+        shouldShowBankFileCreatedOverride() {
+            return (
+                (this.bankFileCreatedLocal || this.bankFilePersisted) &&
+                this.paymentState === 'SubmittedToBatch'
+            );
+        },
         batchStateBadgeClass(state) {
             if (state === 'Settled') return 'bg-green-500 text-white border-transparent';
             if (state === 'SubmittedToBatch') return 'bg-orange-500 text-white border-transparent';
@@ -124,7 +160,7 @@ export default{
         },
         batchPaymentDisplayState(payment) {
             const actual = payment?.periodTotals?.batchPaymentState;
-            if (this.bankFileCreatedLocal && actual === 'SubmittedToBatch') {
+            if (this.shouldShowBankFileCreatedOverride() && actual === 'SubmittedToBatch') {
                 return 'BankFileCreated';
             }
             return actual;
@@ -146,17 +182,30 @@ export default{
             this.batch = result.listOfPeriodTotalsEntry;
             this.totalBatch = result.listOfPeriodTotalsEntry.length
             this.paymentState = this.batch[0].periodTotals.batchPaymentState
+            // Persist when API confirms bank file so a later flaky SubmittedToBatch response still shows blue
             if (this.paymentState === 'BankFileCreated') {
                 this.bankFileCreatedLocal = false;
+                this.persistBankFileCreated(batch_id);
+            } else if (this.paymentState === 'Settled') {
+                this.clearBankFilePersisted();
+            } else if (this.paymentState === 'SubmittedToBatch') {
+                this.bankFilePersisted = this.readBankFilePersisted(batch_id);
+            } else {
+                this.clearBankFilePersisted();
             }
             if (!silent) this.isLoading = false;
         },
         goBack() {
             const params = new URLSearchParams()
-            const page = parseInt(this.$route.query?.fromPage, 10)
-            const months = parseInt(this.$route.query?.fromMonths, 10)
+            const q = this.$route.query || {}
+            const page = parseInt(q.fromPage, 10)
+            const months = parseInt(q.fromMonths, 10)
+            const pageSize = parseInt(q.fromPageSize, 10)
+            const fromStatus = q.fromStatus
             if (page >= 1) params.set('page', page)
             if (months >= 1) params.set('monthsBack', months)
+            if (pageSize >= 1) params.set('pageSize', pageSize)
+            if (fromStatus !== undefined && fromStatus !== '') params.set('status', String(fromStatus))
             const query = params.toString() ? '?' + params.toString() : ''
             this.$router.push('/admin/account/batch' + query)
         },
@@ -181,6 +230,7 @@ export default{
                 await this.getBatch(true);
                 if (this.paymentState !== 'BankFileCreated') {
                     this.bankFileCreatedLocal = true;
+                    this.persistBankFileCreated(this.$route.params.batch_id);
                 }
                 this.$toast({
                     title: 'Success',
@@ -225,15 +275,16 @@ export default{
             return filteted.slice(startIndex, endIndex); // Paginate filtered payments
         },
         displayBatchState() {
-            if (this.bankFileCreatedLocal && this.paymentState === 'SubmittedToBatch') {
+            if (this.shouldShowBankFileCreatedOverride()) {
                 return 'BankFileCreated';
             }
             return this.paymentState;
         },
     },
     watch: {
-        '$route.params.batch_id'() {
+        async '$route.params.batch_id'() {
             this.bankFileCreatedLocal = false;
+            await this.getBatch();
         },
     },
 }
