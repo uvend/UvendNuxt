@@ -58,7 +58,7 @@
                 <div class="flex flex-row items-center gap-4">
                     <div class="flex flex-row gap-2">
                         <div>
-                            {{ paymentState }}
+                            <Badge :class="batchStateBadgeClass(displayBatchState)">{{ displayBatchState }}</Badge>
                         </div>
                         <Badge>{{ totalBatch  }}</Badge>
                         <div>
@@ -81,7 +81,11 @@
             </div>
             <div class="">
                 <div v-for="payment in paginatedBatch">
-                    <MyBatchPaymentCard :payment="payment" @refresh="getBatch()"/>
+                    <MyBatchPaymentCard
+                        :payment="payment"
+                        :display-state="batchPaymentDisplayState(payment)"
+                        @refresh="getBatch()"
+                    />
                 </div>
             </div>
         </div>
@@ -107,13 +111,27 @@ export default{
                 10,50,100,200
             ],
             currentPage: 1,
-            isLoading: true
+            isLoading: true,
+            bankFileCreatedLocal: false
         }
     },
     methods:{
-        async getBatch(){
+        batchStateBadgeClass(state) {
+            if (state === 'Settled') return 'bg-green-500 text-white border-transparent';
+            if (state === 'SubmittedToBatch') return 'bg-orange-500 text-white border-transparent';
+            if (state === 'BankFileCreated') return 'bg-blue-500 text-white border-transparent';
+            return '';
+        },
+        batchPaymentDisplayState(payment) {
+            const actual = payment?.periodTotals?.batchPaymentState;
+            if (this.bankFileCreatedLocal && actual === 'SubmittedToBatch') {
+                return 'BankFileCreated';
+            }
+            return actual;
+        },
+        async getBatch(silent = false){
             const batch_id = this.$route.params.batch_id
-            this.isLoading = true
+            if (!silent) this.isLoading = true
             const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/GetPaymentBatch`,{
                 method: "GET",
                 params: {
@@ -121,13 +139,17 @@ export default{
                 },
             })
             if(result.numberOfRecords == 0){
+                if (!silent) this.isLoading = false
                 return navigateTo('/admin/account/payments')
             }
             console.log(result)
             this.batch = result.listOfPeriodTotalsEntry;
             this.totalBatch = result.listOfPeriodTotalsEntry.length
             this.paymentState = this.batch[0].periodTotals.batchPaymentState
-            this.isLoading = false;
+            if (this.paymentState === 'BankFileCreated') {
+                this.bankFileCreatedLocal = false;
+            }
+            if (!silent) this.isLoading = false;
         },
         goBack() {
             const params = new URLSearchParams()
@@ -156,6 +178,10 @@ export default{
                     cors: 'no-cors'
                     })
                 console.log(result)
+                await this.getBatch(true);
+                if (this.paymentState !== 'BankFileCreated') {
+                    this.bankFileCreatedLocal = true;
+                }
                 this.$toast({
                     title: 'Success',
                     variant: "success"
@@ -197,6 +223,17 @@ export default{
             const startIndex = (this.currentPage - 1) * this.pageSize;
             const endIndex = startIndex + this.pageSize;
             return filteted.slice(startIndex, endIndex); // Paginate filtered payments
+        },
+        displayBatchState() {
+            if (this.bankFileCreatedLocal && this.paymentState === 'SubmittedToBatch') {
+                return 'BankFileCreated';
+            }
+            return this.paymentState;
+        },
+    },
+    watch: {
+        '$route.params.batch_id'() {
+            this.bankFileCreatedLocal = false;
         },
     },
 }
