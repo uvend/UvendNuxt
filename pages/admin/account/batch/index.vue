@@ -66,7 +66,15 @@
                     {{ totalBatchesAmount }}
                 </p>
             </div>
-            <MyBatchCard v-for="batch in paginatedBatch" :key="batch.paymentBatchId" :batch="batch" :current-page="currentPage" :months-back="monthsBack" />
+            <MyBatchCard
+                v-for="batch in paginatedBatch"
+                :key="batch.paymentBatchId"
+                :batch="batch"
+                :current-page="currentPage"
+                :months-back="monthsBack"
+                :page-size="pageSize"
+                :selected-status="selectedStatus"
+            />
             <div class="mt-4 flex items-center justify-between">
                 <div class="flex flex-row w-fit gap-2">
                     <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
@@ -124,8 +132,8 @@ export default{
             totalBatches: 0,
             totalBatchesAmount: 0,
             rangeStart: '',
-            rangeEnd: ''
-
+            rangeEnd: '',
+            batchListHydrating: true
         }
     },
     methods:{
@@ -232,7 +240,7 @@ export default{
             const tableData = this.batches.map(batch => [
                 batch.batchPaymentID || 'N/A',
                 this.formatDate(batch.batchSubmissionDate),
-                this.getStatusLabel(batch.batchPaymentState),
+                this.getBatchListDisplayState(batch),
                 batch.paymentCount || 0,
                 `R ${(parseFloat(batch.payeePayOutAmount) || 0).toFixed(2)}`,
                 batch.batchComment || ''
@@ -288,13 +296,58 @@ export default{
             const status = this.status.find(s => s.value === statusValue);
             return status ? status.label : 'Unknown';
         },
+        getBatchListDisplayState(batch) {
+            const actual = batch?.batchPaymentState;
+            if (actual === 'SubmittedToBatch' && import.meta.client) {
+                try {
+                    const id = batch?.paymentBatchId ?? batch?.batchPaymentID;
+                    if (id != null && sessionStorage.getItem(`uvend:batchBankFileCreated:${id}`) === '1') {
+                        return 'BankFileCreated';
+                    }
+                } catch { /* ignore */ }
+            }
+            return actual != null ? String(actual) : 'N/A';
+        },
+        applyBatchListQueryFromRoute() {
+            const q = this.$route.query || {};
+            const page = parseInt(q.page, 10);
+            const months = parseInt(q.monthsBack, 10);
+            const ps = parseInt(q.pageSize, 10);
+            const statusRaw = q.status;
+            if (page >= 1) this.currentPage = page;
+            if (months >= 1) this.monthsBack = months;
+            if (ps >= 1 && this.pageSizeSelect.includes(ps)) this.pageSize = ps;
+            if (statusRaw !== undefined && statusRaw !== '') {
+                const s = parseInt(String(statusRaw), 10);
+                if (!Number.isNaN(s) && this.status.some((x) => x.value === s)) {
+                    this.selectedStatus = s;
+                }
+            }
+        },
+        syncBatchListQueryToUrl() {
+            if (!import.meta.client) return;
+            this.$router.replace({
+                path: this.$route.path,
+                query: {
+                    page: String(this.currentPage),
+                    monthsBack: String(this.monthsBack),
+                    pageSize: String(this.pageSize),
+                    status: String(this.selectedStatus)
+                }
+            });
+        },
+        clampBatchListPage() {
+            const max = Math.max(1, this.totalPages);
+            if (this.currentPage > max) this.currentPage = max;
+        },
     },
     async mounted(){
-        const page = parseInt(this.$route.query?.page, 10)
-        const months = parseInt(this.$route.query?.monthsBack, 10)
-        if (page >= 1) this.currentPage = page
-        if (months >= 1) this.monthsBack = months
-        await this.getBatch()
+        this.applyBatchListQueryFromRoute();
+        await this.getBatch();
+        this.clampBatchListPage();
+        this.syncBatchListQueryToUrl();
+        await this.$nextTick();
+        this.batchListHydrating = false;
     },
     computed:{
         totalPages() {
@@ -313,15 +366,33 @@ export default{
     },
     watch: {
         async monthsBack(newValue) {
+            if (this.batchListHydrating) return;
             if (newValue < 1) {
-                this.monthsBack = 1; // Reset to 1 if the new value is less than 1
+                this.monthsBack = 1;
             } else {
-                await this.getBatch(); // Call getPayments whenever monthsBack changes and is valid
+                this.currentPage = 1;
+                await this.getBatch();
+                this.clampBatchListPage();
+                this.syncBatchListQueryToUrl();
             }
         },
-        async selectedStatus(newValue){
-            //console.log(newValue)
-            await this.getBatch()
+        async selectedStatus() {
+            if (this.batchListHydrating) return;
+            this.currentPage = 1;
+            await this.getBatch();
+            this.clampBatchListPage();
+            this.syncBatchListQueryToUrl();
+        },
+        pageSize() {
+            if (this.batchListHydrating) return;
+            this.$nextTick(() => {
+                this.clampBatchListPage();
+                this.syncBatchListQueryToUrl();
+            });
+        },
+        currentPage() {
+            if (this.batchListHydrating) return;
+            this.syncBatchListQueryToUrl();
         }
     },
 }

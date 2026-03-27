@@ -28,6 +28,8 @@
 <script setup>
 import { computed } from 'vue'
 
+const { formatMoney } = useCurrency()
+
 const props = defineProps({
   transactions: {
     type: Array,
@@ -114,7 +116,7 @@ const chartOptions = computed(() => ({
   dataLabels: {
     enabled: true,
     formatter: function (val) {
-      return `R ${parseFloat(val).toFixed(2)}`
+      return formatMoney(val)
     },
     style: {
       fontSize: '11px',
@@ -136,7 +138,7 @@ const chartOptions = computed(() => ({
   yaxis: {
     labels: {
       formatter: function (value) {
-        return `R ${value.toFixed(2)}`
+        return formatMoney(value)
       },
       style: {
         colors: '#64748b',
@@ -151,7 +153,7 @@ const chartOptions = computed(() => ({
   tooltip: {
     y: {
       formatter: function (value) {
-        return `R ${value.toFixed(2)}`
+        return formatMoney(value)
       }
     }
   },

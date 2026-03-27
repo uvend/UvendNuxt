@@ -81,9 +81,9 @@
                                      <span v-else-if="transaction.utilityType === 'Gas'" class="text-emerald-600">m³</span>
                                      <span v-else class="text-yellow-600">KWh</span>
                                  </td>
-                                 <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">R {{ transaction.managedTenderAmount }}</td>
-                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">R {{ transaction.commissionAmountEx }}</td>
-                                 <td class="py-4 px-6 text-sm font-semibold text-orange-600 group-hover:text-orange-700">R {{ (parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)).toFixed(2) }}</td>
+                                 <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">{{ formatMoney(transaction.managedTenderAmount) }}</td>
+                                 <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ formatMoney(transaction.commissionAmountEx) }}</td>
+                                 <td class="py-4 px-6 text-sm font-semibold text-orange-600 group-hover:text-orange-700">{{ formatMoney(parseFloat(transaction.managedTenderAmount) - parseFloat(transaction.commissionAmount)) }}</td>
                                  <td class="py-4 px-6 text-sm text-gray-500 group-hover:text-gray-600">
                                      <div class="font-medium">{{ formattedTime(transaction.transactionDate) }}</div>
                                      <div class="text-xs text-gray-400">{{ formatedDate(transaction.transactionDate) }}</div>
@@ -280,7 +280,7 @@
                             </div>
                             <div>
                                 <Label class="text-xs text-gray-500">Amount</Label>
-                                <p class="text-sm font-medium">R {{ selectedTransaction.managedTenderAmount }}</p>
+                                <p class="text-sm font-medium">{{ formatMoney(selectedTransaction.managedTenderAmount) }}</p>
                             </div>
                             <div>
                                 <Label class="text-xs text-gray-500">Units</Label>
@@ -292,11 +292,11 @@
                             </div>
                             <div>
                                 <Label class="text-xs text-gray-500">Other</Label>
-                                <p class="text-sm">R {{ selectedTransaction.commissionAmountEx || '0.00' }}</p>
+                                <p class="text-sm">{{ formatMoney(selectedTransaction.commissionAmountEx || 0) }}</p>
                             </div>
                             <div class="border-t pt-3">
                                 <Label class="text-xs text-gray-500 font-semibold">Total</Label>
-                                <p class="text-sm font-bold">R {{ selectedTransaction.managedTenderAmount }}</p>
+                                <p class="text-sm font-bold">{{ formatMoney(selectedTransaction.managedTenderAmount) }}</p>
                             </div>
                             <div v-if="selectedTransaction.tokenNumbers && selectedTransaction.tokenNumbers.length > 0">
                                 <Label class="text-xs text-gray-500">Token</Label>
@@ -347,6 +347,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const { $toast } = useNuxtApp()
+const { formatMoney } = useCurrency()
 
 // Reactive data
 const isLoading = ref(true)

@@ -178,6 +178,7 @@
             <div class="flex-1 overflow-auto">
                 <slot />
             </div>
+            <InactiveMetersPopupTrigger v-if="$route.params.customer_id" />
         </main>
     </div>
 </template>

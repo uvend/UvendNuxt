@@ -28,6 +28,8 @@
 <script setup>
 import { computed } from 'vue'
 
+const { formatMoney } = useCurrency()
+
 const props = defineProps({
   transactions: {
     type: Array,
@@ -93,7 +95,7 @@ const chartOptions = computed(() => ({
   tooltip: {
     y: {
       formatter: function (value) {
-        return `R ${value.toFixed(2)}`
+        return formatMoney(value)
       }
     }
   },

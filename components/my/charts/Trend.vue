@@ -135,7 +135,9 @@ const props = defineProps({
 
 const emit = defineEmits(['dateRangeChanged'])
 
-const selectedUtility = ref('All')
+const { formatMoney, currencyCode } = useCurrency()
+
+const selectedUtility = ref('Both')
 const chartRef = ref(null)
 const selectedDateRange = ref('lastMonth')
 const startDate = ref(null)
@@ -320,7 +322,7 @@ const chartOptions = computed(() => ({
   },
   yaxis: {
     labels: {
-      formatter: (value) => `R ${value.toFixed(2)}`,
+      formatter: (value) => formatMoney(value),
       style: {
         colors: '#64748b',
         fontSize: '11px'
@@ -332,7 +334,7 @@ const chartOptions = computed(() => ({
       format: 'MMM dd, yyyy'
     },
     y: {
-      formatter: (value) => `R ${value.toFixed(2)}`
+      formatter: (value) => formatMoney(value)
     }
   },
   markers: {
@@ -359,7 +361,7 @@ const downloadCSV = () => {
   if (!hasData.value) return
   
   const csvData = []
-  const headers = ['Date', 'Water (R)', 'Electricity (R)', 'Gas (R)', 'Total (R)']
+  const headers = ['Date', `Water (${currencyCode})`, `Electricity (${currencyCode})`, `Total (${currencyCode})`]
   csvData.push(headers.join(','))
   
   // Get all unique dates
