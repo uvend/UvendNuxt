@@ -3,31 +3,9 @@
         <!-- Main Content Area -->
         <div class="flex-1 p-6 lg:p-8 flex flex-col">
             <!-- Header -->
-            <div class="mb-8 flex justify-between items-start">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Meters</h1>
-                    <p class="text-gray-600">Overview of meters and their vending totals</p>
-                </div>
-                <Button 
-                    v-if="!demoSimulate40Days"
-                    variant="outline" 
-                    size="sm" 
-                    @click="enableDemoSimulate40"
-                    class="text-amber-600 border-amber-300 hover:bg-amber-50"
-                >
-                    <Icon name="lucide:test-tube" class="w-4 h-4 mr-1" />
-                    Simulate 40 days no purchase
-                </Button>
-                <Button 
-                    v-else
-                    variant="outline" 
-                    size="sm" 
-                    @click="disableDemoSimulate40"
-                    class="text-green-600 border-green-300 hover:bg-green-50"
-                >
-                    <Icon name="lucide:check" class="w-4 h-4 mr-1" />
-                    Demo mode ON – click to disable
-                </Button>
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Meters</h1>
+                <p class="text-gray-600">Overview of meters and their vending totals</p>
             </div>
 
             <!-- Search Bar -->
@@ -288,8 +266,7 @@ export default{
             dateRange: null,
             startDate: null,
             endDate: null,
-            selectedDateRange: 'lastMonth',
-            demoSimulate40Days: false
+            selectedDateRange: 'lastMonth'
         }
     },
     methods:{
@@ -403,29 +380,6 @@ export default{
                 }
                 this.metersTotals.push(row)
                 this.originalMetersTotals.push(row)
-            }
-            // Demo: simulate 40 days no purchase
-            if (process.client && localStorage.getItem('demoSimulate40Days') === 'true') {
-                this.metersTotals.push({
-                    meterNumber: 'DEMO_SIMULATE_40',
-                    complexName: 'Demo (Simulated)',
-                    utilityType: 'Electricity',
-                    address: 'Simulated meter for demo',
-                    totalUnitsIssued: 0,
-                    managedTenderAmount: '0.00',
-                    installationUniqueId: 'demo-40',
-                    isActive: false
-                })
-                this.originalMetersTotals.push({
-                    meterNumber: 'DEMO_SIMULATE_40',
-                    complexName: 'Demo (Simulated)',
-                    utilityType: 'Electricity',
-                    address: 'Simulated meter for demo',
-                    totalUnitsIssued: 0,
-                    managedTenderAmount: '0.00',
-                    installationUniqueId: 'demo-40',
-                    isActive: false
-                })
             }
             this.filteredMeters = JSON.parse(JSON.stringify(this.originalMetersTotals))
             // sort by complex name first, then by address, then by meter number
@@ -579,18 +533,6 @@ export default{
             this.currentPage = 1
             this.performFiltering()
         }, 300),
-        enableDemoSimulate40(){
-            localStorage.setItem('demoSimulate40Days', 'true')
-            this.demoSimulate40Days = true
-            this.getAdminMeters()
-            window.dispatchEvent(new Event('demoSimulate40Toggled'))
-        },
-        disableDemoSimulate40(){
-            localStorage.removeItem('demoSimulate40Days')
-            this.demoSimulate40Days = false
-            this.getAdminMeters()
-            window.dispatchEvent(new Event('demoSimulate40Toggled'))
-        },
         // Date handling
         updateDateRange(){
             if(this.startDate && this.endDate){
@@ -630,7 +572,6 @@ export default{
         }
     },
     async mounted(){
-        this.demoSimulate40Days = process.client && localStorage.getItem('demoSimulate40Days') === 'true'
         const today = new Date()
         const lastMonth = new Date()
         lastMonth.setDate(today.getDate() - 30)

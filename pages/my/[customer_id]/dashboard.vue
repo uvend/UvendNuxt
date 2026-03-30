@@ -98,6 +98,21 @@
                 </Card>
             </div>
 
+            <div class="mb-4 flex flex-col sm:flex-row gap-4 flex-shrink-0 items-stretch">
+                <MeterActivityOverview
+                    class="flex-1 min-w-0"
+                    :active-count="meterActiveCount"
+                    :inactive-count="meterInactiveCount"
+                    :loading="meterActivityLoading"
+                />
+                <TotalVendsKpi
+                    class="flex-1 min-w-0"
+                    :count="totalVendCount"
+                    :total-amount="totalVendAmount"
+                    :loading="transactionsLoading"
+                />
+            </div>
+
             <!-- Charts Section -->
             <div class="flex-1 flex flex-col lg:flex-row gap-6 lg:gap-8 min-h-0">
                 <!-- Combined Utility Spending Trend Chart -->
@@ -214,6 +229,8 @@
 <script>
 import Trend from '~/components/my/charts/Trend.vue'
 import ComplexSpendingBar from '~/components/my/charts/ComplexSpendingBar.vue'
+import MeterActivityOverview from '~/components/my/charts/MeterActivityOverview.vue'
+import TotalVendsKpi from '~/components/my/charts/TotalVendsKpi.vue'
 
 definePageMeta({
     layout: 'my'
@@ -222,11 +239,14 @@ definePageMeta({
 export default {
     setup() {
         const { formatMoney } = useCurrency()
-        return { formatMoney }
+        const { metersWithLastVend, fetchAndCompute } = useMeterActivity()
+        return { formatMoney, metersWithLastVend, fetchAndCompute }
     },
     components: {
         Trend,
-        ComplexSpendingBar
+        ComplexSpendingBar,
+        MeterActivityOverview,
+        TotalVendsKpi
     },
     data() {
         return {
@@ -236,48 +256,55 @@ export default {
             selectedTransaction: null,
             expandedRow: null, // Track expanded row index
             summaryData: {}, // Store summary data from API
-            kpiMonthOffset: 0 // 0 = current month, -1 = last month, etc.
+            kpiMonthOffset: 0, // 0 = current month, -1 = last month, etc.
+            meterActivityLoading: true,
+            transactionsLoading: true
         }
     },
     methods: {
         async getAdminTransactions() {
-            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
-                method: "GET",
-                params: {
-                    IncludeMetersWithNoActivity: false,
-                    StartDate: this.dateRange.start,
-                    EndDate: this.dateRange.end,
-                    ReportParentType: 4,  // customer
-                    ResponseFormatType: 0,
-                    ParentUniqueID: this.$route.params.customer_id,
-                    UtilityType: -1
-                }
-            })
-            
-            // Store summary data for refund calculation
-            this.summaryData = result.data.summary || {}
-            
-            // Clear existing transactions
-            this.originalTransactions = []
-            
-               // Extract all transactions from all meters
-               for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
-                if (meterData.transactions && Array.isArray(meterData.transactions)) {
-                    meterData.transactions.forEach(transaction => {
-                        this.originalTransactions.push({
-                            ...transaction,
-                            meterNumber: transaction.meternumber || meterNumber,
-                            complexName: transaction.complexDescription || 'Unknown',
-                            address: transaction.address0 || 'N/A',
-                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
-                            managedTenderAmount: transaction.tenderedamount || 0,
-                            totalUnitsIssued: transaction.totalunitsissued || 0,
-                            transactionDate: transaction.row_creation_date || new Date().toISOString(),
-                            transactionID: transaction.uniqueidentification || Date.now(),
-                            commissionAmount: transaction.vendCommissionAmount || 0
+            this.transactionsLoading = true
+            try {
+                const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
+                    method: "GET",
+                    params: {
+                        IncludeMetersWithNoActivity: false,
+                        StartDate: this.dateRange.start,
+                        EndDate: this.dateRange.end,
+                        ReportParentType: 4,  // customer
+                        ResponseFormatType: 0,
+                        ParentUniqueID: this.$route.params.customer_id,
+                        UtilityType: -1
+                    }
+                })
+
+                // Store summary data for refund calculation
+                this.summaryData = result.data.summary || {}
+
+                // Clear existing transactions
+                this.originalTransactions = []
+
+                // Extract all transactions from all meters
+                for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+                    if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                        meterData.transactions.forEach(transaction => {
+                            this.originalTransactions.push({
+                                ...transaction,
+                                meterNumber: transaction.meternumber || meterNumber,
+                                complexName: transaction.complexDescription || 'Unknown',
+                                address: transaction.address0 || 'N/A',
+                                utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                                managedTenderAmount: transaction.tenderedamount || 0,
+                                totalUnitsIssued: transaction.totalunitsissued || 0,
+                                transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                                transactionID: transaction.uniqueidentification || Date.now(),
+                                commissionAmount: transaction.vendCommissionAmount || 0
+                            })
                         })
-                    })
+                    }
                 }
+            } finally {
+                this.transactionsLoading = false
             }
         },
         async getVendTransactions() {
@@ -292,11 +319,11 @@ export default {
             })
             this.originalTransactions = result.responseData.transactionData
         },
-        getTransactions() {
-            this.getAdminTransactions()
+        async getTransactions() {
+            await this.getAdminTransactions()
             // if (localStorage.getItem('customer') === 'admin') {
             // } else {
-            //     this.getVendTransactions()
+            //     await this.getVendTransactions()
             // }
         },
         selectTransaction(transaction) {
@@ -338,7 +365,15 @@ export default {
             start: ninetyDaysAgo.toISOString(),
             end: today.toISOString()
         }
-        await this.getTransactions()
+        this.meterActivityLoading = true
+        try {
+            await Promise.all([
+                this.getTransactions(),
+                this.fetchAndCompute(this.$route.params.customer_id)
+            ])
+        } finally {
+            this.meterActivityLoading = false
+        }
     },
     computed: {
         kpiMonthRange() {
@@ -352,6 +387,31 @@ export default {
             const d = new Date();
             d.setMonth(d.getMonth() + this.kpiMonthOffset);
             return d.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
+        },
+        meterActivityMeters() {
+            const list = this.metersWithLastVend
+            return Array.isArray(list) ? list : []
+        },
+        meterActiveCount() {
+            return this.meterActivityMeters.filter(m => m && m.isActive).length
+        },
+        meterInactiveCount() {
+            return this.meterActivityMeters.filter(m => m && !m.isActive).length
+        },
+        totalVendCount() {
+            if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                return 0
+            }
+            return this.originalTransactions.length
+        },
+        totalVendAmount() {
+            if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                return 0
+            }
+            return this.originalTransactions.reduce((sum, t) => {
+                const n = parseFloat(t?.managedTenderAmount)
+                return sum + (Number.isNaN(n) ? 0 : n)
+            }, 0)
         },
         filteredTransactionsForKPI() {
             if (!this.kpiMonthRange) return this.originalTransactions;
@@ -428,13 +488,26 @@ export default {
     },
     watch: {
         dateRange: {
-            handler(newRange, oldRange) {
+            async handler(newRange, oldRange) {
                 if (newRange && oldRange &&
                     (newRange.start !== oldRange.start || newRange.end !== oldRange.end)) {
-                    this.getTransactions();
+                    await this.getTransactions()
                 }
             },
             deep: true
+        },
+        '$route.params.customer_id': {
+            async handler() {
+                this.meterActivityLoading = true
+                try {
+                    await Promise.all([
+                        this.getTransactions(),
+                        this.fetchAndCompute(this.$route.params.customer_id, true)
+                    ])
+                } finally {
+                    this.meterActivityLoading = false
+                }
+            }
         }
     }
 }

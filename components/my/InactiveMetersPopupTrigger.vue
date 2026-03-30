@@ -21,15 +21,8 @@ async function checkAndShow() {
     }
 }
 
-const onDemoToggled = () => checkAndShow()
-
 onMounted(async () => {
     await checkAndShow()
-    window.addEventListener('demoSimulate40Toggled', onDemoToggled)
-})
-
-onUnmounted(() => {
-    window.removeEventListener('demoSimulate40Toggled', onDemoToggled)
 })
 
 watch(() => route.params.customer_id, () => checkAndShow())

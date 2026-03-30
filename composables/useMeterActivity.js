@@ -6,16 +6,17 @@ export function useMeterActivity() {
     const metersWithLastVend = useState('metersWithLastVend', () => [])
     const inactive40Days = useState('inactive40Days', () => [])
     const lastFetch = useState('meterActivityLastFetch', () => null)
+    const lastFetchCustomerId = useState('meterActivityLastCustomerId', () => null)
     const CACHE_MS = 5 * 60 * 1000 // 5 min cache
 
     const DAYS_INACTIVE = 30
     const DAYS_POPUP = 40
 
-    async function fetchAndCompute(customerId) {
+    async function fetchAndCompute(customerId, force = false) {
         if (!customerId) return
         const now = Date.now()
-        const skipCache = process.client && localStorage.getItem('demoSimulate40Days') === 'true'
-        if (!skipCache && lastFetch.value && now - lastFetch.value < CACHE_MS) return
+        const sameCustomer = lastFetchCustomerId.value === customerId
+        if (!force && sameCustomer && lastFetch.value && now - lastFetch.value < CACHE_MS) return
 
         try {
             const today = new Date()
@@ -34,6 +35,7 @@ export function useMeterActivity() {
                 }
             })
             lastFetch.value = now
+            lastFetchCustomerId.value = customerId
             const transactionData = result?.data?.transactionData || {}
             const list = []
             const todayTime = today.getTime()
@@ -73,21 +75,6 @@ export function useMeterActivity() {
                     daysSinceLastVend: Math.floor(daysSince),
                     isActive: daysSince <= DAYS_INACTIVE,
                     is40DaysInactive: daysSince >= DAYS_POPUP
-                })
-            }
-
-            // Demo: simulate 40 days no purchase
-            if (process.client && localStorage.getItem('demoSimulate40Days') === 'true') {
-                list.push({
-                    meterNumber: 'DEMO_SIMULATE_40',
-                    installationUniqueId: 'demo-40',
-                    complexName: 'Demo (Simulated)',
-                    utilityType: 'Electricity',
-                    address: 'Simulated meter for demo',
-                    lastVendDate: new Date(today.getTime() - 40 * 24 * 60 * 60 * 1000),
-                    daysSinceLastVend: 40,
-                    isActive: false,
-                    is40DaysInactive: true
                 })
             }
 
