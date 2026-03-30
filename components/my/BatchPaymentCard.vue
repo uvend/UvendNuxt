@@ -29,7 +29,7 @@
         </div>
         <div class="flex flex-col justify-center items-center">
             <div>
-                <Badge :class="[payment.periodTotals.batchPaymentState == 'Settled' ? 'bg-green-500' : '' ]">{{ payment.periodTotals.batchPaymentState }}</Badge>
+                <Badge :class="batchStateBadgeClass(effectiveBatchState)">{{ effectiveBatchState }}</Badge>
                 <p class="w-full text-center font-bold">{{ payment.periodTotals.payeePayOutAmount.toFixed(2) }}</p>
             </div>
         </div>
@@ -46,9 +46,16 @@
 <script>
 export default{
     props:{
-        payment: Object
+        payment: Object,
+        displayState: {
+            type: String,
+            default: null
+        }
     },
     computed:{
+        effectiveBatchState() {
+            return this.displayState ?? this.payment.periodTotals.batchPaymentState;
+        },
         formattedStartDate() {
             return new Date(this.payment.periodTotals.transactionPeriodStartDate).toLocaleDateString('en-ZA', {
                 day: '2-digit',
@@ -77,7 +84,15 @@ export default{
             const seconds = String(date.getSeconds()).padStart(2, '0'); // Get seconds and pad with leading zero
             return `${hours}:${minutes}`;
         },
-    }
+    },
+    methods: {
+        batchStateBadgeClass(state) {
+            if (state === 'Settled') return 'bg-green-500 text-white border-transparent';
+            if (state === 'SubmittedToBatch') return 'bg-orange-500 text-white border-transparent';
+            if (state === 'BankFileCreated') return 'bg-blue-500 text-white border-transparent';
+            return '';
+        },
+    },
 }
 </script>
 <style>

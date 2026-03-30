@@ -1,0 +1,500 @@
+<template>
+    <div class="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+        <!-- Main Content Area -->
+        <div class="flex-1 p-6 lg:p-8 flex flex-col min-h-0">
+            <!-- KPI Cards - Monthly vending trend with month cycle -->
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-800">Monthly Vending Trend</h2>
+                <div class="flex items-center gap-2">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        @click="prevKpiMonth"
+                        class="rounded-xl"
+                    >
+                        <Icon name="lucide:chevron-left" class="w-4 h-4" />
+                        Previous
+                    </Button>
+                    <span class="text-sm font-medium text-gray-700 min-w-[140px] text-center">{{ kpiMonthLabel }}</span>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        @click="nextKpiMonth"
+                        :disabled="kpiMonthOffset >= 0"
+                        class="rounded-xl"
+                    >
+                        Next
+                        <Icon name="lucide:chevron-right" class="w-4 h-4" />
+                    </Button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 mb-6 flex-shrink-0">
+                <!-- Water Utility -->
+                <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardHeader class="pb-2 relative z-10">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                    <Icon name="lucide:droplets" class="w-4 h-4 lg:w-5 lg:h-5 text-blue-600" />
+                                </div>
+                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Water</CardTitle>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent class="pt-0 relative z-10 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Spending:</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ formatMoney(waterSpending) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Vended:</span>
+                            <span class="text-sm font-semibold text-blue-600">{{ klVended }} KL</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Electricity Utility -->
+                <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-yellow-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardHeader class="pb-2 relative z-10">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-yellow-100 rounded-xl flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
+                                    <Icon name="lucide:zap" class="w-4 h-4 lg:w-5 lg:h-5 text-yellow-600" />
+                                </div>
+                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Electricity</CardTitle>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent class="pt-0 relative z-10 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Spending:</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ formatMoney(electricitySpending) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-600">Vended:</span>
+                            <span class="text-sm font-semibold text-yellow-600">{{ electricityVended }} KWh</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Total Refunds -->
+                <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-orange-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardHeader class="pb-2 relative z-10">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                                    <Icon name="lucide:refresh-cw" class="w-4 h-4 lg:w-5 lg:h-5 text-orange-600" />
+                                </div>
+                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Total Refunds</CardTitle>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent class="pt-0 relative z-10">
+                        <div class="text-lg lg:text-2xl font-bold text-orange-600">{{ formatMoney(totalRefunds) }}</div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="flex-1 flex flex-col lg:flex-row gap-6 lg:gap-8 min-h-0">
+                <!-- Combined Utility Spending Trend Chart -->
+                <div class="flex-1 min-h-0 flex flex-col gap-6">
+                    <!-- Trend Chart -->
+                    <div class="flex-1 min-h-0 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border-0 overflow-hidden">
+                        <Trend 
+                            :transactions="originalTransactions" 
+                            title="Utility Spending Trend"
+                            description="Track your water and electricity spending over time"
+                            @dateRangeChanged="onChartDateRangeChanged"
+                        />
+                    </div>
+                </div>
+                
+                <!-- Today's Transactions Sidebar -->
+                <div class="w-full lg:w-96 xl:w-[28rem] flex-shrink-0">
+                    <Card class="h-full flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
+                        <CardHeader class="pb-3 flex-shrink-0 bg-gradient-to-r from-blue-50 to-indigo-50">
+                            <CardTitle class="text-lg font-semibold text-gray-800">Today's Transactions</CardTitle>
+                            <CardDescription class="text-gray-600">Recent transactions from today</CardDescription>
+                        </CardHeader>
+                        <CardContent class="flex-1 min-h-0 p-0">
+                            <div v-if="todayTransactions.length > 0" class="h-full overflow-y-auto custom-scrollbar">
+                                <table class="w-full text-xs">
+                                    <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                                        <tr>
+                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-16 lg:w-20">Meter</th>
+                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700">Complex</th>
+                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-20 lg:w-24 ">Amount</th>
+                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-16 lg:w-20 hidden 2xl::table-cell">Units</th>
+                                            <th class="text-left py-2 px-1 lg:px-2 font-medium text-gray-700 w-14 lg:w-16 ">Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-for="(transaction, index) in todayTransactions" :key="transaction.transactionID">
+                                            <!-- Main Row -->
+                                            <tr 
+                                                class="border-b border-gray-100 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group"
+                                                @click="toggleRowExpansion(index)"
+                                            >
+                                                <td class="py-3 px-3 font-medium text-gray-900 group-hover:text-gray-700">
+                                                    <div class="truncate max-w-[60px] lg:max-w-[80px]" :title="transaction.meterNumber">
+                                                        {{ transaction.meterNumber }}
+                                                    </div>
+                                                </td>
+                                                <td class="py-3 px-3 text-gray-600 group-hover:text-gray-700">
+                                                    <div class="truncate max-w-[80px] lg:max-w-[120px]" :title="transaction.complexName">
+                                                        {{transaction.complexName}} <br/>
+                                                        <p class="text-[12px] text-gray-500">{{ transaction.address }}</p>
+                                                    </div>
+                                                </td>
+                                                <td class="py-2 px-1 lg:px-2 font-semibold text-green-600 whitespace-nowrap ">{{ formatMoney(transaction.managedTenderAmount) }}</td>
+                                                <td class="py-2 px-1 lg:px-2 text-gray-600 whitespace-nowrap hidden 2xl::table-cell">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</td>
+                                                <td class="py-2 px-1 lg:px-2 text-gray-500 whitespace-nowrap ">{{ formattedTime(transaction.transactionDate) }}</td>
+                                            </tr>
+                                            
+                                            <!-- Expanded Details Row -->
+                                            <tr v-if="expandedRow === index" class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200">
+                                                <td colspan="5" class="py-4 px-3">
+                                                    <div class="space-y-3">
+                                                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                                                            <div class="bg-white/60 rounded-lg p-2">
+                                                                <span class="font-semibold text-gray-700">Full Meter:</span>
+                                                                <div class="text-gray-900 mt-1">{{ transaction.meterNumber }}</div>
+                                                            </div>
+                                                            <div class="bg-white/60 rounded-lg p-2">
+                                                                <span class="font-semibold text-gray-700">Full Complex:</span>
+                                                                <div class="text-gray-900 mt-1">{{ transaction.complexName }}</div>
+                                                            </div>
+                                                            <div class="bg-white/60 rounded-lg p-2">
+                                                                <span class="font-semibold text-gray-700">Units:</span>
+                                                                <div class="text-gray-900 mt-1">{{ parseFloat(transaction.totalUnitsIssued).toFixed(1) }} {{ transaction.utilityType === 'Water' ? 'KL' : 'KWh' }}</div>
+                                                            </div>
+                                                            <div class="bg-white/60 rounded-lg p-2">
+                                                                <span class="font-semibold text-gray-700">Time:</span>
+                                                                <div class="text-gray-900 mt-1">{{ formattedTime(transaction.transactionDate) }}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex justify-end pt-2">
+                                                            <Button 
+                                                                size="sm" 
+                                                                @click.stop="viewMeter(transaction.meterinstallationuniqueid)"
+                                                                class="text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                                                            >
+                                                                <Icon name="lucide:eye" class="w-3 h-3 mr-1" />
+                                                                View Meter
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div v-else class="flex items-center justify-center h-full text-gray-500">
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <Icon name="lucide:receipt" class="w-8 h-8 text-gray-400" />
+                                    </div>
+                                    <p class="text-gray-600 font-medium">No transactions today</p>
+                                    <p class="text-gray-400 text-sm mt-1">Transactions will appear here when they occur</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import Trend from '~/components/my/charts/Trend.vue'
+import ComplexSpendingBar from '~/components/my/charts/ComplexSpendingBar.vue'
+
+definePageMeta({
+    layout: 'my'
+})
+
+export default {
+    setup() {
+        const { formatMoney } = useCurrency()
+        return { formatMoney }
+    },
+    components: {
+        Trend,
+        ComplexSpendingBar
+    },
+    data() {
+        return {
+            originalTransactions: [], // Store original unfiltered data
+            dateRange: null,
+            chartDateRange: null, // Date range from chart component
+            selectedTransaction: null,
+            expandedRow: null, // Track expanded row index
+            summaryData: {}, // Store summary data from API
+            kpiMonthOffset: 0 // 0 = current month, -1 = last month, etc.
+        }
+    },
+    methods: {
+        async getAdminTransactions() {
+            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
+                method: "GET",
+                params: {
+                    IncludeMetersWithNoActivity: false,
+                    StartDate: this.dateRange.start,
+                    EndDate: this.dateRange.end,
+                    ReportParentType: 4,  // customer
+                    ResponseFormatType: 0,
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: -1
+                }
+            })
+            
+            // Store summary data for refund calculation
+            this.summaryData = result.data.summary || {}
+            
+            // Clear existing transactions
+            this.originalTransactions = []
+            
+               // Extract all transactions from all meters
+               for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+                if (meterData.transactions && Array.isArray(meterData.transactions)) {
+                    meterData.transactions.forEach(transaction => {
+                        this.originalTransactions.push({
+                            ...transaction,
+                            meterNumber: transaction.meternumber || meterNumber,
+                            complexName: transaction.complexDescription || 'Unknown',
+                            address: transaction.address0 || 'N/A',
+                            utilityType: transaction.utilitytype === 1 ? 'Water' : 'Electricity',
+                            managedTenderAmount: transaction.tenderedamount || 0,
+                            totalUnitsIssued: transaction.totalunitsissued || 0,
+                            transactionDate: transaction.row_creation_date || new Date().toISOString(),
+                            transactionID: transaction.uniqueidentification || Date.now(),
+                            commissionAmount: transaction.vendCommissionAmount || 0
+                        })
+                    })
+                }
+            }
+        },
+        async getVendTransactions() {
+            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`, {
+                method: "GET",
+                params: {
+                    StartDate: this.dateRange.start,
+                    EndDate: this.dateRange.end,
+                    VendTransactionReportType: 0,  // customer
+                    UtilityType: -1
+                }
+            })
+            this.originalTransactions = result.responseData.transactionData
+        },
+        getTransactions() {
+            this.getAdminTransactions()
+            // if (localStorage.getItem('customer') === 'admin') {
+            // } else {
+            //     this.getVendTransactions()
+            // }
+        },
+        selectTransaction(transaction) {
+            this.selectedTransaction = transaction
+        },
+        toggleRowExpansion(index) {
+            this.expandedRow = this.expandedRow === index ? null : index;
+        },
+        viewMeter(meterNumber) {
+            navigateTo(`/my/${this.$route.params.customer_id}/meters/${meterNumber}`);
+        },
+        formattedTime(dateString) {
+            const date = new Date(dateString)
+            return date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            })
+        },
+        onChartDateRangeChanged(dateRange) {
+            this.chartDateRange = dateRange;
+            // Also update the main dateRange to trigger API calls
+            this.dateRange = dateRange;
+        },
+        prevKpiMonth() {
+            this.kpiMonthOffset -= 1;
+        },
+        nextKpiMonth() {
+            if (this.kpiMonthOffset < 0) this.kpiMonthOffset += 1;
+        }
+    },
+    async mounted() {
+        const today = new Date()
+        const ninetyDaysAgo = new Date()
+        ninetyDaysAgo.setDate(today.getDate() - 90)
+        
+        // Fetch 90 days so we have data for multiple months when cycling
+        this.dateRange = {
+            start: ninetyDaysAgo.toISOString(),
+            end: today.toISOString()
+        }
+        await this.getTransactions()
+    },
+    computed: {
+        kpiMonthRange() {
+            const today = new Date();
+            const d = new Date(today.getFullYear(), today.getMonth() + this.kpiMonthOffset, 1);
+            const start = new Date(d.getFullYear(), d.getMonth(), 1);
+            const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+            return { start, end };
+        },
+        kpiMonthLabel() {
+            const d = new Date();
+            d.setMonth(d.getMonth() + this.kpiMonthOffset);
+            return d.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
+        },
+        filteredTransactionsForKPI() {
+            if (!this.kpiMonthRange) return this.originalTransactions;
+            const { start, end } = this.kpiMonthRange;
+            return this.originalTransactions.filter(transaction => {
+                const transactionDate = new Date(transaction.transactionDate);
+                return transactionDate >= start && transactionDate <= end;
+            });
+        },
+        waterSpending() {
+            return this.filteredTransactionsForKPI
+                .filter(t => t.utilityType === 'Water')
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
+                .toFixed(2);
+        },
+        electricitySpending() {
+            return this.filteredTransactionsForKPI
+                .filter(t => t.utilityType === 'Electricity')
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
+                .toFixed(2);
+        },
+        totalRefunds() {
+            // Use refund from summary data (vendRefund field from API)
+            if (this.summaryData && this.summaryData.vendRefund !== undefined) {
+                return parseFloat(this.summaryData.vendRefund || 0).toFixed(2);
+            }
+            
+            return '0.00';
+        },
+        klVended() {
+            try {
+                if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
+                    return '0.0';
+                }
+                return this.filteredTransactionsForKPI
+                    .filter(t => t && t.utilityType === 'Water')
+                    .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
+                    .toFixed(1);
+            } catch (error) {
+                console.error('Error in klVended:', error);
+                return '0.0';
+            }
+        },
+        electricityVended() {
+            try {
+                if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
+                    return '0.0';
+                }
+                return this.filteredTransactionsForKPI
+                    .filter(t => t && t.utilityType === 'Electricity')
+                    .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
+                    .toFixed(1);
+            } catch (error) {
+                console.error('Error in electricityVended:', error);
+                return '0.0';
+            }
+        },
+        todayTransactions() {
+            if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                return []
+            }
+            
+            const today = new Date()
+            const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+            const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
+            
+            return this.originalTransactions
+                .filter(transaction => {
+                    const transactionDate = new Date(transaction.transactionDate)
+                    return transactionDate >= todayStart && transactionDate <= todayEnd
+                })
+                .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)) // Most recent first
+        }
+    },
+    watch: {
+        dateRange: {
+            handler(newRange, oldRange) {
+                if (newRange && oldRange &&
+                    (newRange.start !== oldRange.start || newRange.end !== oldRange.end)) {
+                    this.getTransactions();
+                }
+            },
+            deep: true
+        }
+    }
+}
+</script>
+
+<style scoped>
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.5);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(203, 213, 225, 0.8);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.9);
+}
+
+/* Firefox scrollbar styles */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(203, 213, 225, 0.8) rgba(241, 245, 249, 0.5);
+}
+
+/* Hide scrollbar when not needed */
+.custom-scrollbar::-webkit-scrollbar-thumb:vertical {
+    min-height: 30px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:horizontal {
+    min-width: 30px;
+}
+
+/* Card hover animations */
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+}
+
+/* Table row animations */
+.table-row {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Gradient text effect */
+.gradient-text {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>

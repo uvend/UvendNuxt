@@ -1,235 +1,702 @@
 <template>
-    <div>
-        <div class="flex justify-between">
-            <div class="flex gap-1">
-                <div class="flex gap-1">
-                <Button @click="toggleSearch()" variant="secondary">
-                    <Icon name="lucide:search"/>
+    <div class="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <!-- Main Content Area -->
+        <div class="flex-1 p-6 lg:p-8 flex flex-col">
+            <!-- Header -->
+            <div class="mb-8 flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Meters</h1>
+                    <p class="text-gray-600">Overview of meters and their vending totals</p>
+                </div>
+                <Button 
+                    v-if="!demoSimulate40Days"
+                    variant="outline" 
+                    size="sm" 
+                    @click="enableDemoSimulate40"
+                    class="text-amber-600 border-amber-300 hover:bg-amber-50"
+                >
+                    <Icon name="lucide:test-tube" class="w-4 h-4 mr-1" />
+                    Simulate 40 days no purchase
                 </Button>
-                <Input v-if="searchActive" type="text" placeholder="Search" v-model="search" @input="debouncedSearch"/>
+                <Button 
+                    v-else
+                    variant="outline" 
+                    size="sm" 
+                    @click="disableDemoSimulate40"
+                    class="text-green-600 border-green-300 hover:bg-green-50"
+                >
+                    <Icon name="lucide:check" class="w-4 h-4 mr-1" />
+                    Demo mode ON – click to disable
+                </Button>
             </div>
-            <div>
-                <Select  v-model="selectedUtility">
-                    <SelectTrigger class="w-[180px]">
-                        <SelectValue placeholder="Utility type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="utility in utilityType" :value="utility.value">
-                            {{ utility.label }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
+
+            <!-- Search Bar -->
+            <div class="mb-8">
+                <div class="relative w-1/2">
+                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5">
+                        <Icon name="lucide:search" class="w-5 h-5" />
+                    </div>
+                    <Input 
+                        type="text" 
+                        placeholder="Search meters..." 
+                        class="pl-10 bg-white/80 backdrop-blur-sm border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                        v-model="search"
+                        @input="debouncedSearch"
+                    />
+                </div>
+            </div>
+
+            <!-- Meters Table View -->
+            <div class="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
+                <!-- Table Header -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-800">Meter Summary</h2>
+                            <p class="text-gray-600 text-sm">Totals per meter for the selected period</p>
+                            <!-- Activity Status Legend -->
+                            <div class="flex items-center gap-4 mt-2">
+                                <div class="flex items-center gap-1">
+                                    <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500" />
+                                    <span class="text-xs text-gray-600">Active (Has vended)</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <Icon name="lucide:x-circle" class="w-4 h-4 text-red-500" />
+                                    <span class="text-xs text-gray-600">Inactive (No vending in 30+ days)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-600">Total Meters</div>
+                            <div class="text-2xl font-bold text-blue-600">{{ filteredMeters.length }}</div>
+                            <div class="text-xs text-gray-500 mt-1">Currently Shown: {{ displayedMeters.length }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Content -->
+                <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                    <table class="w-full">
+                        <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Meter</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Complex</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Utility</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Units Issued</th>
+                                <th class="text-left py-4 px-6 font-semibold text-gray-700">Amount Vended</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="meter in displayedMeters" :key="meter.meterNumber" class="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group" @click="navigateTo(`/my/${$route.params.customer_id}/meters/${meter.installationUniqueId || meter.meterinstallationuniqueid || meter.meterinstallationuniqueid}`)">
+                                <td class="py-4 px-6 text-sm font-medium text-gray-900 group-hover:text-gray-700">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ meter.meterNumber }}</span>
+                                        <Icon 
+                                            :name="meter.isActive ? 'lucide:check-circle' : 'lucide:x-circle'" 
+                                            :class="meter.isActive ? 'text-green-500' : 'text-red-500'"
+                                            class="w-4 h-4"
+                                            :title="meter.isActive ? 'Active (Has vended in last 30 days)' : 'Inactive (No vending in last 30 days)'"
+                                        />
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-gray-700 group-hover:text-gray-700">
+                                    {{ meter.complexName || 'N/A' }}
+                                    <p class="text-gray-500">{{ meter.address || 'N/A' }}</p>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">{{ meter.utilityType }}</td>
+                                <td class="py-4 px-6 text-sm text-gray-600 group-hover:text-gray-700">
+                                    <span class="font-medium">{{ meter.totalUnitsIssued }}</span>
+                                    <span v-if="meter.utilityType === 'Water'" class="text-blue-600">KL</span>
+                                    <span v-else-if="meter.utilityType === 'Electricity'" class="text-yellow-600">KWh</span>
+                                </td>
+                                <td class="py-4 px-6 text-sm font-semibold text-green-600 group-hover:text-green-700">{{ formatMoney(meter.managedTenderAmount) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Load More Button -->
+                <div v-if="hasMoreMeters" class="p-6 border-t border-gray-200 flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <div class="flex justify-center">
+                        <Button @click="loadMore" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 px-6 py-2">
+                            <Icon name="lucide:plus" class="w-4 h-4 mr-2" />
+                            Load More ({{ remainingMeters }} remaining)
+                        </Button>
+                    </div>
+                </div>
             </div>
         </div>
-            <div class="flex flex-row w-fit gap-1">
-                <div class="flex gap-1">
-                    <Button variant="secondary" v-if="selectedMeterComplex != null" @click="selectedMeterComplex = null">
-                        <Icon name="lucide:x" class="w-5 h-5"/>
-                    </Button>
+
+        <!-- Right Sidebar -->
+        <div class="w-64 bg-white/90 backdrop-blur-sm border-l border-gray-200 p-6 overflow-y-auto custom-scrollbar shadow-lg">
+            <!-- Filters Section -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
+
+                <!-- Date Range -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Date Range</Label>
+                    <div class="space-y-2">
+                        <Select v-model="selectedDateRange" @update:model-value="onDateRangeChange">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Select date range" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="lastDay">Last Day</SelectItem>
+                                <SelectItem value="lastWeek">Last Week</SelectItem>
+                                <SelectItem value="lastMonth">Last Month</SelectItem>
+                                <SelectItem value="custom">Custom Range</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <div v-if="selectedDateRange === 'custom'" class="space-y-2">
+                            <div>
+                                <Label class="text-xs text-gray-500 mb-1 block">Start Date</Label>
+                                <Input 
+                                    type="date" 
+                                    v-model="startDate"
+                                    class="w-full"
+                                    @change="updateDateRange"
+                                />
+                            </div>
+                            <div>
+                                <Label class="text-xs text-gray-500 mb-1 block">End Date</Label>
+                                <Input 
+                                    type="date" 
+                                    v-model="endDate"
+                                    class="w-full"
+                                    @change="updateDateRange"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Type -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Type</Label>
+                    <Select v-model="selectedUtility">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Electricity & Water" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="utility in utilityType" :key="utility.value" :value="utility.value">
+                                {{ utility.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- Complex -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Complex</Label>
                     <Select v-model="selectedMeterComplex">
-                        <SelectTrigger class="w-[180px]">
+                        <SelectTrigger class="w-full">
                             <SelectValue placeholder="Select complex" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem v-for="complex in meterComplexes" :value="complex">
+                            <SelectItem v-for="complex in meterComplexes" :key="complex" :value="complex">
                                 {{ complex }}
                             </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
-                <Select  v-model="pageSize">
-                    <SelectTrigger class="w-[80px]">
-                        <SelectValue placeholder="Page Size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="size in pageSizeSelect" :value="size">
-                            {{ size }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-                <div>
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+
+                <!-- Activity Status -->
+                <div class="mb-4">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Activity Status</Label>
+                    <Select v-model="selectedActivityStatus">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="All meters" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="status in activityStatusOptions" :key="status.value" :value="status.value">
+                                {{ status.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- Load More Amount -->
+                <div class="mb-6">
+                    <Label class="text-sm font-medium text-gray-700 mb-2 block">Load More Amount</Label>
+                    <Select v-model="pageSize">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="25 records" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="size in pageSizeSelect" :key="size" :value="size">
+                                {{ size }} records
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                    <Button variant="outline" @click="clearFilters" class="flex-1">
+                        Clear
+                    </Button>
+                    <Button @click="applyFilters" class="flex-1 bg-blue-600 hover:bg-blue-700">
+                        Apply
+                    </Button>
                 </div>
             </div>
         </div>
-    </div>
-    <MySkeletenCardList v-if="isLoading"/>
-    <div v-else>
-        <MyMeterCard v-for="meter in paginated" :meter="meter"/>
     </div>
 </template>
 <script>
 import _ from 'lodash';
 const { debounce } = _;
+
 definePageMeta({
     layout: 'my'
 })
 export default{
+    setup() {
+        const { formatMoney } = useCurrency()
+        return { formatMoney }
+    },
     data(){
         return{
-            customer: null,
-            meters: [],
-            startDate: '',
-            endDate: '',
             isLoading: true,
-            currentPage: 1,
-            pageSize: 10,
-            pageSizeSelect: [
-                10,50,100,200
-            ],
-            selectedUtility: -1,
-            utilityType: [
-                {
-                    label: "Any",
-                    value: -1
-                },
-                {
-                    label: "Electricity",
-                    value: 0
-                },
-                {
-                    label: "Water",
-                    value: 1
-                }
-            ],
-            search: null,
-            searchActive: false,
+            // data sets
+            metersTotals: [],
+            originalMetersTotals: [],
+            filteredMeters: [],
+            displayedMeters: [],
             meterComplexes: [],
             selectedMeterComplex: null,
+            // pagination
+            currentPage: 1,
+            pageSize: 25,
+            pageSizeSelect: [10,25,50,100],
+            // filters
+            selectedUtility: -1,
+            utilityType: [
+                { label: 'Any', value: -1 },
+                { label: 'Electricity', value: 0 },
+                { label: 'Water', value: 1 }
+            ],
+            selectedActivityStatus: -1,
+            activityStatusOptions: [
+                { label: 'All', value: -1 },
+                { label: 'Active', value: 1 },
+                { label: 'Inactive', value: 0 }
+            ],
+            search: null,
+            // dates
+            dateRange: null,
+            startDate: null,
+            endDate: null,
+            selectedDateRange: 'lastMonth',
+            demoSimulate40Days: false
         }
     },
     methods:{
-        async getAdminMeterActivity(){
-            this.isLoading = true;
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/MeterStatement/GetSummarisedMeterActivity`,{
-                method: "GET",
-                params:{
-                    IncludeMetersWithNoActivity : true,
-                    StartDate : this.startDate,
-                    EndDate: this.endDate,
-                    ReportParentType: 4,  // customer
-                    ResponseFormatType: 0,
-                    ParentUniqueID: this.$route.params.customer_id,
-                    UtilityType: this.selectedUtility
-                },
-            })
-            this.meters = result.responseData.transactionData
-            console.log(result)
-            this.isLoading = false
-        },
-        async getVendMeterActivity(){
-            this.isLoading = true;
-            const result = await useAuthFetch(`${VEND_URL}/user/VendUserFunctions/GetMeterList`,{
-                method: "GET",
-                params:{
-                    StartDate : this.startDate,
-                    EndDate: this.endDate,
-                    UtilityType: this.selectedUtility,
-                    VendTransactionReportType: 0
-                },
-            })
-            console.log(result)
-            const customerList = result.customerList
-            customerList.forEach( c => {
-                const meterComplexGroup = c.meterComplexGroupList
-                meterComplexGroup.forEach( mcg => {
-                    const meterComplexList = mcg.meterComplexList
-                    meterComplexList.forEach( complex => {
-                        this.meterComplexes.push(complex.descriptor)
-                        const meterList = complex.meterInstallationList
-                        meterList.forEach( meter => {
-                            const mymeter = {
-                                installationAdress : meter.address,
-                                meterNumber : meter.meterNumber,
-                                installationUniqueId : meter.uniqueIdentification,
-                                utilityType: meter.vendMeterParameters.utilityType,
-                                complexName: complex.descriptor
-                            }
-                            this.meters.push(mymeter)
-                        })
-                    })
+        async getAdminMeters(){
+            try{
+                this.isLoading = true
+                // Fetch 90 days for activity check (last vend date); totals filtered by user date range
+                const today = new Date()
+                const activityStart = new Date(today)
+                activityStart.setDate(today.getDate() - 90)
+                const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
+                    method: 'GET',
+                    params:{
+                        IncludeMetersWithNoActivity : true,
+                        StartDate : activityStart.toISOString(),
+                        EndDate: this.dateRange.end,
+                        ReportParentType: 4,  // customer
+                        ResponseFormatType: 0,
+                        ParentUniqueID: this.$route.params.customer_id,
+                        UtilityType: this.selectedUtility
+                    }
                 })
-            })
-            //this.meters = result.responseData.transactionData
-            this.isLoading = false;
-
-        },
-        async getMeterActivity(){
-            if(localStorage.getItem('customer') === 'admin'){
-                await this.getAdminMeterActivity()
-            }else{
-                await this.getVendMeterActivity()
+                this._buildFromTransactionData(result.data.transactionData, this.dateRange)
+                await this.getMeterComplex()
+                this.isLoading = false
+            }catch(e){
+                console.error('Admin meters fetch failed', e)
+                this.metersTotals = []
+                this.originalMetersTotals = []
+                this.filteredMeters = []
+                this.displayedMeters = []
+                this.isLoading = false
             }
         },
-        changePage(page){
-            if (page >= 1 && page <= this.totalPages) {
-                this.currentPage = page;
+        async getVendMeters(){
+            try{
+                this.isLoading = true
+                const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
+                    method: 'GET',
+                    params:{
+                        StartDate : this.dateRange.start,
+                        EndDate: this.dateRange.end,
+                        VendTransactionReportType: 0,
+                        UtilityType: this.selectedUtility
+                    }
+                })
+                this._buildFromTransactionData(result.responseData.transactionData)
+                await this.getMeterComplex()
+                this.isLoading = false
+            }catch(e){
+                console.error('Vend meters fetch failed', e)
+                this.metersTotals = []
+                this.originalMetersTotals = []
+                this.filteredMeters = []
+                this.displayedMeters = []
+                this.isLoading = false
             }
         },
-        filterMeters() {
-            // If selectedMeterComplex is null, return all meters
-            let filteredMeters = this.selectedMeterComplex === null ? this.meters : this.meters.filter(meter => {
-                return meter.complexName === this.selectedMeterComplex; // Filter by complex name
-            });
+        _buildFromTransactionData(transactionData, userDateRange){
+            // Reset
+            this.metersTotals = []
+            this.originalMetersTotals = []
 
-            // If search phrase is provided, filter by meter number
-            if (this.search) {
-                filteredMeters = filteredMeters.filter(meter => {
-                    if(meter.meterNumber.includes(this.search) || meter.installationAdress[0].toLowerCase().includes(this.search.toLowerCase()) || meter.installationAdress[1].toLowerCase().includes(this.search.toLowerCase()) || meter.installationAdress[2].toLowerCase().includes(this.search.toLowerCase()) || meter.installationAdress[3].toLowerCase().includes(this.search.toLowerCase()) || meter.installationAdress[4].toLowerCase().includes(this.search.toLowerCase())) return true
-                });
-            }
+            const todayTime = new Date().getTime()
+            const DAYS_INACTIVE = 30
+            const range = userDateRange || this.dateRange
+            const userStart = range?.start ? new Date(range.start).getTime() : 0
+            const userEnd = range?.end ? new Date(range.end).getTime() : Infinity
 
-            return filteredMeters; // Return the filtered list of meters
-        },
-        toggleSearch(){
-            this.searchActive = !this.searchActive
-            this.search = null
-        },
-        getMeterComplex(){
-            this.meters.forEach((meter)=>{
-                const complexName = meter.complexName
-                if (!this.meterComplexes.includes(complexName)) {
-                    this.meterComplexes.push(complexName); // Add the complex if not present
-                    //console.log(`Added meter complex: ${complexName}`);
+            for(const [meterKey, meterData] of Object.entries(transactionData || {})){
+                let totalAmount = 0
+                let totalUnits = 0
+                let utilityType = null
+                let meterNumber = meterKey
+                let installationId = null
+                let complexName = null
+                let firstTxn = null
+                let lastVendDate = null
+                let address0 = null
+                if(meterData && Array.isArray(meterData.transactions)){
+                    meterData.transactions.forEach(txn => {
+                        const txnDate = txn.row_creation_date || txn.transactionDate || txn.StartDate
+                        const txnTime = txnDate ? new Date(txnDate).getTime() : 0
+                        if(txnTime && (!lastVendDate || txnTime > lastVendDate)) lastVendDate = txnTime
+                        // Totals only for user-selected period
+                        if(txnTime >= userStart && txnTime <= userEnd){
+                            totalAmount += parseFloat(txn.tenderedamount || txn.transactionAmount || txn.amount || 0) || 0
+                            totalUnits += parseFloat(txn.totalunitsissued || txn.unitsIssued || txn.units || 0) || 0
+                        }
+                        if(!firstTxn) firstTxn = txn
+                    })
                 }
+                const daysSinceLastVend = lastVendDate ? (todayTime - lastVendDate) / (24 * 60 * 60 * 1000) : 999
+                const isActive = daysSinceLastVend <= DAYS_INACTIVE
+                if(firstTxn){
+                    utilityType = firstTxn.utilitytype === 1 ? 'Water' : 'Electricity'
+                    meterNumber = firstTxn.meternumber || meterNumber
+                    installationId = firstTxn.meterinstallationuniqueid || firstTxn.installationUniqueId || null
+                    complexName = firstTxn.complexDescription || firstTxn.complexName || null
+                    address0 = firstTxn.address0 || null
+                }
+                const row = {
+                    meterNumber: meterNumber,
+                    complexName: complexName || 'N/A',
+                    utilityType: utilityType || 'Unknown',
+                    address: address0 || 'N/A',
+                    totalUnitsIssued: Number(totalUnits.toFixed(1)),
+                    managedTenderAmount: totalAmount.toFixed(2),
+                    installationUniqueId: installationId,
+                    isActive: isActive
+                }
+                this.metersTotals.push(row)
+                this.originalMetersTotals.push(row)
+            }
+            // Demo: simulate 40 days no purchase
+            if (process.client && localStorage.getItem('demoSimulate40Days') === 'true') {
+                this.metersTotals.push({
+                    meterNumber: 'DEMO_SIMULATE_40',
+                    complexName: 'Demo (Simulated)',
+                    utilityType: 'Electricity',
+                    address: 'Simulated meter for demo',
+                    totalUnitsIssued: 0,
+                    managedTenderAmount: '0.00',
+                    installationUniqueId: 'demo-40',
+                    isActive: false
+                })
+                this.originalMetersTotals.push({
+                    meterNumber: 'DEMO_SIMULATE_40',
+                    complexName: 'Demo (Simulated)',
+                    utilityType: 'Electricity',
+                    address: 'Simulated meter for demo',
+                    totalUnitsIssued: 0,
+                    managedTenderAmount: '0.00',
+                    installationUniqueId: 'demo-40',
+                    isActive: false
+                })
+            }
+            this.filteredMeters = JSON.parse(JSON.stringify(this.originalMetersTotals))
+            // sort by complex name first, then by address, then by meter number
+            this.filteredMeters.sort((a, b) => {
+                // First sort by complex name
+                const complexA = (a.complexName || '').toLowerCase()
+                const complexB = (b.complexName || '').toLowerCase()
+                if (complexA !== complexB) {
+                    return complexA.localeCompare(complexB, undefined, { numeric: true, sensitivity: 'base' })
+                }
+                
+                // Then sort by address
+                const addressA = (a.address || '').toLowerCase()
+                const addressB = (b.address || '').toLowerCase()
+                if (addressA !== addressB) {
+                    return addressA.localeCompare(addressB, undefined, { numeric: true, sensitivity: 'base' })
+                }
+                
+                // Finally sort by meter number
+                return (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' })
+            })
+            this.displayedMeters = this.filteredMeters.slice(0, this.pageSize)
+        },
+        getMeters(){
+            this.getAdminMeters()
+            // if(localStorage.getItem('customer') === 'admin'){
+            // }else{
+            //     this.getVendMeters()
+            // }
+        },
+        async getMeterComplex(){
+            const complexSet = new Set()
+            if(this.originalMetersTotals && this.originalMetersTotals.length > 0){
+                this.originalMetersTotals.forEach(m => {
+                    if(m.complexName){
+                        complexSet.add(m.complexName)
+                    }
+                })
+            }
+            this.meterComplexes = Array.from(complexSet).sort()
+        },
+        loadMore(){
+            const startIndex = this.displayedMeters.length
+            const endIndex = startIndex + this.pageSize
+            const next = this.filteredMeters.slice(startIndex, endIndex)
+            this.displayedMeters = [...this.displayedMeters, ...next]
+        },
+        clearFilters(){
+            this.selectedUtility = -1
+            this.selectedMeterComplex = null
+            this.selectedActivityStatus = -1
+            this.search = ''
+            this.currentPage = 1
+            // reset dates to last 30 days
+            this.selectedDateRange = 'lastMonth'
+            const today = new Date()
+            const lastMonth = new Date()
+            lastMonth.setDate(today.getDate() - 30)
+            this.startDate = lastMonth.toISOString().split('T')[0]
+            this.endDate = today.toISOString().split('T')[0]
+            this.updateDateRange()
+            // reset data
+            this.filteredMeters = []
+            this.$nextTick(() => {
+                this.filteredMeters = JSON.parse(JSON.stringify(this.originalMetersTotals))
+                // sort by complex name first, then by address, then by meter number
+                this.filteredMeters.sort((a, b) => {
+                    // First sort by complex name
+                    const complexA = (a.complexName || '').toLowerCase()
+                    const complexB = (b.complexName || '').toLowerCase()
+                    if (complexA !== complexB) {
+                        return complexA.localeCompare(complexB, undefined, { numeric: true, sensitivity: 'base' })
+                    }
+                    
+                    // Then sort by address
+                    const addressA = (a.address || '').toLowerCase()
+                    const addressB = (b.address || '').toLowerCase()
+                    if (addressA !== addressB) {
+                        return addressA.localeCompare(addressB, undefined, { numeric: true, sensitivity: 'base' })
+                    }
+                    
+                    // Finally sort by meter number
+                    return (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' })
+                })
+                this.displayedMeters = this.filteredMeters.slice(0, this.pageSize)
             })
         },
-        removeMetersByComplex(complexName) {
-            this.meters = this.meters.filter(meter => meter.complexName !== complexName); // Remove meters with matching complex name
+        applyFilters(){
+            this.currentPage = 1
+            this.filteredMeters = []
+            this.$nextTick(() => {
+                this.performFiltering()
+            })
         },
-        debouncedSearch: debounce(function () {
-            this.currentPage = 1;
-            console.log(this.search);
-            //this._search(this.search);
-        }, 500),
-    },
-    computed:{
-        totalPages() {
-            return Math.ceil(this.filterMeters().length / this.pageSize);
+        performFiltering(){
+            let data = JSON.parse(JSON.stringify(this.originalMetersTotals))
+
+            // complex
+            if(this.selectedMeterComplex){
+                data = data.filter(m => m.complexName === this.selectedMeterComplex)
+            }
+            // utility type
+            if(this.selectedUtility !== -1){
+                data = data.filter(m => {
+                    if(this.selectedUtility === 0) return m.utilityType === 'Electricity'
+                    if(this.selectedUtility === 1) return m.utilityType === 'Water'
+                    return true
+                })
+            }
+            // activity status
+            if(this.selectedActivityStatus !== -1){
+                data = data.filter(m => {
+                    if(this.selectedActivityStatus === 1) return m.isActive === true
+                    if(this.selectedActivityStatus === 0) return m.isActive === false
+                    return true
+                })
+            }
+            // search by meter number or complex
+            if(this.search && this.search.trim() !== ''){
+                const s = this.search.toLowerCase()
+                data = data.filter(m => (m.meterNumber || '').toLowerCase().includes(s) || (m.complexName || '').toLowerCase().includes(s))
+            }
+
+            // sort by complex name first, then by address, then by meter number
+            data.sort((a, b) => {
+                // First sort by complex name
+                const complexA = (a.complexName || '').toLowerCase()
+                const complexB = (b.complexName || '').toLowerCase()
+                if (complexA !== complexB) {
+                    return complexA.localeCompare(complexB, undefined, { numeric: true, sensitivity: 'base' })
+                }
+                
+                // Then sort by address
+                const addressA = (a.address || '').toLowerCase()
+                const addressB = (b.address || '').toLowerCase()
+                if (addressA !== addressB) {
+                    return addressA.localeCompare(addressB, undefined, { numeric: true, sensitivity: 'base' })
+                }
+                
+                // Finally sort by meter number
+                return (a.meterNumber || '').localeCompare(b.meterNumber || '', undefined, { numeric: true, sensitivity: 'base' })
+            })
+
+            this.filteredMeters = []
+            this.$nextTick(() => {
+                this.filteredMeters = JSON.parse(JSON.stringify(data))
+                this.displayedMeters = this.filteredMeters.slice(0, this.pageSize)
+            })
         },
-        paginated(){
-            const filtered = this.filterMeters()
-            const startIndex = (this.currentPage - 1) * this.pageSize;
-            const endIndex = startIndex + this.pageSize;
-            return filtered.slice(startIndex, endIndex); // Paginate filtered payments
+        debouncedSearch: debounce(function(){
+            this.currentPage = 1
+            this.performFiltering()
+        }, 300),
+        enableDemoSimulate40(){
+            localStorage.setItem('demoSimulate40Days', 'true')
+            this.demoSimulate40Days = true
+            this.getAdminMeters()
+            window.dispatchEvent(new Event('demoSimulate40Toggled'))
+        },
+        disableDemoSimulate40(){
+            localStorage.removeItem('demoSimulate40Days')
+            this.demoSimulate40Days = false
+            this.getAdminMeters()
+            window.dispatchEvent(new Event('demoSimulate40Toggled'))
+        },
+        // Date handling
+        updateDateRange(){
+            if(this.startDate && this.endDate){
+                this.dateRange = {
+                    start: new Date(this.startDate).toISOString(),
+                    end: new Date(this.endDate).toISOString()
+                }
+            }
+        },
+        onDateRangeChange(value){
+            const today = new Date()
+            let startDate, endDate
+            switch(value){
+                case 'lastDay':
+                    startDate = new Date(today)
+                    startDate.setDate(today.getDate() - 1)
+                    endDate = new Date(today)
+                    break
+                case 'lastWeek':
+                    startDate = new Date(today)
+                    startDate.setDate(today.getDate() - 7)
+                    endDate = new Date(today)
+                    break
+                case 'lastMonth':
+                    startDate = new Date(today)
+                    startDate.setDate(today.getDate() - 30)
+                    endDate = new Date(today)
+                    break
+                case 'custom':
+                    return
+                default:
+                    return
+            }
+            this.startDate = startDate.toISOString().split('T')[0]
+            this.endDate = endDate.toISOString().split('T')[0]
+            this.updateDateRange()
         }
     },
     async mounted(){
-        const today = new Date();
-        let currentDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
-        this.startDate = this.endDate = currentDate;
-        await this.getMeterActivity()
-        await this.getMeterComplex()
+        this.demoSimulate40Days = process.client && localStorage.getItem('demoSimulate40Days') === 'true'
+        const today = new Date()
+        const lastMonth = new Date()
+        lastMonth.setDate(today.getDate() - 30)
+        // init dates
+        this.startDate = lastMonth.toISOString().split('T')[0]
+        this.endDate = today.toISOString().split('T')[0]
+        this.dateRange = { start: lastMonth.toISOString(), end: today.toISOString() }
+        await this.getMeters()
+    },
+    computed:{
+        hasMoreMeters(){
+            return this.displayedMeters.length < this.filteredMeters.length
+        },
+        remainingMeters(){
+            return this.filteredMeters.length - this.displayedMeters.length
+        }
     },
     watch:{
-        selectedUtility(newValue){
-            this.search = null
-            this.getMeterActivity()
+        dateRange: {
+            handler(newVal, oldVal){
+                if(newVal && oldVal && (newVal.start !== oldVal.start || newVal.end !== oldVal.end)){
+                    this.getMeters()
+                }
+            },
+            deep: true
         },
-        selectedMeterComplex(newValue){
-            console.log(newValue)
+        selectedUtility(){
+            // refetch when utility changes to reflect API-level filter
+            this.getMeters()
         }
     }
 }
 </script>
+<style scoped>
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Firefox scrollbar styles */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Hide scrollbar when not needed */
+.custom-scrollbar::-webkit-scrollbar-thumb:vertical {
+    min-height: 40px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:horizontal {
+    min-width: 40px;
+}
+</style>
