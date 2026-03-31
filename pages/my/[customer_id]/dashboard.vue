@@ -231,6 +231,7 @@ import Trend from '~/components/my/charts/Trend.vue'
 import ComplexSpendingBar from '~/components/my/charts/ComplexSpendingBar.vue'
 import MeterActivityOverview from '~/components/my/charts/MeterActivityOverview.vue'
 import TotalVendsKpi from '~/components/my/charts/TotalVendsKpi.vue'
+import { summarisedPayload } from '~/composables/summarisedPayload.js'
 
 definePageMeta({
     layout: 'my'
@@ -265,7 +266,7 @@ export default {
         async getAdminTransactions() {
             this.transactionsLoading = true
             try {
-                const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
+                const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
                     method: "GET",
                     params: {
                         IncludeMetersWithNoActivity: false,
@@ -277,15 +278,16 @@ export default {
                         UtilityType: -1
                     }
                 })
+                const payload = summarisedPayload(result)
 
                 // Store summary data for refund calculation
-                this.summaryData = result.data.summary || {}
+                this.summaryData = payload.summary || {}
 
                 // Clear existing transactions
                 this.originalTransactions = []
 
                 // Extract all transactions from all meters
-                for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+                for (const [meterNumber, meterData] of Object.entries(payload.transactionData || {})) {
                     if (meterData.transactions && Array.isArray(meterData.transactions)) {
                         meterData.transactions.forEach(transaction => {
                             this.originalTransactions.push({

@@ -224,6 +224,7 @@
 </template>
 <script>
 import _ from 'lodash';
+import { summarisedPayload } from '~/composables/summarisedPayload.js';
 const { debounce } = _;
 
 definePageMeta({
@@ -277,7 +278,7 @@ export default{
                 const today = new Date()
                 const activityStart = new Date(today)
                 activityStart.setDate(today.getDate() - 90)
-                const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
+                const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
                     method: 'GET',
                     params:{
                         IncludeMetersWithNoActivity : true,
@@ -289,7 +290,7 @@ export default{
                         UtilityType: this.selectedUtility
                     }
                 })
-                this._buildFromTransactionData(result.data.transactionData, this.dateRange)
+                this._buildFromTransactionData(summarisedPayload(result).transactionData, this.dateRange)
                 await this.getMeterComplex()
                 this.isLoading = false
             }catch(e){

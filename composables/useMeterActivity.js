@@ -1,3 +1,5 @@
+import { summarisedPayload } from './summarisedPayload.js'
+
 /**
  * Composable for meter activity status (last vend date, 30/40 day inactive).
  * Fetches meter data and computes lastVendDate per meter.
@@ -22,7 +24,7 @@ export function useMeterActivity() {
             const today = new Date()
             const start = new Date(today)
             start.setDate(today.getDate() - 90)
-            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
+            const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
                 method: 'GET',
                 params: {
                     IncludeMetersWithNoActivity: true,
@@ -36,7 +38,7 @@ export function useMeterActivity() {
             })
             lastFetch.value = now
             lastFetchCustomerId.value = customerId
-            const transactionData = result?.data?.transactionData || {}
+            const transactionData = summarisedPayload(result).transactionData || {}
             const list = []
             const todayTime = today.getTime()
 

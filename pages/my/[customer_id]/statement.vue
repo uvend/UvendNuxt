@@ -329,6 +329,7 @@
 </template>
 <script>
 import _ from 'lodash';
+import { summarisedPayload } from '~/composables/summarisedPayload.js';
 const { debounce } = _;
 definePageMeta({
     layout: 'my'
@@ -422,7 +423,7 @@ export default{
         },
         async getAdminTransactions(){
             this.isLoading = true;
-            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`,{
+            const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
                 method: "GET",
                 params:{
                     IncludeMetersWithNoActivity : false,
@@ -436,18 +437,18 @@ export default{
                     ...(this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL' ? { ComplexUniqueID: Number(this.selectedMeterComplex) } : {})
                 },
             })
-            
+            const payload = summarisedPayload(result)
             
             // Store the complete API response
-            this.transactionResponseData = result.data
-            this.summary = result.data.summary
+            this.transactionResponseData = payload
+            this.summary = payload.summary
             
             // Clear existing transactions
             this.transactions = []
             this.originalTransactions = []
             
             // Extract all transactions from all meters (same pattern as transactions.vue)
-            for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+            for (const [meterNumber, meterData] of Object.entries(payload.transactionData || {})) {
                 if (meterData.transactions && Array.isArray(meterData.transactions)) {
                     meterData.transactions.forEach(transaction => {
                         const flattenedTransaction = {
