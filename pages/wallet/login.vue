@@ -1,8 +1,5 @@
 <template>
-    <div class="w-full h-[100vh] flex flex-col items-center justify-center" style="background-color: #0d0d3b;">
-        <div class="mb-6">
-            <img src="/Dethro.jpg" alt="Dethro Technology" class="w-36 rounded-xl shadow-lg" />
-        </div>
+    <div class="w-full h-[100vh] flex items-center justify-center">
         <WalletSignin v-if="login && !resetPassword" @changeState="signUp(false)" @forgotPassword="toggleResetPassword()"/>
         <WalletSignup v-if="!login && !resetPassword" @changeState="signUp(true)"/>
         <WalletForgotPassword v-if="resetPassword" @backToLogin="toggleResetPassword()"/>

@@ -1,51 +1,54 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between" style="background: linear-gradient(180deg, #0d0d3b 0%, #141452 100%); color: #ffffff;">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
             <nav>
                 <MyLogo />
-                <div class="menu-item cursor-pointer hover:bg-[#d4a843]/15 rounded-md" @click="goToLastCustomer">
-                    <Icon name="lucide:arrow-left" class="mr-2 h-5 w-5 text-[#d4a843]" />
-                    <p>Back to Customer</p>
+                <!-- Back to Last Customer Button -->
+                <div class="menu-item cursor-pointer" @click="goToLastCustomer">
+                    <Icon name="lucide:arrow-left" class="mr-2 h-5 w-5" />
+                    <p class="">Back to Customer</p>
                 </div>
-                <div class="menu-item cursor-pointer hover:bg-[#d4a843]/15 rounded-md" @click="goToCustomerSelection">
-                    <Icon name="lucide:users" class="mr-2 h-5 w-5 text-[#d4a843]" />
-                    <p>Customer Selection</p>
+                <!-- Customer Selection Button -->
+                <div class="menu-item cursor-pointer" @click="goToCustomerSelection">
+                    <Icon name="lucide:users" class="mr-2 h-5 w-5" />
+                    <p class="">Customer Selection</p>
                 </div>
                 <NuxtLink class="menu-item">
-                    <Icon name="lucide:shield" class="mr-2 h-5 w-5 text-[#d4a843]" />
-                    <p>Accounts</p>
+                    <Icon name="lucide:shield" class="mr-2 h-5 w-5" />
+                    <p class="">Accounts</p>
                 </NuxtLink>
                 <nav class="sub-group">
-                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-[#d4a843]/15 font-medium" @click="navigateTo('/admin/account/payments')">
-                        <Icon name="lucide:wallet-cards" class="mr-2 h-5 w-5 text-[#d4a843]/70" />
-                        <p>Payments</p>
+                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/payments')">
+                        <Icon name="lucide:wallet-cards" class="mr-2 h-5 w-5" />
+                        <p class="">Payments</p>
                     </NuxtLink>
-                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-[#d4a843]/15 font-medium" @click="navigateTo('/admin/account/batch')">
-                        <Icon name="lucide:layers" class="mr-2 h-5 w-5 text-[#d4a843]/70" />
-                        <p>Payment Batch</p>
+                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/batch')">
+                        <Icon name="lucide:layers" class="mr-2 h-5 w-5" />
+                        <p class="">Payment Batch</p>
                     </NuxtLink>
                 </nav>
                 <nav v-if="mpesaUrl">
                     <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white font-medium" >
-                        <Icon name="lucide:smartphone-charging" class="mr-2 h-5 w-5 text-[#d4a843]" />
-                        <p>Mpesa</p>
+                        <Icon name="lucide:smartphone-charging" class="mr-2 h-5 w-5" />
+                        <p class="">Mpesa</p>
                     </NuxtLink>
                     <nav class="sub-group">
-                        <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-[#d4a843]/15 font-medium" @click="navigateTo('/admin/mpesa/requests')">
-                            <Icon name="lucide:arrow-right-left" class="mr-2 h-5 w-5 text-[#d4a843]/70" />
-                            <p>Requests</p>
+                        <!--<li class="menu-item" @click="navigateTo('/admin/mpesa/transactions')"><Icon name="lucide:arrow-right-left"/><p class="text-sm">Transactions</p></li>-->
+                        <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/mpesa/requests')">
+                            <Icon name="lucide:arrow-right-left" class="mr-2 h-5 w-5" />
+                            <p class="">Requests</p>
                         </NuxtLink>
                     </nav>
                 </nav>
                 <nav>
                     <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white font-medium" >
-                        <Icon name="lucide:wallet" class="mr-2 h-5 w-5 text-[#d4a843]" />
-                        <p>Wallet</p>
+                        <Icon name="lucide:wallet" class="mr-2 h-5 w-5" />
+                        <p class="">Wallet</p>
                     </NuxtLink>
                     <nav class="sub-group">
-                        <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-[#d4a843]/15 font-medium" @click="navigateTo('/admin/account/wallet')">
-                            <Icon name="lucide:search" class="mr-2 h-5 w-5 text-[#d4a843]/70" />
-                            <p>Support Dashboard</p>
+                        <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/wallet')">
+                            <Icon name="lucide:search" class="mr-2 h-5 w-5" />
+                            <p class="">Support Dashboard</p>
                         </NuxtLink>
                     </nav>
                 </nav>
