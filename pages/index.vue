@@ -1,7 +1,7 @@
 <template>
     <div class="main-grid">
-        <div class="bg-image">
-            <MyLogo />
+        <div class="bg-panel flex items-center justify-center">
+            <img src="/Dethro.jpg" alt="Dethro Technology" class="h-32 w-auto rounded-lg shadow-2xl" />
         </div>
         <div class="profile-grid flex h-full">
             <div class="flex justify-between py-2 px-4">
@@ -85,12 +85,8 @@ export default {
 }
 </script>
 <style scoped>
-.bg-image {
-    background-image: url('/assets/css/login/Background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: background-image 0.3s;
+.bg-panel {
+    background-color: #1a1a5e;
 }
 .main-grid {
     display: grid;

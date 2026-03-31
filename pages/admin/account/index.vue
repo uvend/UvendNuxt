@@ -1,8 +1,9 @@
 <template>
     <div class="flex items-center justify-center min-h-screen">
         <div class="text-center">
-            <h1 class="text-6xl font-bold text-gray-900 mb-4">Welcome To Uvend Accounting</h1>
-            <p class="text-xl text-gray-600">Your comprehensive payment management system</p>
+            <img src="/Dethro.jpg" alt="Dethro Technology" class="h-24 w-auto mx-auto mb-6 rounded-lg shadow-lg" />
+            <h1 class="text-5xl font-bold mb-4" style="color: #1a1a5e;">Welcome To Dethro Accounting</h1>
+            <p class="text-xl text-gray-500">Your comprehensive payment management system</p>
         </div>
     </div>
 </template>
