@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+      - dev
     tags:
       - "v*.*.*"
 
@@ -38,4 +39,5 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/uvend-nuxt:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/uvend-nuxt:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/uvend-nuxt:${{ github.ref_name }}
 
