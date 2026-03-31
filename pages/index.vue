@@ -1,7 +1,7 @@
 <template>
     <div class="main-grid">
-        <div class="bg-image">
-            <MyLogo />
+        <div class="bg-image flex items-center justify-center">
+            <img src="/Dethro.jpg" alt="Dethro Technology" class="w-64 rounded-2xl shadow-2xl" />
         </div>
         <div class="profile-grid flex h-full">
             <div class="flex justify-between py-2 px-4">
@@ -86,11 +86,8 @@ export default {
 </script>
 <style scoped>
 .bg-image {
-    background-image: url('/assets/css/login/Background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: background-image 0.3s;
+    background: linear-gradient(135deg, #0d0d3b 0%, #161659 50%, #1a1a6e 100%);
+    transition: background 0.3s;
 }
 .main-grid {
     display: grid;

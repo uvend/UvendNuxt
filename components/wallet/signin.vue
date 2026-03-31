@@ -1,22 +1,22 @@
 <template>
-    <Card class="p-4 m-4 w-[400px] max-w-full">
+    <Card class="p-4 m-4 w-[400px] max-w-full border-[#d4a843]/20 shadow-xl">
         <CardHeader>
-            <h1 class="font-bold text-2xl">Sign in</h1>
+            <h1 class="font-bold text-2xl" style="color: #0d0d3b;">Sign in</h1>
         </CardHeader>
         <CardContent class="flex flex-col gap-2">
             <div>
                 <Label>Email</Label>
-                <Input type="text" v-model="email"/>
+                <Input type="text" v-model="email" class="focus:ring-[#d4a843] focus:border-[#d4a843]"/>
             </div>
             <div>
                 <Label>Password</Label>
-                <Input type="password" v-model="password"/>
-                <p class="text-sm pt-2 cursor-pointer" @click="$emit('forgotPassword')">Forgot Password?</p>
+                <Input type="password" v-model="password" class="focus:ring-[#d4a843] focus:border-[#d4a843]"/>
+                <p class="text-sm pt-2 cursor-pointer hover:underline" style="color: #d4a843;" @click="$emit('forgotPassword')">Forgot Password?</p>
             </div>
         </CardContent>
         <CardFooter class="flex flex-col gap-2">
-            <Button class="w-full" @click="debounceSignIn">Sign in</Button>
-            <Button class="w-full" variant="ghost" @click="$emit('changeState')">Create account</Button>
+            <Button class="w-full text-white" style="background-color: #d4a843;" @click="debounceSignIn">Sign in</Button>
+            <Button class="w-full" variant="ghost" style="color: #0d0d3b;" @click="$emit('changeState')">Create account</Button>
         </CardFooter>
     </Card>
 </template>
