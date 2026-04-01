@@ -8,12 +8,12 @@
             @mouseleave="handleSidebarHover(false)"
         >
             <!-- Logo Section -->
-            <div class="flex items-center justify-center py-5 px-4 border-b border-yellow-500/20">
+            <div class="flex items-center justify-center py-6 px-4 border-b border-yellow-500/20">
                 <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex items-center justify-center w-full">
-                    <img src="/Dethro.jpg" alt="Dethro Technology" class="h-28 w-auto rounded" />
+                    <img src="/Dethro.jpg" alt="Dethro Technology" class="h-36 w-auto rounded" />
                 </div>
                 <div v-else class="flex items-center justify-center w-full">
-                    <img src="/Dethro.jpg" alt="Dethro Technology" class="h-14 w-14 rounded object-cover" />
+                    <img src="/Dethro.jpg" alt="Dethro Technology" class="h-16 w-16 rounded object-cover" />
                 </div>
             </div>
             

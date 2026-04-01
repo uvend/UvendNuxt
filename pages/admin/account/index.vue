@@ -1,7 +1,7 @@
 <template>
     <div class="flex items-center justify-center min-h-screen">
         <div class="text-center">
-            <img src="/Dethro.jpg" alt="Dethro Technology" class="h-24 w-auto mx-auto mb-6 rounded-lg shadow-lg" />
+            <img src="/Dethro.jpg" alt="Dethro Technology" class="h-56 w-auto mx-auto mb-8 rounded-xl shadow-2xl" />
             <h1 class="text-5xl font-bold mb-4" style="color: #1a1a5e;">Welcome To Dethro Accounting</h1>
             <p class="text-xl text-gray-500">Your comprehensive payment management system</p>
         </div>
