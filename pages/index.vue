@@ -3,9 +3,12 @@
         <div class="bg-panel relative h-screen overflow-hidden">
             <!-- Background collage image -->
             <img src="/IMG-20260401-WA0018.jpg" alt="Energy & Utilities" class="absolute inset-0 w-full h-full object-cover opacity-40" style="object-position: center center;" />
-            <!-- Centered logo -->
-            <div class="absolute inset-0 flex items-center justify-center z-10">
-                <img src="/Dethro.jpg" alt="Dethro Technology" class="h-52 w-auto rounded-xl shadow-2xl" />
+            <!-- Centered logo + slogan -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+                <img src="/Dethro.jpg" alt="Dethro Technology" class="h-64 w-auto rounded-xl shadow-2xl mb-5" />
+                <p class="text-xl text-yellow-400 text-center tracking-wide leading-relaxed drop-shadow-lg" style="font-family: 'Georgia', 'Times New Roman', serif;">
+                    Empowering your Future with Smart Systems
+                </p>
             </div>
         </div>
         <div class="profile-grid flex h-full">
