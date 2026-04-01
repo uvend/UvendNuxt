@@ -178,7 +178,7 @@ export default{
         },
         debouncedSearch: debounce(async function(){
             this.page = 1
-            this.getRequests()
+            this.getAllTransactions()
         }),
         resend: debounce(async function (id){
             try{
@@ -218,79 +218,63 @@ export default{
             return `${hours}:${minutes}`;
         },
         changePage(page){
-            console.log('changePage',page)
-            if(page > this.totalPages || page < 1){
-                return;
-            }
+            if (page < 1) return
+            if (this.totalPages > 0 && page > this.totalPages) return
             this.page = page
         },
         async getAllTransactions(){
             this.isLoading = true
-             const response = await $fetch(`${MPESA_URL}/api/admin/transactions`,{
-                params: {
-                    page: this.page,
-                    limit: this.pageSize,
-                    fromDate: this.formatDate(this.dateRange.start),
-                    toDate: this.formatDate(this.dateRange.end),
-                    search: this.search
-                }
-             })
-             this.page = response.pagination.currentPage
-             this.hasNextPage = response.pagination.hasNextPage
-             this.pageSize = response.pagination.limit
-             this.totalPages = response.pagination.totalPages
-             this.requests = response.transactions
-             this.isLoading = false
+            try {
+                const response = await $fetch(`${MPESA_URL}/api/admin/transactions`, {
+                    params: {
+                        page: this.page,
+                        limit: this.pageSize,
+                        fromDate: this.formatDate(this.dateRange.start),
+                        toDate: this.formatDate(this.dateRange.end),
+                        search: this.search
+                    }
+                })
+                this.page = response.pagination.currentPage
+                this.hasNextPage = response.pagination.hasNextPage
+                this.pageSize = response.pagination.limit
+                this.totalPages = response.pagination.totalPages
+                this.requests = response.transactions || []
+            } catch (e) {
+                console.error('getAllTransactions', e)
+                this.requests = []
+                this.totalPages = 0
+            } finally {
+                this.isLoading = false
+            }
         }
     },
     mounted(){
-        const today = new Date();
-        const lastMonth = new Date();
-        lastMonth.setDate(today.getDate()-30)
-        this.dateRange = {
-            start: lastMonth.toISOString(),
-            end: today.toISOString()
-        }
         this.getSMSBalance();
-       // this.getRequests()
+        this.getAllTransactions();
     },
     watch:{
         dateRange:{
-            handler(value,newValue){
-                if(value && value !== newValue){
-                    this.getAllTransactions()
-                }
+            handler(newVal, oldVal){
+                // Deep watch: new/old are often the same object reference; compare serialised range.
+                if (oldVal === undefined) return;
+                if (JSON.stringify(newVal) === JSON.stringify(oldVal)) return;
+                this.page = 1;
+                this.getAllTransactions();
             },
-            deep: true,
-            immediate: true
+            deep: true
         },
-        page:{
-            handler(value,newValue){
-                if(value && value !== newValue){
-                    this.getAllTransactions()
-                }
-            },
-            deep: true,
-            immediate: true
+        page(newVal, oldVal){
+            if (oldVal === undefined) return;
+            if (newVal === oldVal) return;
+            this.getAllTransactions();
         },
-        pageSize:{
-            handler(value,newValue){
-                if(value && value !== newValue){
-                    this.getAllTransactions()
-                }
-            },
-            deep: true,
-            immediate: true
-        },
-        search:{
-            handler(value,newValue){
-                if(value && value !== newValue){
-                    this.getAllTransactions()
-                }
-            },
-            deep: true,
-            immediate: true
+        pageSize(newVal, oldVal){
+            if (oldVal === undefined) return;
+            if (newVal === oldVal) return;
+            this.page = 1;
+            this.getAllTransactions();
         }
+        // search: handled by debouncedSearch on input (avoids duplicate fetches vs v-model watcher)
     }
 }
 </script>

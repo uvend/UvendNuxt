@@ -305,6 +305,10 @@ export default {
                         })
                     }
                 }
+            } catch (e) {
+                console.error('getAdminTransactions', e)
+                this.summaryData = {}
+                this.originalTransactions = []
             } finally {
                 this.transactionsLoading = false
             }

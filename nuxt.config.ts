@@ -23,6 +23,29 @@ export default defineNuxtConfig({
   },
   css: ['@/assets/css/tailwind.css'],
   vite: {
+    // Local dev: same-origin proxies avoid CORS to Kenya hosts. See `.env` / `env-kenya-local-dev.txt`.
+    server: {
+      proxy: {
+        '/__dev_proxy/kenya-admin': {
+          target: 'https://kenya-adminapi.vendease.co.za',
+          changeOrigin: true,
+          secure: true,
+          rewrite: path => path.replace(/^\/__dev_proxy\/kenya-admin/, '/api')
+        },
+        '/__dev_proxy/kenya-customer': {
+          target: 'https://kenya-customer-api.uatvend.co.za',
+          changeOrigin: true,
+          secure: true,
+          rewrite: path => path.replace(/^\/__dev_proxy\/kenya-customer/, '')
+        },
+        '/__dev_proxy/kenya-vend': {
+          target: 'https://kenya-vendliveapi.vendease.co.za',
+          changeOrigin: true,
+          secure: true,
+          rewrite: path => path.replace(/^\/__dev_proxy\/kenya-vend/, '/api')
+        }
+      }
+    },
     define: {
       API_URL: JSON.stringify(process.env.API_URL || ''),
       VEND_URL: JSON.stringify(process.env.VEND_URL || ''),

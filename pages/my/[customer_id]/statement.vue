@@ -423,6 +423,7 @@ export default{
         },
         async getAdminTransactions(){
             this.isLoading = true;
+            try {
             const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
                 method: "GET",
                 params:{
@@ -441,7 +442,7 @@ export default{
             
             // Store the complete API response
             this.transactionResponseData = payload
-            this.summary = payload.summary
+            this.summary = payload.summary || {}
             
             // Clear existing transactions
             this.transactions = []
@@ -491,28 +492,29 @@ export default{
             // Example:
             // this.statement.customField = this.transactionResponseData.someField
             // this.statement.anotherField = this.transactionResponseData.anotherField
-            this.statement.managedAmount = this.summary.managedTenredAmount
-            this.statement.nonManagedAmount = this.summary.nonManagedTenredAmount
-            this.statement.totalValue = this.summary.tenderedamount
-            this.statement.surchargeAmount = this.summary.surcharge0AmountInclVat
-            this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
+            const s = this.summary
+            this.statement.managedAmount = s.managedTenredAmount
+            this.statement.nonManagedAmount = s.nonManagedTenredAmount
+            this.statement.totalValue = s.tenderedamount
+            this.statement.surchargeAmount = s.surcharge0AmountInclVat
+            this.statement.commissionAmount = s.vendCommissionAmountIncVat
             
             // Customer condition for ID 5480
             const customerId = parseInt(this.$route.params.customer_id)
             if (customerId === 5480) {
                 // Special logic for customer 5480
-                this.statement.commissionPerc = this.summary.surcharge0.percentage
-                this.statement.commissionAmount = this.summary.surcharge0AmountInclVat
-                this.statement.totalVendAMount = this.summary.grossvendamount || this.summary.vendamount
-                this.statement.totalDueToCustomer = (this.summary.grossvendamount || this.summary.vendamount) - this.summary.surcharge0AmountInclVat
-                this.statement.totalDueToUvend = this.summary.surcharge0AmountInclVat
+                this.statement.commissionPerc = s.surcharge0?.percentage
+                this.statement.commissionAmount = s.surcharge0AmountInclVat
+                this.statement.totalVendAMount = s.grossvendamount || s.vendamount
+                this.statement.totalDueToCustomer = (s.grossvendamount || s.vendamount) - (s.surcharge0AmountInclVat ?? 0)
+                this.statement.totalDueToUvend = s.surcharge0AmountInclVat
             } else {
                 // Default logic for all other customers
-                this.statement.commissionPerc = this.summary.vendCommission.rate
-                this.statement.commissionAmount = this.summary.vendCommissionAmountIncVat
-                this.statement.totalVendAMount = this.summary.vendamount
-                this.statement.totalDueToCustomer = this.summary.vendRefund
-                this.statement.totalDueToUvend = this.summary.vendCommissionAmountIncVat + this.summary.nonManagedTenderedAmountToVendor
+                this.statement.commissionPerc = s.vendCommission?.rate
+                this.statement.commissionAmount = s.vendCommissionAmountIncVat
+                this.statement.totalVendAMount = s.vendamount
+                this.statement.totalDueToCustomer = s.vendRefund
+                this.statement.totalDueToUvend = (s.vendCommissionAmountIncVat ?? 0) + (s.nonManagedTenderedAmountToVendor ?? 0)
             }
             
             
@@ -522,7 +524,7 @@ export default{
 
             // Clear existing stats before adding new ones
             this.statement.stats = []
-            for (const [utilityType,data] of Object.entries(this.summary.utilities)) {
+            for (const [utilityType,data] of Object.entries(s.utilities || {})) {
                 let newSet = {...data}
                 newSet.utilityType = utilityType
                 this.statement.stats.push(newSet)
@@ -532,7 +534,16 @@ export default{
 
             // Get meter complexes for filtering
             this.getMeterComplex();
-            this.isLoading = false;
+            } catch (e) {
+                console.error('getAdminTransactions', e)
+                this.summary = {}
+                this.transactions = []
+                this.originalTransactions = []
+                this.filteredTransactions = []
+                this.displayedTransactions = []
+            } finally {
+                this.isLoading = false;
+            }
         },
         async getVendTransactions(){
             this.isLoading = true;
