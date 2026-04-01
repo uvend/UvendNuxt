@@ -7,7 +7,10 @@
         <div class="w-3/5 p-8 flex flex-col justify-center" style="background-color: #1a1a5e;">
             <!-- Logo -->
             <div class="flex flex-col items-center mb-8">
-                <img src="/Dethro.jpg" alt="Dethro Technology" class="h-44 w-auto rounded-lg shadow-lg mb-4" />
+                <img src="/Dethro.jpg" alt="Dethro Technology" class="h-56 w-auto rounded-lg shadow-lg mb-5" />
+                <p class="text-xl text-yellow-400 text-center tracking-wide leading-relaxed" style="font-family: 'Georgia', 'Times New Roman', serif;">
+                    Empowering your Future with Smart Systems
+                </p>
             </div>
             
             <!-- Feature List -->

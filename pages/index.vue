@@ -1,7 +1,12 @@
 <template>
     <div class="main-grid">
-        <div class="bg-panel flex items-center justify-center">
-            <img src="/Dethro.jpg" alt="Dethro Technology" class="h-32 w-auto rounded-lg shadow-2xl" />
+        <div class="bg-panel relative h-screen overflow-hidden">
+            <!-- Background collage image -->
+            <img src="/IMG-20260401-WA0018.jpg" alt="Energy & Utilities" class="absolute inset-0 w-full h-full object-cover opacity-40" style="object-position: center center;" />
+            <!-- Centered logo -->
+            <div class="absolute inset-0 flex items-center justify-center z-10">
+                <img src="/Dethro.jpg" alt="Dethro Technology" class="h-52 w-auto rounded-xl shadow-2xl" />
+            </div>
         </div>
         <div class="profile-grid flex h-full">
             <div class="flex justify-between py-2 px-4">
