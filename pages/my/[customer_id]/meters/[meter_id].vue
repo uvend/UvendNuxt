@@ -15,6 +15,8 @@
                  <p class="text-gray-600 " v-if="meterNumber">Meter: {{ meterNumber }}</p>
                  <p class="text-gray-600 " v-if="meterNumber">Complex: {{ complexName }}</p>
                  <p class="text-gray-600 " v-if="meterNumber">Unit: {{ unitInfo }}</p>
+                 <p class="text-gray-600 " v-if="tenantName">Tenant: {{ tenantName }}</p>
+                 <p class="text-gray-600 " v-if="tenantEmail">Tenant Email: {{ tenantEmail }}</p>
                 </div>
 
              <!-- Search Bar and View Toggle -->
@@ -208,6 +210,18 @@
                     </Select>
                 </div>
 
+                <!-- Set Tenant Details Button -->
+                <div class="mb-6">
+                    <Button 
+                        @click="openTenantDialog"
+                        variant="outline"
+                        class="w-full"
+                    >
+                        <Icon name="lucide:user-pen" class="w-4 h-4 mr-2" />
+                        Set Tenant Details
+                    </Button>
+                </div>
+
                 <!-- Block Meter Button -->
                 <div class="mb-6">
                     <Button 
@@ -335,6 +349,35 @@
             </div>
         </DialogContent>
     </Dialog>
+
+    <!-- Tenant Details Dialog -->
+    <Dialog v-model:open="isTenantDialogOpen">
+        <DialogContent class="max-w-md">
+            <DialogHeader>
+                <DialogTitle>Set Tenant Details</DialogTitle>
+                <DialogDescription>Update tenant name and email for this meter.</DialogDescription>
+            </DialogHeader>
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <Label class="text-sm text-gray-700">Tenant Name</Label>
+                    <Input v-model="tenantNameInput" type="text" placeholder="Enter tenant name" />
+                </div>
+                <div class="space-y-2">
+                    <Label class="text-sm text-gray-700">Tenant Email</Label>
+                    <Input v-model="tenantEmailInput" type="email" placeholder="Enter tenant email" />
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <DialogClose as-child>
+                    <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button @click="updateTenantDetails" :disabled="tenantUpdateLoading">
+                    <Icon v-if="tenantUpdateLoading" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
+                    Save
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>
 
 <script setup>
@@ -388,6 +431,12 @@ const selectedTransaction = ref(null)
 const showTransactionDetails = ref(false)
 const showCharts = ref(false)
 const sortOrder = ref('latest') // Default to latest to oldest
+const tenantName = ref(null)
+const tenantEmail = ref(null)
+const tenantNameInput = ref('')
+const tenantEmailInput = ref('')
+const isTenantDialogOpen = ref(false)
+const tenantUpdateLoading = ref(false)
 
 // Methods
 const getAdminMeterActivity = async () => {
@@ -531,6 +580,100 @@ const getMeterActivity = async () => {
     // } else {
     //     await getVendMeterActivity()
     // }
+}
+
+const normalizeText = (value) => {
+    if (value === null || value === undefined) return null
+    const text = typeof value === 'string' ? value.trim() : String(value)
+    return text ? text : null
+}
+
+const buildTenantName = (tenant) => {
+    if (!tenant) return null
+    const nameParts = [
+        tenant.firstname,
+        tenant.surname,
+        tenant.firstName,
+        tenant.lastName
+    ].filter(Boolean)
+    const combined = nameParts.join(' ').trim()
+    return normalizeText(tenant.fullname || tenant.fullName || combined)
+}
+
+const fetchTenantDetails = async () => {
+    try {
+        const currentMeterNumber = normalizeText(meterNumber.value)
+        if (!currentMeterNumber) {
+            tenantName.value = null
+            tenantEmail.value = null
+            return
+        }
+
+        const result = await $fetch(
+            `${CUSTOMER_API}/meter/${encodeURIComponent(currentMeterNumber)}/tenant`,
+            { method: "GET" }
+        )
+
+        const tenant = result?.data?.tenant || null
+        tenantName.value = buildTenantName(tenant)
+        tenantEmail.value = normalizeText(
+            tenant?.emailaddress || tenant?.emailAddress || tenant?.email
+        )
+    } catch (error) {
+        console.error('Error fetching tenant details:', error)
+        tenantName.value = null
+        tenantEmail.value = null
+    }
+}
+
+const openTenantDialog = () => {
+    tenantNameInput.value = tenantName.value || ''
+    tenantEmailInput.value = tenantEmail.value || ''
+    isTenantDialogOpen.value = true
+}
+
+const updateTenantDetails = async () => {
+    try {
+        const currentMeterNumber = normalizeText(meterNumber.value)
+        if (!currentMeterNumber) {
+            $toast({
+                title: 'Missing meter number',
+                description: 'Select a meter before updating tenant details.',
+                variant: "destructive"
+            })
+            return
+        }
+
+        tenantUpdateLoading.value = true
+        await $fetch(
+            `${CUSTOMER_API}/meter/${encodeURIComponent(currentMeterNumber)}/tenant`,
+            {
+                method: "PATCH",
+                body: {
+                    firstname: tenantNameInput.value,
+                    emailaddress: tenantEmailInput.value
+                }
+            }
+        )
+
+        tenantName.value = normalizeText(tenantNameInput.value)
+        tenantEmail.value = normalizeText(tenantEmailInput.value)
+        isTenantDialogOpen.value = false
+        $toast({
+            title: 'Tenant updated',
+            description: 'Tenant details saved successfully.',
+            variant: "success"
+        })
+    } catch (error) {
+        console.error('Error updating tenant details:', error)
+        $toast({
+            title: 'Update failed',
+            description: 'Unable to update tenant details. Please try again.',
+            variant: "destructive"
+        })
+    } finally {
+        tenantUpdateLoading.value = false
+    }
 }
 
 const getMeterInfo = async () => {
@@ -1060,6 +1203,7 @@ watch(dateRange, () => {
 
 watch(meterNumber, () => {
     getMeterInfo()
+    fetchTenantDetails()
 })
 </script>
 
