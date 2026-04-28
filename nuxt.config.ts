@@ -5,7 +5,7 @@ const pagesDir = appEnv ? `pages/${appEnv}` : 'pages'
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: false },
+  devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt', '@nuxt/icon','@pinia/nuxt'],
   build: {
     transpile: ['vue3-apexcharts']
