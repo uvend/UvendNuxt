@@ -122,6 +122,10 @@
                         <p class="font-bold">Message</p>
                         <p class="ml-4" v-html="getRequestMessage(request)"></p>
                     </div>
+                    <div class="dialog-mpesa-request-grid" v-if="getRequestTokens(request)">
+                        <p class="font-bold">Token</p>
+                        <p class="ml-4">{{ getRequestTokens(request) }}</p>
+                    </div>
                 </div>
                 <DialogFooter class="flex">
                     <Button @click="resend(request.id)" v-if="request.Message" class="w-full">
@@ -227,6 +231,9 @@ export default{
             });
         },
         getRequestMessage(request){
+            return (request?.Message || 'No message available').replace(/\n/g, '<br>');
+        },
+        getRequestTokens(request){
             const relatedTransaction = request?.relatedTransaction || request?.RelatedTransaction;
             const jsonData = relatedTransaction?.JsonData || relatedTransaction?.jsonData;
             const tokenTxns = jsonData?.ListOfTokenTransactions || jsonData?.listOfTokenTransactions || [];
@@ -238,13 +245,11 @@ export default{
                     .filter(Boolean);
             });
 
-            const baseMessage = (request?.Message || 'No message available').replace(/\n/g, '<br>');
-
             if (tokenNumbers.length > 0) {
-                return `${baseMessage}<br><strong>Token:</strong> ${tokenNumbers.join(', ')}`;
+                return tokenNumbers.join(', ');
             }
 
-            return baseMessage;
+            return '';
         },
         formattedTime(dateString){
             const date = new Date(dateString);
