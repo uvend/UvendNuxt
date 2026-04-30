@@ -1,5 +1,9 @@
 export default defineNuxtRouteMiddleware((to, from) => {
-    
+    // This middleware runs on server in SSR mode, so browser storage is unavailable there.
+    if (import.meta.server) {
+        return;
+    }
+
     //console.log('middleware', APP_ENV)
     const path = to.path.split('/');
     if (to.meta.layout !== 'noauth') {

@@ -1,11 +1,12 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-const pagesDir = process.env.APP_ENV != '' 
-  ? `pages/${process.env.APP_ENV}` 
-  : 'pages'
+// When APP_ENV is unset/undefined, `undefined != ''` is true in JS — must not resolve to `pages/undefined`.
+const appEnv = (process.env.APP_ENV ?? '').trim()
+const pagesDir = appEnv ? `pages/${appEnv}` : 'pages'
+const isDev = process.env.NODE_ENV !== 'production'
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt', '@nuxt/icon','@pinia/nuxt'],
   build: {
     transpile: ['vue3-apexcharts']
@@ -71,7 +72,7 @@ export default defineNuxtConfig({
       CUSTOMER_API: JSON.stringify(process.env.CUSTOMER_API || ''),
     },
   },
-  ssr: false,// Not required in Tailwind 3+, but useful for older versions
+  ssr: isDev, // Enable SSR in dev, keep SPA behavior for production
   plugins: [
     '~/plugins/toast',
     '~/plugins/pinia',

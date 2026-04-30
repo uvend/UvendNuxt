@@ -38,6 +38,9 @@
                     <p class="text-sm">SMS Balance</p>
                     <p class="text-base font-bold text-right">{{ smsBalance }}</p>
                 </div>
+                <div v-else-if="smsBalanceMessage" class="flex flex-col justify-end">
+                    <p class="text-sm text-muted-foreground">{{ smsBalanceMessage }}</p>
+                </div>
             </div>
         </div>
         <Dialog v-for="request in requests"
@@ -151,6 +154,7 @@ export default{
                 end: new Date().toISOString()
             },
             smsBalance: null,
+            smsBalanceMessage: '',
             searchActive: false,
             search: '',
             hasNextPage: false,
@@ -170,11 +174,23 @@ export default{
         },
         async getSMSBalance(){
             this.smsBalance = null;
-            const response = await $fetch(`${MPESA_URL}/status`,{
-                method: "GET"
-            })
-            console.log(response)
-            this.smsBalance = response.checks.sms_balance;
+            this.smsBalanceMessage = '';
+            try {
+                const response = await $fetch(`${MPESA_URL}/checkbalance`,{
+                    method: "GET"
+                })
+                console.log(response)
+                this.smsBalance = response.balance;
+            } catch (e) {
+                const statusCode = e?.statusCode || e?.response?.status;
+                if (statusCode === 404) {
+                    // Treat missing endpoint as an offline provider and continue rendering.
+                    this.smsBalanceMessage = 'SMS provider is currently offline';
+                    return;
+                }
+                this.smsBalanceMessage = 'Unable to load SMS balance right now';
+                console.error('Failed to load SMS balance', e);
+            }
         },
         debouncedSearch: debounce(async function(){
             this.page = 1
