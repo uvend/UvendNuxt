@@ -120,7 +120,7 @@
                     </div>
                     <div class="dialog-mpesa-request-grid">
                         <p class="font-bold">Message</p>
-                        <p class="ml-4" v-html="(request.Message || 'No message available').replace(/\n/g, '<br>')"></p>
+                        <p class="ml-4" v-html="getRequestMessage(request)"></p>
                     </div>
                 </div>
                 <DialogFooter class="flex">
@@ -225,6 +225,26 @@ export default{
                 month: 'short',
                 year: 'numeric'
             });
+        },
+        getRequestMessage(request){
+            const relatedTransaction = request?.relatedTransaction || request?.RelatedTransaction;
+            const jsonData = relatedTransaction?.JsonData || relatedTransaction?.jsonData;
+            const tokenTxns = jsonData?.ListOfTokenTransactions || jsonData?.listOfTokenTransactions || [];
+
+            const tokenNumbers = tokenTxns.flatMap((txn) => {
+                const tokens = txn?.Tokens || txn?.tokens || [];
+                return tokens
+                    .map((token) => token?.DelimitedTokenNumber || token?.delimitedTokenNumber)
+                    .filter(Boolean);
+            });
+
+            const baseMessage = (request?.Message || 'No message available').replace(/\n/g, '<br>');
+
+            if (tokenNumbers.length > 0) {
+                return `${baseMessage}<br><strong>Token:</strong> ${tokenNumbers.join(', ')}`;
+            }
+
+            return baseMessage;
         },
         formattedTime(dateString){
             const date = new Date(dateString);
