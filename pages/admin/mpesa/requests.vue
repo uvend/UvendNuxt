@@ -176,24 +176,44 @@ export default{
             const year = d.getFullYear();
             return `${day}-${month}-${year}`;
         },
+        /** Base URL for M-Pesa API (no trailing slash). */
+        mpesaApiBase() {
+            return (typeof MPESA_URL === 'string' ? MPESA_URL : '').replace(/\/$/, '');
+        },
+        /**
+         * GET `/status` — balance lives at `checks.sms_balance`, e.g.
+         * `{ status, service, timestamp, checks: { database, vendease, sms, sms_balance } }`
+         */
+        parseBalanceFromStatusResponse(data) {
+            if (!data || typeof data !== 'object') return null;
+            const checks = data.checks;
+            if (!checks || typeof checks !== 'object') return null;
+            const raw = checks.sms_balance ?? checks.smsBalance;
+            if (raw == null || raw === '') return null;
+            const n = Number(raw);
+            return Number.isNaN(n) ? null : n;
+        },
+        /** SMS balance is read only from `GET /status` → `checks.sms_balance`. */
         async getSMSBalance(){
             this.smsBalance = null;
             this.smsBalanceMessage = '';
+            const base = this.mpesaApiBase();
+            if (!base) {
+                this.smsBalanceMessage = 'MPESA_URL is not configured';
+                return;
+            }
+
             try {
-                const response = await $fetch(`${MPESA_URL}/checkbalance`,{
-                    method: "GET"
-                })
-                console.log(response)
-                this.smsBalance = response.balance;
-            } catch (e) {
-                const statusCode = e?.statusCode || e?.response?.status;
-                if (statusCode === 404) {
-                    // Treat missing endpoint as an offline provider and continue rendering.
-                    this.smsBalanceMessage = 'SMS provider is currently offline';
+                const data = await $fetch(`${base}/status`, { method: 'GET' });
+                const balance = this.parseBalanceFromStatusResponse(data);
+                if (balance != null) {
+                    this.smsBalance = balance;
                     return;
                 }
-                this.smsBalanceMessage = 'Unable to load SMS balance right now';
-                console.error('Failed to load SMS balance', e);
+                this.smsBalanceMessage = 'Unable to load SMS balance';
+            } catch (e) {
+                this.smsBalanceMessage = 'Unable to load SMS balance';
+                console.error('SMS balance: GET /status failed', base, e);
             }
         },
         debouncedSearch: debounce(async function(){
