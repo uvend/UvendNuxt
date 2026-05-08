@@ -30,13 +30,6 @@ export default defineNuxtConfig({
   },
   css: ['@/assets/css/tailwind.css'],
   vite: {
-    server: {
-      host: '0.0.0.0',
-      hmr: {
-        protocol: 'ws',
-        host: '0.0.0.0',
-      },
-    },
     define: {
       API_URL: JSON.stringify(process.env.API_URL || ''),
       VEND_URL: JSON.stringify(process.env.VEND_URL || ''),
