@@ -4,6 +4,7 @@
 //       Everything else is resolved at runtime via runtimeConfig + globalThis.__NUXT_RUNTIME__.
 const appEnv = (process.env.APP_ENV ?? '').trim()
 const pagesDir = appEnv ? `pages/${appEnv}` : 'pages'
+const isDev = process.env.NODE_ENV !== 'production'
 
 // Keys whose values must be resolved at RUNTIME (not build time).
 // Vite's `define` rewrites every occurrence of these identifiers in the source
@@ -18,6 +19,7 @@ const RUNTIME_KEYS = [
   'VEND_URL',
   'WALLET_API_URL',
   'STATEMENT_API',
+  'STATEMENT_SUMMARISED_PATH',
   'JSREPORT_URL',
   'MPESA_URL',
   'ADMIN_AUTH',
@@ -87,6 +89,7 @@ export default defineNuxtConfig({
   plugins: [
     '~/plugins/toast',
     '~/plugins/pinia',
+    '~/plugins/currency',
     '~/plugins/apexcharts.client',
   ],
   dir: {

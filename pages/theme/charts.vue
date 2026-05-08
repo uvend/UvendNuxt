@@ -148,10 +148,10 @@
 
 <script setup>
 
-const currencyCode = CURRENCY_CODE
+const { formatMoney, currencyCode } = useCurrency()
 
 function formatChartCurrency(tick) {
-  return tick ? `${currencyCode}${Number(tick).toLocaleString()}` : ''
+  return tick ? formatMoney(tick) : ''
 }
 
 const daysInMonth = 30;

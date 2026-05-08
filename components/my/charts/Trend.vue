@@ -137,7 +137,7 @@ const emit = defineEmits(['dateRangeChanged'])
 
 const { formatMoney, currencyCode } = useCurrency()
 
-const selectedUtility = ref('Both')
+const selectedUtility = ref('All')
 const chartRef = ref(null)
 const selectedDateRange = ref('lastMonth')
 const startDate = ref(null)

@@ -25,6 +25,7 @@ const PUBLIC_ENV_KEYS = [
   'VEND_URL',
   'WALLET_API_URL',
   'STATEMENT_API',
+  'STATEMENT_SUMMARISED_PATH',
   'JSREPORT_URL',
   'MPESA_URL',
   'ADMIN_AUTH',
@@ -55,6 +56,9 @@ export default defineNitroPlugin((nitroApp) => {
   resolved.APP_ENV = appEnv
   resolved.APP_CURRENCY = currencyCode
   resolved.CURRENCY_CODE = currencyCode
+  if (!resolved.STATEMENT_SUMMARISED_PATH) {
+    resolved.STATEMENT_SUMMARISED_PATH = '/statement/GetDBMeterActivitySummarised'
+  }
 
   ;(globalThis as Record<string, unknown>).__NUXT_RUNTIME__ = { ...resolved }
 

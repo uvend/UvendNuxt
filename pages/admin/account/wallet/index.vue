@@ -82,7 +82,7 @@
                                 Loading...
                             </span>
                             <span v-else-if="meterBalance !== null" class="text-sm font-semibold text-gray-900">
-                                {{ currencyCode }} {{ formatCurrency(meterBalance) }}
+                                {{ $formatMoney(meterBalance) }}
                                 <span v-if="meterBalanceSource === 'calculated'" class="text-xs text-gray-500 font-normal">(from loaded transactions)</span>
                             </span>
                             <span v-else class="text-sm text-gray-500">Click "Check Balance"</span>
@@ -203,7 +203,7 @@
                         <CardContent class="pt-6">
                             <div class="flex flex-col">
                                 <p class="text-sm text-gray-600 font-semibold mb-1">Total Vending</p>
-                                <p class="text-3xl font-black text-gray-900">{{ currencyCode }} {{ formatCurrency(meterTotal) }}</p>
+                                <p class="text-3xl font-black text-gray-900">{{ $formatMoney(meterTotal) }}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -211,7 +211,7 @@
                         <CardContent class="pt-6">
                             <div class="flex flex-col">
                                 <p class="text-sm text-gray-600 font-semibold mb-1">Total Funding</p>
-                                <p class="text-3xl font-black text-green-600">{{ currencyCode }} {{ formatCurrency(fundingTotal) }}</p>
+                                <p class="text-3xl font-black text-green-600">{{ $formatMoney(fundingTotal) }}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -219,7 +219,7 @@
                         <CardContent class="pt-6">
                             <div class="flex flex-col">
                                 <p class="text-sm text-gray-600 font-semibold mb-1">Electricity</p>
-                                <p class="text-3xl font-black text-yellow-600">{{ currencyCode }} {{ formatCurrency(electricityTotal) }}</p>
+                                <p class="text-3xl font-black text-yellow-600">{{ $formatMoney(electricityTotal) }}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -227,7 +227,7 @@
                         <CardContent class="pt-6">
                             <div class="flex flex-col">
                                 <p class="text-sm text-gray-600 font-semibold mb-1">Water</p>
-                                <p class="text-3xl font-black text-blue-600">{{ currencyCode }} {{ formatCurrency(waterTotal) }}</p>
+                                <p class="text-3xl font-black text-blue-600">{{ $formatMoney(waterTotal) }}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -280,7 +280,7 @@
                                             {{ transaction.meterNumber || transaction.reference || transaction.payvault_data_1 || 'N/A' }}
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold" :class="getAmountColor(transaction.type || transaction.transactionType)">
-                                            {{ getAmountPrefix(transaction.type || transaction.transactionType) }}{{ currencyCode }} {{ formatCurrency(getTransactionAmount(transaction)) }}
+                                            {{ getAmountPrefix(transaction.type || transaction.transactionType) }}{{ $formatMoney(getTransactionAmount(transaction)) }}
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <Badge :variant="getStatusVariant(transaction.status || transaction.result_desc)">
@@ -355,7 +355,7 @@
                         </div>
                         <div class="bg-gray-50 p-3 rounded-lg">
                             <p class="text-xs text-gray-500 mb-1">Amount</p>
-                            <p class="font-semibold text-gray-900 text-lg">{{ getAmountPrefix(selectedTransaction.type || selectedTransaction.transactionType) }}{{ currencyCode }} {{ formatCurrency(getTransactionAmount(selectedTransaction)) }}</p>
+                            <p class="font-semibold text-gray-900 text-lg">{{ getAmountPrefix(selectedTransaction.type || selectedTransaction.transactionType) }}{{ $formatMoney(getTransactionAmount(selectedTransaction)) }}</p>
                         </div>
                         <div class="bg-gray-50 p-3 rounded-lg">
                             <p class="text-xs text-gray-500 mb-1">Type</p>
@@ -424,7 +424,7 @@ export default {
         lastWeek.setDate(today.getDate() - 7);
         
         return {
-            currencyCode: CURRENCY_CODE,
+            
             searchMeter: '',
             transactions: [],
             isLoading: false,
@@ -882,15 +882,6 @@ export default {
             this.meterBalance = null;
             this.meterBalanceSource = null;
         },
-        formatCurrency(amount) {
-            if (!amount && amount !== 0) return '0.00';
-            // Handle amounts that might be in cents
-            const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-            return new Intl.NumberFormat('en-ZA', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(Math.abs(numAmount));
-        },
         formatDate(dateString) {
             if (!dateString) return 'N/A';
             const date = new Date(dateString);
@@ -1009,7 +1000,7 @@ export default {
                     this.meterBalanceSource = source;
                     this.$toast({
                         title: source === 'api' ? 'Meter Balance' : 'Meter Balance (Calculated)',
-                        description: `Meter ${meterNumber} balance: ${this.currencyCode} ${this.formatCurrency(balance)}${source === 'calculated' ? ' (from loaded transactions)' : ''}`,
+                        description: `Meter ${meterNumber} balance: ${this.$formatMoney(balance)}${source === 'calculated' ? ' (from loaded transactions)' : ''}`,
                         variant: "success"
                     });
                 } else {

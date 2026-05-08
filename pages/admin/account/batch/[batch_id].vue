@@ -62,7 +62,7 @@
                         </div>
                         <Badge>{{ totalBatch  }}</Badge>
                         <div>
-                            {{ totalBatchPayment }}
+                            {{ $formatMoney(totalBatchPayment) }}
                         </div>
                     </div>
                     <div class="flex gap-2">
@@ -262,8 +262,8 @@ export default{
     computed:{
         totalBatchPayment() {
             return this.batch.reduce((total, payment) => {
-                return total + (parseFloat(payment.periodTotals.payeePayOutAmount) || 0); 
-            }, 0).toFixed(2);
+                return total + (parseFloat(payment.periodTotals.payeePayOutAmount) || 0);
+            }, 0);
         },
         totalPages() {
             return Math.ceil(this.batch.length / this.pageSize);

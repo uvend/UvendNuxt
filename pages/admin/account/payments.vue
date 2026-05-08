@@ -27,7 +27,7 @@
                 </div>
             </div>
             <div class="flex flex-row gap-x-1.5 items-center">
-                <p :class="[disableBatch ? 'text-red-500' : 'text-green-500']">{{ selectedDifference }}</p>                
+                <p :class="[disableBatch ? 'text-red-500' : 'text-green-500']">{{ $formatMoney(selectedDifference) }}</p>                
                 <div class="relative w-full max-w-sm items-center">
                     <Input id="search" type="text" placeholder="Max" class="pl-10" v-model="maxBatch"/>
                     <span class="absolute start-0 inset-y-0 flex items-center justify-center px-2">
@@ -107,13 +107,13 @@
                         {{ rangeStart }} - {{ rangeEnd }}
                     </p>
                     <!--<p class="text-sm flex justify-end">Selected</p>-->
-                    <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ totalSelectedAmount }}</p>
+                    <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ $formatMoney(totalSelectedAmount) }}</p>
                 </div>
                 <div>
                     <p class="text-sm flex justify-end">Due</p>
                     <p class="w-full text-center font-bold">
                         <Badge>{{ totalRepsonse  }}</Badge>
-                        {{ totalAmount }}
+                        {{ $formatMoney(totalAmount) }}
                     </p>
                 </div>
             </div>
@@ -157,7 +157,6 @@ definePageMeta({
 export default{
     data(){
         return {
-            currencyCode: CURRENCY_CODE,
             payments: [],
             selectedPayments: [],
             currentPage: 1,
@@ -251,7 +250,7 @@ export default{
             // Calculate total payments
             this.totalAmount = this.payments.reduce((total, payment) => {
                 return total + (parseFloat(payment.periodTotals?.payeePayOutAmount) || 0);
-            }, 0).toFixed(2); // Format to two decimal places
+            }, 0);
 
             // Sort payments
             this.payments.sort((a, b) => {
@@ -342,7 +341,7 @@ export default{
                 this.disableBatch = true;
             }
 
-            this.selectedDifference = (this.maxBatch - total).toFixed(2);
+            this.selectedDifference = this.maxBatch - total;
         },
         async batch(){
             let preparedPayments = [];
@@ -436,13 +435,12 @@ export default{
             // Calculate totals
             const totalAmount = payments.reduce((sum, payment) => {
                 return sum + (parseFloat(payment.periodTotals?.payeePayOutAmount) || 0);
-            }, 0).toFixed(2);
-            
-            // Generate filter summary
+            }, 0);
+
             const activeFilters = [];
             if (this.search) activeFilters.push(`Search: "${this.search}"`);
-            if (this.minAmount) activeFilters.push(`Min Amount: ${this.currencyCode} ${this.minAmount}`);
-            if (this.maxAmount) activeFilters.push(`Max Amount: ${this.currencyCode} ${this.maxAmount}`);
+            if (this.minAmount) activeFilters.push(`Min Amount: ${this.$formatMoney(this.minAmount)}`);
+            if (this.maxAmount) activeFilters.push(`Max Amount: ${this.$formatMoney(this.maxAmount)}`);
             if (this.filters.onRollback) activeFilters.push('Current period rollback only');
             if (this.filters.hasValidBank) activeFilters.push('Valid banking details only');
             if (this.filters.hasEmail) activeFilters.push('Valid email only');
@@ -467,20 +465,18 @@ export default{
             doc.text('Summary:', 20, 65);
             doc.setFont(undefined, 'normal');
             doc.text(`Total Payments: ${payments.length}`, 20, 75);
-            doc.text(`Total Amount: ${this.currencyCode} ${totalAmount}`, 20, 82);
-            
-            // Prepare table data
+            doc.text(`Total Amount: ${this.$formatMoney(totalAmount)}`, 20, 82);
+
             const tableData = payments.map(payment => [
                 payment.payeeInfo?.description || 'N/A',
                 payment.payeeBankingInfo?.hasValidBankDetails ? 'Valid' : 'Invalid',
                 payment.payeeInfo?.isValidEmailAddress ? 'Valid' : 'Invalid',
-                `${this.currencyCode} ${(parseFloat(payment.periodTotals?.payeePayOutAmount) || 0).toFixed(2)}`,
+                this.$formatMoney(parseFloat(payment.periodTotals?.payeePayOutAmount) || 0),
                 payment.periodTotals?.cancellationComment ? 'Rollback' : 'Active',
                 payment.periodTotals?.cancellationComment || ''
             ]);
-            
-            // Add total row
-            tableData.push(['', '', 'TOTAL', `${this.currencyCode} ${totalAmount}`, '', '']);
+
+            tableData.push(['', '', 'TOTAL', this.$formatMoney(totalAmount), '', '']);
             
             // Add table
             autoTable(doc, {
@@ -547,7 +543,7 @@ export default{
         totalSelectedAmount() {
             return this.selectedPayments.reduce((total, payment) => {
                 return total + (parseFloat(payment.periodTotals?.payeePayOutAmount) || 0);
-            }, 0).toFixed(2); // Format to two decimal places
+            }, 0);
         },
         totalSelected() {
             return this.selectedPayments.length; // Count of selected payments

@@ -28,7 +28,7 @@
                     </Button>
                 </div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 mb-6 flex-shrink-0">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-6 flex-shrink-0">
                 <!-- Water Utility -->
                 <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -72,7 +72,7 @@
                     <CardContent class="pt-0 relative z-10 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Spending:</span>
-                            <span class="text-sm font-semibold text-gray-900">{{ currencyCode }} {{ gasSpending }}</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ $formatMoney(gasSpending) }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Vended:</span>
@@ -125,20 +125,7 @@
                 </Card>
             </div>
 
-            <div class="mb-4 flex flex-col sm:flex-row gap-4 flex-shrink-0 items-stretch">
-                <MeterActivityOverview
-                    class="flex-1 min-w-0"
-                    :active-count="meterActiveCount"
-                    :inactive-count="meterInactiveCount"
-                    :loading="meterActivityLoading"
-                />
-                <TotalVendsKpi
-                    class="flex-1 min-w-0"
-                    :count="totalVendCount"
-                    :total-amount="totalVendAmount"
-                    :loading="transactionsLoading"
-                />
-            </div>
+          
 
             <!-- Charts Section -->
             <div class="flex-1 flex flex-col lg:flex-row gap-6 lg:gap-8 min-h-0">
@@ -272,7 +259,13 @@ definePageMeta({
 export default {
     setup() {
         const { formatMoney } = useCurrency()
-        return { formatMoney, currencyCode: CURRENCY_CODE }
+        const { metersWithLastVend, inactive40Days, fetchAndCompute } = useMeterActivity()
+        return {
+            formatMoney,
+            metersWithLastVend,
+            inactive40Days,
+            fetchAndCompute
+        }
     },
     components: {
         Trend,
@@ -455,28 +448,23 @@ export default {
         waterSpending() {
             return this.filteredTransactionsForKPI
                 .filter(t => t.utilityType === 'Water')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                .toFixed(2);
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
         },
         electricitySpending() {
             return this.filteredTransactionsForKPI
                 .filter(t => t.utilityType === 'Electricity')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                .toFixed(2);
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
         },
         gasSpending() {
             return this.filteredTransactionsForKPI
                 .filter(t => t.utilityType === 'Gas')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                .toFixed(2);
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
         },
         totalRefunds() {
-            // Use refund from summary data (vendRefund field from API)
             if (this.summaryData && this.summaryData.vendRefund !== undefined) {
-                return parseFloat(this.summaryData.vendRefund || 0).toFixed(2);
+                return parseFloat(this.summaryData.vendRefund || 0);
             }
-            
-            return '0.00';
+            return 0;
         },
         klVended() {
             try {

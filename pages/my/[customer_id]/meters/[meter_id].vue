@@ -1127,7 +1127,7 @@ const chartPoints = computed(() => {
             x,
             y,
             date: point.date,
-            label: `${point.date}: ${currencyCode}${point.amount.toFixed(2)}`
+            label: `${point.date}: ${formatMoney(point.amount)}`
         }
     })
 })

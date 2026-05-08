@@ -63,7 +63,7 @@
                 </p>
                 <p class="w-fit text-center font-bold">
                     <Badge>{{ totalBatches }}</Badge>
-                    {{ totalBatchesAmount }}
+                    {{ $formatMoney(totalBatchesAmount) }}
                 </p>
             </div>
             <MyBatchCard
@@ -105,7 +105,6 @@ definePageMeta({
 export default{
     data(){
         return {
-            currencyCode: CURRENCY_CODE,
             isLoading: true,
             batches: [],
             monthsBack: 1,
@@ -211,9 +210,8 @@ export default{
             // Calculate totals
             const totalAmount = this.batches.reduce((sum, batch) => {
                 return sum + (parseFloat(batch.payeePayOutAmount) || 0);
-            }, 0).toFixed(2);
-            
-            // Generate status summary
+            }, 0);
+
             const statusSummary = this.selectedStatus === -1 ? 'All Statuses' : 
                 this.status.find(s => s.value === this.selectedStatus)?.label || 'Unknown Status';
             
@@ -235,20 +233,18 @@ export default{
             doc.text('Summary:', 20, 65);
             doc.setFont(undefined, 'normal');
             doc.text(`Total Batches: ${this.batches.length}`, 20, 75);
-            doc.text(`Total Amount: ${this.currencyCode} ${totalAmount}`, 20, 82);
-            
-            // Prepare table data
+            doc.text(`Total Amount: ${this.$formatMoney(totalAmount)}`, 20, 82);
+
             const tableData = this.batches.map(batch => [
                 batch.batchPaymentID || 'N/A',
                 this.formatDate(batch.batchSubmissionDate),
                 this.getBatchListDisplayState(batch),
                 batch.paymentCount || 0,
-                `${this.currencyCode} ${(parseFloat(batch.payeePayOutAmount) || 0).toFixed(2)}`,
+                this.$formatMoney(parseFloat(batch.payeePayOutAmount) || 0),
                 batch.batchComment || ''
             ]);
-            
-            // Add total row
-            tableData.push(['', '', 'TOTAL', this.batches.length, `${this.currencyCode} ${totalAmount}`, '']);
+
+            tableData.push(['', '', 'TOTAL', this.batches.length, this.$formatMoney(totalAmount), '']);
             
             // Add table
             autoTable(doc, {
@@ -361,8 +357,8 @@ export default{
         },
         totalBatchesAmount() {
             return this.batches.reduce((total, batch) => {
-                return total + (parseFloat(batch.payeePayOutAmount) || 0); // Replace 'amount' with the correct property name
-            }, 0).toFixed(2); // Format to two decimal places
+                return total + (parseFloat(batch.payeePayOutAmount) || 0);
+            }, 0);
         },
     },
     watch: {
