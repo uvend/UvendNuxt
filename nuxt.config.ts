@@ -2,6 +2,7 @@
 // When APP_ENV is unset/undefined, `undefined != ''` is true in JS — must not resolve to `pages/undefined`.
 const appEnv = (process.env.APP_ENV ?? '').trim()
 const pagesDir = appEnv ? `pages/${appEnv}` : 'pages'
+const currencyCode = (process.env.CURRENCY_CODE ?? '').trim().toUpperCase()
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -41,7 +42,8 @@ export default defineNuxtConfig({
       APP_FONT_COLOR_2: JSON.stringify(process.env.APP_FONT_COLOR_2 || ''),
       APP_FONT_COLOR_3: JSON.stringify(process.env.APP_FONT_COLOR_3 || ''),
       APP_ENV: JSON.stringify(appEnv),
-      APP_CURRENCY: JSON.stringify((process.env.APP_CURRENCY || 'ZAR').trim().toUpperCase()),
+      APP_CURRENCY: JSON.stringify(currencyCode),
+      CURRENCY_CODE: JSON.stringify(currencyCode),
       CUSTOMER_API: JSON.stringify(process.env.CUSTOMER_API || ''),
     }
   },
@@ -71,7 +73,8 @@ export default defineNuxtConfig({
     // Public keys that are exposed to the client
     public: {
       APP_ENV: appEnv,
-      APP_CURRENCY: (process.env.APP_CURRENCY || 'ZAR').trim().toUpperCase()
+      APP_CURRENCY: currencyCode,
+      CURRENCY_CODE: currencyCode
     }
   },
   routeRules: {

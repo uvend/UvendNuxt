@@ -10,7 +10,7 @@
                 :data="data"
                 index="day"
                 :categories="['amount']"
-                :y-formatter="(tick) => tick ? `$${Number(tick).toLocaleString()}` : ''"
+                :y-formatter="formatChartCurrency"
                 :show-legend="false"
                 :show-x-axis="false"
                 :show-y-axis="false"
@@ -22,7 +22,7 @@
             <div class="p-4 pt-0">
               <div class="flex flex-row items-center justify-between">
                 <div class="flex items-center space-x-2">
-                  <span class="text-2xl font-bold">$147,133.47</span>
+                  <span class="text-2xl font-bold">{{ currencyCode }} 147,133.47</span>
                   <span class="flex items-center text-green-600 font-semibold text-sm">
                     +8%
                   </span>
@@ -55,7 +55,7 @@
             <div class="p-4 pt-0">
               <div class="flex flex-row items-center justify-between">
                 <div class="flex items-center space-x-2">
-                  <span class="text-2xl font-bold">$147,133.47</span>
+                  <span class="text-2xl font-bold">{{ currencyCode }} 147,133.47</span>
                   <span class="flex items-center text-green-600 font-semibold text-sm">
                     +8%
                   </span>
@@ -72,7 +72,7 @@
           <CardContent class="flex flex-row items-center justify-between gap-4 p-0 h-full overflow-hidden">
             <div class="flex-1 flex flex-col items-start justify-center p-4">
               <div class="flex items-center space-x-2">
-                <span class="text-2xl font-bold">$147,133.47</span>
+                <span class="text-2xl font-bold">{{ currencyCode }} 147,133.47</span>
                 <span class="flex items-center text-green-600 font-semibold text-sm">
                   +8%
                 </span>
@@ -85,7 +85,7 @@
                   :data="data"
                   index="day"
                   :categories="['amount']"
-                  :y-formatter="(tick) => tick ? `$${Number(tick).toLocaleString()}` : ''"
+                  :y-formatter="formatChartCurrency"
                   :show-legend="false"
                   :show-x-axis="false"
                   :show-y-axis="false"
@@ -147,6 +147,12 @@
 </template>
 
 <script setup>
+
+const currencyCode = CURRENCY_CODE
+
+function formatChartCurrency(tick) {
+  return tick ? `${currencyCode}${Number(tick).toLocaleString()}` : ''
+}
 
 const daysInMonth = 30;
 const data = Array.from({ length: daysInMonth }, (_, i) => {

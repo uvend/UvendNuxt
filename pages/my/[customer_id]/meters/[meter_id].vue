@@ -390,7 +390,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const { $toast } = useNuxtApp()
-const { formatMoney } = useCurrency()
+const { formatMoney, currencyCode } = useCurrency()
 
 // Reactive data
 const isLoading = ref(true)
@@ -1125,7 +1125,7 @@ const chartPoints = computed(() => {
             x,
             y,
             date: point.date,
-            label: `${point.date}: R${point.amount.toFixed(2)}`
+            label: `${point.date}: ${currencyCode}${point.amount.toFixed(2)}`
         }
     })
 })

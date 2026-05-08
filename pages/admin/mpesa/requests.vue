@@ -179,7 +179,7 @@ export default{
         },
         async getSMSBalance(){
             this.smsBalance = null;
-            const response = await $fetch(`${MPESA_URL}/checkbalance`,{
+            const response = await $fetch(`${MPESA_URL}/status`,{
                 method: "GET"
             })
             console.log(response)

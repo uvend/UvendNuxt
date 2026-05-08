@@ -72,7 +72,7 @@
                     <CardContent class="pt-0 relative z-10 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Spending:</span>
-                            <span class="text-sm font-semibold text-gray-900">R {{ gasSpending }}</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ currencyCode }} {{ gasSpending }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Vended:</span>
@@ -254,7 +254,7 @@ definePageMeta({
 export default {
     setup() {
         const { formatMoney } = useCurrency()
-        return { formatMoney }
+        return { formatMoney, currencyCode: CURRENCY_CODE }
     },
     components: {
         Trend,

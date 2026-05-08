@@ -105,6 +105,7 @@ definePageMeta({
 export default{
     data(){
         return {
+            currencyCode: CURRENCY_CODE,
             isLoading: true,
             batches: [],
             monthsBack: 1,
@@ -234,7 +235,7 @@ export default{
             doc.text('Summary:', 20, 65);
             doc.setFont(undefined, 'normal');
             doc.text(`Total Batches: ${this.batches.length}`, 20, 75);
-            doc.text(`Total Amount: R ${totalAmount}`, 20, 82);
+            doc.text(`Total Amount: ${this.currencyCode} ${totalAmount}`, 20, 82);
             
             // Prepare table data
             const tableData = this.batches.map(batch => [
@@ -242,12 +243,12 @@ export default{
                 this.formatDate(batch.batchSubmissionDate),
                 this.getBatchListDisplayState(batch),
                 batch.paymentCount || 0,
-                `R ${(parseFloat(batch.payeePayOutAmount) || 0).toFixed(2)}`,
+                `${this.currencyCode} ${(parseFloat(batch.payeePayOutAmount) || 0).toFixed(2)}`,
                 batch.batchComment || ''
             ]);
             
             // Add total row
-            tableData.push(['', '', 'TOTAL', this.batches.length, `R ${totalAmount}`, '']);
+            tableData.push(['', '', 'TOTAL', this.batches.length, `${this.currencyCode} ${totalAmount}`, '']);
             
             // Add table
             autoTable(doc, {

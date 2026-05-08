@@ -157,6 +157,7 @@ definePageMeta({
 export default{
     data(){
         return {
+            currencyCode: CURRENCY_CODE,
             payments: [],
             selectedPayments: [],
             currentPage: 1,
@@ -440,8 +441,8 @@ export default{
             // Generate filter summary
             const activeFilters = [];
             if (this.search) activeFilters.push(`Search: "${this.search}"`);
-            if (this.minAmount) activeFilters.push(`Min Amount: R ${this.minAmount}`);
-            if (this.maxAmount) activeFilters.push(`Max Amount: R ${this.maxAmount}`);
+            if (this.minAmount) activeFilters.push(`Min Amount: ${this.currencyCode} ${this.minAmount}`);
+            if (this.maxAmount) activeFilters.push(`Max Amount: ${this.currencyCode} ${this.maxAmount}`);
             if (this.filters.onRollback) activeFilters.push('Current period rollback only');
             if (this.filters.hasValidBank) activeFilters.push('Valid banking details only');
             if (this.filters.hasEmail) activeFilters.push('Valid email only');
@@ -466,20 +467,20 @@ export default{
             doc.text('Summary:', 20, 65);
             doc.setFont(undefined, 'normal');
             doc.text(`Total Payments: ${payments.length}`, 20, 75);
-            doc.text(`Total Amount: R ${totalAmount}`, 20, 82);
+            doc.text(`Total Amount: ${this.currencyCode} ${totalAmount}`, 20, 82);
             
             // Prepare table data
             const tableData = payments.map(payment => [
                 payment.payeeInfo?.description || 'N/A',
                 payment.payeeBankingInfo?.hasValidBankDetails ? 'Valid' : 'Invalid',
                 payment.payeeInfo?.isValidEmailAddress ? 'Valid' : 'Invalid',
-                `R ${(parseFloat(payment.periodTotals?.payeePayOutAmount) || 0).toFixed(2)}`,
+                `${this.currencyCode} ${(parseFloat(payment.periodTotals?.payeePayOutAmount) || 0).toFixed(2)}`,
                 payment.periodTotals?.cancellationComment ? 'Rollback' : 'Active',
                 payment.periodTotals?.cancellationComment || ''
             ]);
             
             // Add total row
-            tableData.push(['', '', 'TOTAL', `R ${totalAmount}`, '', '']);
+            tableData.push(['', '', 'TOTAL', `${this.currencyCode} ${totalAmount}`, '', '']);
             
             // Add table
             autoTable(doc, {
