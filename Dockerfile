@@ -11,11 +11,11 @@ RUN npm install
 # Copy project files
 COPY . .
 
-# Build the app
-RUN npm run build
+# Prepare Nuxt (generates .nuxt types)
+RUN npx nuxt prepare
 
 # Expose port
 EXPOSE 3000
 
 # Start the app
-CMD ["npm", "run","dev"]
+CMD ["npm", "run", "dev"]
