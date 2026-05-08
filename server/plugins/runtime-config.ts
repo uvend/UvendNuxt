@@ -1,14 +1,24 @@
 /**
- * Reads environment variables at SERVER STARTUP (not build time) and overrides
- * `runtimeConfig.public.*`. The same image can therefore be deployed to dev/uat/prod
- * by simply changing the container's environment (e.g. `env_file: .env` in compose).
+ * Reads URL/feature env vars at SERVER STARTUP (not build time) and injects them
+ * into every HTML response as an inline `<script>` that populates
+ * `globalThis.__NUXT_RUNTIME__`.
  *
- * The keys here intentionally use the same names as the existing .env file so no
- * variable renaming is required (Nuxt's standard `NUXT_PUBLIC_*` override convention
- * is not used here — see plugins/00.runtime-config.ts).
+ * Vite's `define` config in `nuxt.config.ts` rewrites every occurrence of these
+ * identifiers in the bundle to `globalThis.__NUXT_RUNTIME__.<KEY>`, so this
+ * inline script must run BEFORE any other script in the page. We use `head.unshift`
+ * to push the script to the very top of `<head>`, where it runs synchronously
+ * during HTML parsing — strictly before the deferred module bundle.
  *
- * runtimeConfig.public is serialized into the SPA shell HTML by Nitro and is read
- * by `useRuntimeConfig()` on the client.
+ * The `nuxt.config.ts` already injects an empty-default initializer via
+ * `app.head.script`, so even if env vars are missing the global is always at
+ * least an object with empty-string values for every key (no `undefined` leaks
+ * into URLs).
+ *
+ * Why not use Nuxt's runtimeConfig env-var override mechanism? Because Nuxt
+ * freezes `runtimeConfig.public` after init (so we can't mutate it from a Nitro
+ * plugin), and its standard `NUXT_PUBLIC_*` convention would force renaming of
+ * every variable in `.env` (and the conventions map to camelCase keys, which
+ * wouldn't match the existing UPPER_SNAKE_CASE identifiers used in the code).
  */
 const PUBLIC_ENV_KEYS = [
   'API_URL',
@@ -33,10 +43,8 @@ const PUBLIC_ENV_KEYS = [
   'CURRENCY_CODE',
 ] as const
 
-export default defineNitroPlugin(() => {
-  const config = useRuntimeConfig()
+export default defineNitroPlugin((nitroApp) => {
   const env = process.env
-
   const appEnv = (env.APP_ENV ?? '').trim()
   const currencyCode = (env.CURRENCY_CODE ?? '').trim().toUpperCase()
 
@@ -48,7 +56,15 @@ export default defineNitroPlugin(() => {
   resolved.APP_CURRENCY = currencyCode
   resolved.CURRENCY_CODE = currencyCode
 
-  Object.assign(config.public as Record<string, unknown>, resolved)
-
   ;(globalThis as Record<string, unknown>).__NUXT_RUNTIME__ = { ...resolved }
+
+  // JSON.stringify produces a JS-literal-safe object; using `</script>` inside a
+  // value would be unsafe, but these are all known config keys with URL/string
+  // values from env, so a basic escape of `</` is sufficient defense-in-depth.
+  const safeJson = JSON.stringify(resolved).replace(/<\//g, '<\\/')
+  const inlineScript = `<script>window.__NUXT_RUNTIME__=Object.assign(window.__NUXT_RUNTIME__||{},${safeJson});</script>`
+
+  nitroApp.hooks.hook('render:html', (html) => {
+    html.head.unshift(inlineScript)
+  })
 })

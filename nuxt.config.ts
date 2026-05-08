@@ -5,14 +5,14 @@
 const appEnv = (process.env.APP_ENV ?? '').trim()
 const pagesDir = appEnv ? `pages/${appEnv}` : 'pages'
 
-// Helper: produce a runtime expression for a public runtime-config key.
-// At build time, every occurrence of e.g. `STATEMENT_API` in source is replaced with
-// `(globalThis.__NUXT_RUNTIME__?.STATEMENT_API ?? "")`, which reads the value at runtime
-// from a global populated by `plugins/00.runtime-config.ts` (client) and
-// `server/plugins/runtime-config.ts` (server).
-const runtimeRef = (key: string) =>
-  `(globalThis.__NUXT_RUNTIME__?.${key} ?? "")`
-
+// Keys whose values must be resolved at RUNTIME (not build time).
+// Vite's `define` rewrites every occurrence of these identifiers in the source
+// (e.g. `STATEMENT_API`) to the member expression `globalThis.__NUXT_RUNTIME__.STATEMENT_API`.
+// The `globalThis.__NUXT_RUNTIME__` object is populated by:
+//   - server/plugins/runtime-config.ts: reads process.env at server startup AND
+//     injects an inline <script> into every HTML response with the real values.
+//   - the empty-default inline script below: ensures all keys are at least empty
+//     strings even before the runtime-injected script runs.
 const RUNTIME_KEYS = [
   'API_URL',
   'VEND_URL',
@@ -36,11 +36,24 @@ const RUNTIME_KEYS = [
   'CURRENCY_CODE',
 ] as const
 
+// esbuild/Vite require `define` values to be a JS literal or a plain entity-name
+// member expression — NOT an expression with `??`/`?.`/parentheses. So we use a
+// straight member access here and rely on the inline head script (below) to
+// guarantee `globalThis.__NUXT_RUNTIME__` is always a defined object with all
+// keys present (default: empty string), before any other code runs.
 const viteDefine: Record<string, string> = {}
-for (const k of RUNTIME_KEYS) viteDefine[k] = runtimeRef(k)
+for (const k of RUNTIME_KEYS) viteDefine[k] = `globalThis.__NUXT_RUNTIME__.${k}`
 
 const publicConfigDefaults: Record<string, string> = {}
 for (const k of RUNTIME_KEYS) publicConfigDefaults[k] = ''
+
+// Inline script injected into the very top of <head>. It runs synchronously
+// during HTML parsing — before any deferred/module script — so by the time the
+// app bundle executes, `globalThis.__NUXT_RUNTIME__.<KEY>` is guaranteed to be
+// at least an empty string. The values get overwritten with real ones by
+// `plugins/00.runtime-config.ts` once `useRuntimeConfig()` is available.
+const runtimeBootstrap =
+  `window.__NUXT_RUNTIME__=Object.assign(${JSON.stringify(publicConfigDefaults)},window.__NUXT_RUNTIME__||{});`
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -72,7 +85,6 @@ export default defineNuxtConfig({
   },
   ssr: false,// Not required in Tailwind 3+, but useful for older versions
   plugins: [
-    '~/plugins/00.runtime-config',
     '~/plugins/toast',
     '~/plugins/pinia',
     '~/plugins/apexcharts.client',
@@ -86,6 +98,13 @@ export default defineNuxtConfig({
         {
           name: 'viewport',
           content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
+        }
+      ],
+      script: [
+        {
+          innerHTML: runtimeBootstrap,
+          tagPosition: 'head',
+          tagPriority: 'critical'
         }
       ]
     }
