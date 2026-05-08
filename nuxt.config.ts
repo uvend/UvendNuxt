@@ -1,8 +1,46 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 // When APP_ENV is unset/undefined, `undefined != ''` is true in JS — must not resolve to `pages/undefined`.
+// NOTE: pagesDir is resolved at build time only (file layout cannot change at runtime).
+//       Everything else is resolved at runtime via runtimeConfig + globalThis.__NUXT_RUNTIME__.
 const appEnv = (process.env.APP_ENV ?? '').trim()
 const pagesDir = appEnv ? `pages/${appEnv}` : 'pages'
-const currencyCode = (process.env.CURRENCY_CODE ?? '').trim().toUpperCase()
+
+// Helper: produce a runtime expression for a public runtime-config key.
+// At build time, every occurrence of e.g. `STATEMENT_API` in source is replaced with
+// `(globalThis.__NUXT_RUNTIME__?.STATEMENT_API ?? "")`, which reads the value at runtime
+// from a global populated by `plugins/00.runtime-config.ts` (client) and
+// `server/plugins/runtime-config.ts` (server).
+const runtimeRef = (key: string) =>
+  `(globalThis.__NUXT_RUNTIME__?.${key} ?? "")`
+
+const RUNTIME_KEYS = [
+  'API_URL',
+  'VEND_URL',
+  'WALLET_API_URL',
+  'STATEMENT_API',
+  'JSREPORT_URL',
+  'MPESA_URL',
+  'ADMIN_AUTH',
+  'VEND_TerminalID',
+  'VEND_OperatorID',
+  'APP_LOGO',
+  'APP_BG_1',
+  'APP_BG_2',
+  'APP_BG_3',
+  'APP_FONT_COLOR_1',
+  'APP_FONT_COLOR_2',
+  'APP_FONT_COLOR_3',
+  'CUSTOMER_API',
+  'APP_ENV',
+  'APP_CURRENCY',
+  'CURRENCY_CODE',
+] as const
+
+const viteDefine: Record<string, string> = {}
+for (const k of RUNTIME_KEYS) viteDefine[k] = runtimeRef(k)
+
+const publicConfigDefaults: Record<string, string> = {}
+for (const k of RUNTIME_KEYS) publicConfigDefaults[k] = ''
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -30,31 +68,11 @@ export default defineNuxtConfig({
   },
   css: ['@/assets/css/tailwind.css'],
   vite: {
-    define: {
-      API_URL: JSON.stringify(process.env.API_URL || ''),
-      VEND_URL: JSON.stringify(process.env.VEND_URL || ''),
-      WALLET_API_URL : JSON.stringify(process.env.WALLET_API_URL || ''),
-      STATEMENT_API: JSON.stringify(process.env.STATEMENT_API || ''),
-      JSREPORT_URL: JSON.stringify(process.env.JSREPORT_URL || ''),
-      MPESA_URL: JSON.stringify(process.env.MPESA_URL || ''),
-      ADMIN_AUTH: JSON.stringify(process.env.ADMIN_AUTH || ''),
-      VEND_TerminalID: JSON.stringify(process.env.VEND_TerminalID || ''),
-      VEND_OperatorID: JSON.stringify(process.env.VEND_OperatorID || ''),
-      APP_LOGO: JSON.stringify(process.env.APP_LOGO || ''),
-      APP_BG_1: JSON.stringify(process.env.APP_BG_1 || ''),
-      APP_BG_2: JSON.stringify(process.env.APP_BG_2 || ''),
-      APP_BG_3: JSON.stringify(process.env.APP_BG_3 || ''),
-      APP_FONT_COLOR_1: JSON.stringify(process.env.APP_FONT_COLOR_1 || ''),
-      APP_FONT_COLOR_2: JSON.stringify(process.env.APP_FONT_COLOR_2 || ''),
-      APP_FONT_COLOR_3: JSON.stringify(process.env.APP_FONT_COLOR_3 || ''),
-      APP_ENV: JSON.stringify(appEnv),
-      APP_CURRENCY: JSON.stringify(currencyCode),
-      CURRENCY_CODE: JSON.stringify(currencyCode),
-      CUSTOMER_API: JSON.stringify(process.env.CUSTOMER_API || ''),
-    }
+    define: viteDefine
   },
   ssr: false,// Not required in Tailwind 3+, but useful for older versions
   plugins: [
+    '~/plugins/00.runtime-config',
     '~/plugins/toast',
     '~/plugins/pinia',
     '~/plugins/apexcharts.client',
@@ -73,15 +91,7 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
-    // Private keys are only available on the server
-    // apiSecret: '123'
-
-    // Public keys that are exposed to the client
-    public: {
-      APP_ENV: appEnv,
-      APP_CURRENCY: currencyCode,
-      CURRENCY_CODE: currencyCode
-    }
+    public: publicConfigDefaults
   },
   routeRules: {
     '/registration/**': { 
