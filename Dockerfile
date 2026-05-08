@@ -1,21 +1,28 @@
-FROM node:20-alpine
+# syntax=docker/dockerfile:1
+
+# ---------- Builder stage: install deps and build the Nuxt app ----------
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Install dependencies
 RUN npm install
 
-# Copy project files
 COPY . .
 
-# Prepare Nuxt (generates .nuxt types)
-RUN npx nuxt prepare
+RUN npm run build
 
-# Expose port
+# ---------- Runtime stage: minimal image to serve the built output ----------
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+
+COPY --from=builder /app/.output ./.output
+
 EXPOSE 3000
 
-# Start the app
-CMD ["npm", "run", "dev"]
+CMD ["node", ".output/server/index.mjs"]

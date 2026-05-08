@@ -6,7 +6,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=${PORT:-3002}
-    command: ["node", ".output/server/index.mjs"]
     restart: unless-stopped
     env_file:
       - .env
