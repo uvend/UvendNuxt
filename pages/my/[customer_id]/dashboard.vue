@@ -125,6 +125,21 @@
                 </Card>
             </div>
 
+            <div class="mb-4 flex flex-col sm:flex-row gap-4 flex-shrink-0 items-stretch">
+                <MeterActivityOverview
+                    class="flex-1 min-w-0"
+                    :active-count="meterActiveCount"
+                    :inactive-count="meterInactiveCount"
+                    :loading="meterActivityLoading"
+                />
+                <TotalVendsKpi
+                    class="flex-1 min-w-0"
+                    :count="totalVendCount"
+                    :total-amount="totalVendAmount"
+                    :loading="transactionsLoading"
+                />
+            </div>
+
             <!-- Charts Section -->
             <div class="flex-1 flex flex-col lg:flex-row gap-6 lg:gap-8 min-h-0">
                 <!-- Combined Utility Spending Trend Chart -->
@@ -246,6 +261,9 @@
 <script>
 import Trend from '~/components/my/charts/Trend.vue'
 import ComplexSpendingBar from '~/components/my/charts/ComplexSpendingBar.vue'
+import MeterActivityOverview from '~/components/my/charts/MeterActivityOverview.vue'
+import TotalVendsKpi from '~/components/my/charts/TotalVendsKpi.vue'
+import { summarisedPayload } from '~/composables/summarisedPayload.js'
 
 definePageMeta({
     layout: 'my'
@@ -258,7 +276,9 @@ export default {
     },
     components: {
         Trend,
-        ComplexSpendingBar
+        ComplexSpendingBar,
+        MeterActivityOverview,
+        TotalVendsKpi
     },
     data() {
         return {
@@ -268,7 +288,9 @@ export default {
             selectedTransaction: null,
             expandedRow: null, // Track expanded row index
             summaryData: {}, // Store summary data from API
-            kpiMonthOffset: 0 // 0 = current month, -1 = last month, etc.
+            kpiMonthOffset: 0, // 0 = current month, -1 = last month, etc.
+            meterActivityLoading: true,
+            transactionsLoading: true
         }
     },
     methods: {
@@ -328,11 +350,11 @@ export default {
             })
             this.originalTransactions = result.responseData.transactionData
         },
-        getTransactions() {
-            this.getAdminTransactions()
+        async getTransactions() {
+            await this.getAdminTransactions()
             // if (localStorage.getItem('customer') === 'admin') {
             // } else {
-            //     this.getVendTransactions()
+            //     await this.getVendTransactions()
             // }
         },
         selectTransaction(transaction) {
@@ -374,7 +396,15 @@ export default {
             start: ninetyDaysAgo.toISOString(),
             end: today.toISOString()
         }
-        await this.getTransactions()
+        this.meterActivityLoading = true
+        try {
+            await Promise.all([
+                this.getTransactions(),
+                this.fetchAndCompute(this.$route.params.customer_id)
+            ])
+        } finally {
+            this.meterActivityLoading = false
+        }
     },
     computed: {
         kpiMonthRange() {
@@ -388,6 +418,31 @@ export default {
             const d = new Date();
             d.setMonth(d.getMonth() + this.kpiMonthOffset);
             return d.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
+        },
+        meterActivityMeters() {
+            const list = this.metersWithLastVend
+            return Array.isArray(list) ? list : []
+        },
+        meterActiveCount() {
+            return this.meterActivityMeters.filter(m => m && m.isActive).length
+        },
+        meterInactiveCount() {
+            return this.meterActivityMeters.filter(m => m && !m.isActive).length
+        },
+        totalVendCount() {
+            if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                return 0
+            }
+            return this.originalTransactions.length
+        },
+        totalVendAmount() {
+            if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                return 0
+            }
+            return this.originalTransactions.reduce((sum, t) => {
+                const n = parseFloat(t?.managedTenderAmount)
+                return sum + (Number.isNaN(n) ? 0 : n)
+            }, 0)
         },
         filteredTransactionsForKPI() {
             if (!this.kpiMonthRange) return this.originalTransactions;
@@ -490,13 +545,26 @@ export default {
     },
     watch: {
         dateRange: {
-            handler(newRange, oldRange) {
+            async handler(newRange, oldRange) {
                 if (newRange && oldRange &&
                     (newRange.start !== oldRange.start || newRange.end !== oldRange.end)) {
-                    this.getTransactions();
+                    await this.getTransactions()
                 }
             },
             deep: true
+        },
+        '$route.params.customer_id': {
+            async handler() {
+                this.meterActivityLoading = true
+                try {
+                    await Promise.all([
+                        this.getTransactions(),
+                        this.fetchAndCompute(this.$route.params.customer_id, true)
+                    ])
+                } finally {
+                    this.meterActivityLoading = false
+                }
+            }
         }
     }
 }

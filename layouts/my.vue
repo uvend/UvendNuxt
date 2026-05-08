@@ -183,7 +183,10 @@
     </div>
 </template>
 <script>
+import InactiveMetersPopupTrigger from '~/components/my/InactiveMetersPopupTrigger.vue'
+
 export default{
+    components: { InactiveMetersPopupTrigger },
     data(){
         return {
             sidebarExpanded: true,

@@ -57,7 +57,7 @@ const runtimeBootstrap =
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt', '@nuxt/icon','@pinia/nuxt'],
   components: [
     {
@@ -83,7 +83,7 @@ export default defineNuxtConfig({
   vite: {
     define: viteDefine
   },
-  ssr: false,// Not required in Tailwind 3+, but useful for older versions
+  ssr: isDev, // Enable SSR in dev, keep SPA behavior for production
   plugins: [
     '~/plugins/toast',
     '~/plugins/pinia',

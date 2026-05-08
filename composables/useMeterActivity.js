@@ -1,3 +1,5 @@
+import { summarisedPayload } from './summarisedPayload.js'
+
 /**
  * Composable for meter activity status (last vend date, 30/40 day inactive).
  * Fetches meter data and computes lastVendDate per meter.
@@ -6,12 +8,13 @@ export function useMeterActivity() {
     const metersWithLastVend = useState('metersWithLastVend', () => [])
     const inactive40Days = useState('inactive40Days', () => [])
     const lastFetch = useState('meterActivityLastFetch', () => null)
+    const lastFetchCustomerId = useState('meterActivityLastCustomerId', () => null)
     const CACHE_MS = 5 * 60 * 1000 // 5 min cache
 
     const DAYS_INACTIVE = 30
     const DAYS_POPUP = 40
 
-    async function fetchAndCompute(customerId) {
+    async function fetchAndCompute(customerId, force = false) {
         if (!customerId) return
         const now = Date.now()
         if (lastFetch.value && now - lastFetch.value < CACHE_MS) return
@@ -20,7 +23,7 @@ export function useMeterActivity() {
             const today = new Date()
             const start = new Date(today)
             start.setDate(today.getDate() - 90)
-            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
+            const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
                 method: 'GET',
                 params: {
                     IncludeMetersWithNoActivity: true,
@@ -33,7 +36,8 @@ export function useMeterActivity() {
                 }
             })
             lastFetch.value = now
-            const transactionData = result?.data?.transactionData || {}
+            lastFetchCustomerId.value = customerId
+            const transactionData = summarisedPayload(result).transactionData || {}
             const list = []
             const todayTime = today.getTime()
 

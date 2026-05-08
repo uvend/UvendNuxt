@@ -381,6 +381,7 @@
 </template>
 
 <script setup>
+import { summarisedPayload } from '~/composables/summarisedPayload.js'
 import _ from 'lodash';
 
 definePageMeta({
@@ -442,7 +443,7 @@ const tenantUpdateLoading = ref(false)
 const getAdminMeterActivity = async () => {
     try {
         isLoading.value = true
-        const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
+        const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
             method: "GET",
             params: {
                 StartDate: dateRange.value.start,
@@ -453,13 +454,14 @@ const getAdminMeterActivity = async () => {
                 UtilityType: -1
             }
         })
+        const payload = summarisedPayload(result)
         
         // Clear existing transactions
         meterTransactions.value = []
         originalTransactions.value = []
         
         // Extract all transactions from all meters
-        for (const [meterNumber, meterData] of Object.entries(result.data.transactionData)) {
+        for (const [meterNumber, meterData] of Object.entries(payload.transactionData || {})) {
             if (meterData.transactions && Array.isArray(meterData.transactions)) {
                 meterData.transactions.forEach(transaction => {
                     const flattenedTransaction = {
