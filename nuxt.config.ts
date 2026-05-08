@@ -8,6 +8,12 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt', '@nuxt/icon','@pinia/nuxt'],
+  components: [
+    {
+      path: '~/components',
+      extensions: ['vue']
+    }
+  ],
   build: {
     transpile: ['vue3-apexcharts']
   },
