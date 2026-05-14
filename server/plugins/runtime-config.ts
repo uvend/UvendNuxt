@@ -42,6 +42,7 @@ const PUBLIC_ENV_KEYS = [
   'APP_ENV',
   'APP_CURRENCY',
   'CURRENCY_CODE',
+  'AEON_CHECK',
 ] as const
 
 export default defineNitroPlugin((nitroApp) => {

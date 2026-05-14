@@ -76,18 +76,43 @@ const emit = defineEmits(['update:modelValue'])
 
 const inputId = computed(() => `file-input-${Math.random().toString(36).substr(2, 9)}`)
 
+const allowedAcceptEntries = computed(() =>
+  props.accept
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean)
+)
+
+const matchesAcceptRule = (file) => {
+  if (!allowedAcceptEntries.value.length) return true
+
+  const fileName = (file?.name || '').toLowerCase()
+  const fileType = (file?.type || '').toLowerCase()
+
+  return allowedAcceptEntries.value.some((entry) => {
+    if (entry.startsWith('.')) {
+      return fileName.endsWith(entry)
+    }
+
+    if (entry.endsWith('/*')) {
+      return fileType.startsWith(entry.slice(0, -1))
+    }
+
+    return fileType === entry
+  })
+}
+
 const validateFile = (file) => {
   if (!file) return false
   
   const maxSize = 10 * 1024 * 1024 // 10MB
-  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png']
   
   if (file.size > maxSize) {
     return 'File size must be less than 10MB'
   }
   
-  if (!allowedTypes.includes(file.type)) {
-    return 'File must be PDF, JPG, or PNG'
+  if (!matchesAcceptRule(file)) {
+    return `File must match: ${props.accept}`
   }
   
   return true

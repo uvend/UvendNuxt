@@ -25,6 +25,7 @@
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "filepond": "^4.32.12",
     "html2pdf.js": "^0.14.0",
     "http-proxy-middleware": "^3.0.3",
     "jspdf": "^4.2.0",
@@ -43,6 +44,7 @@
     "unstorage": "^1.17.4",
     "vaul-vue": "^0.4.1",
     "vue": "latest",
+    "vue-filepond": "^8.0.0",
     "vue-router": "latest",
     "vue3-apexcharts": "^1.8.0",
     "vue3-datepicker": "^0.4.0"

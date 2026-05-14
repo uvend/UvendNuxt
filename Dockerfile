@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# ---------- Builder stage: install deps and build the Nuxt app ----------
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS app
 
 WORKDIR /app
 
@@ -13,16 +12,10 @@ COPY . .
 
 RUN npm run build
 
-# ---------- Runtime stage: minimal image to serve the built output ----------
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
+ENV PORT=3002
 
-COPY --from=builder /app/.output ./.output
+EXPOSE 3002
 
-EXPOSE 3000
-
-CMD ["node", ".output/server/index.mjs"]
+CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"development\" ]; then npx nuxt dev --host 0.0.0.0 --port ${PORT}; else node .output/server/index.mjs; fi"]
