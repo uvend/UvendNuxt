@@ -58,7 +58,7 @@
                 <div class="flex flex-row items-center gap-4">
                     <div class="flex flex-row gap-2">
                         <div>
-                            <Badge :class="batchStateBadgeClass(displayBatchState)">{{ displayBatchState }}</Badge>
+                            <Badge :class="batchStateBadgeClass(paymentState)">{{ paymentState }}</Badge>
                         </div>
                         <Badge>{{ totalBatch  }}</Badge>
                         <div>
@@ -83,7 +83,7 @@
                 <div v-for="payment in paginatedBatch">
                     <MyBatchPaymentCard
                         :payment="payment"
-                        :display-state="batchPaymentDisplayState(payment)"
+                        :display-state="payment?.periodTotals?.batchPaymentState"
                         @refresh="getBatch()"
                     />
                 </div>
@@ -111,59 +111,15 @@ export default{
                 10,50,100,200
             ],
             currentPage: 1,
-            isLoading: true,
-            bankFileCreatedLocal: false,
-            /** Survives refetch/reload in-session; cleared when API settles or confirms BankFileCreated */
-            bankFilePersisted: false
+            isLoading: true
         }
     },
     methods:{
-        bankFileSessionKey(batchId) {
-            return `uvend:batchBankFileCreated:${batchId}`;
-        },
-        readBankFilePersisted(batchId) {
-            if (!import.meta.client) return false;
-            try {
-                return sessionStorage.getItem(this.bankFileSessionKey(batchId)) === '1';
-            } catch {
-                return false;
-            }
-        },
-        persistBankFileCreated(batchId) {
-            if (!import.meta.client) return;
-            try {
-                sessionStorage.setItem(this.bankFileSessionKey(batchId), '1');
-            } catch { /* ignore quota */ }
-            this.bankFilePersisted = true;
-        },
-        clearBankFilePersisted() {
-            const batchId = this.$route.params.batch_id;
-            if (import.meta.client && batchId) {
-                try {
-                    sessionStorage.removeItem(this.bankFileSessionKey(batchId));
-                } catch { /* ignore */ }
-            }
-            this.bankFilePersisted = false;
-            this.bankFileCreatedLocal = false;
-        },
-        shouldShowBankFileCreatedOverride() {
-            return (
-                (this.bankFileCreatedLocal || this.bankFilePersisted) &&
-                this.paymentState === 'SubmittedToBatch'
-            );
-        },
         batchStateBadgeClass(state) {
             if (state === 'Settled') return 'bg-green-500 text-white border-transparent';
             if (state === 'SubmittedToBatch') return 'bg-orange-500 text-white border-transparent';
             if (state === 'BankFileCreated') return 'bg-blue-500 text-white border-transparent';
             return '';
-        },
-        batchPaymentDisplayState(payment) {
-            const actual = payment?.periodTotals?.batchPaymentState;
-            if (this.shouldShowBankFileCreatedOverride() && actual === 'SubmittedToBatch') {
-                return 'BankFileCreated';
-            }
-            return actual;
         },
         async getBatch(silent = false){
             const batch_id = this.$route.params.batch_id
@@ -182,17 +138,6 @@ export default{
             this.batch = result.listOfPeriodTotalsEntry;
             this.totalBatch = result.listOfPeriodTotalsEntry.length
             this.paymentState = this.batch[0].periodTotals.batchPaymentState
-            // Persist when API confirms bank file so a later flaky SubmittedToBatch response still shows blue
-            if (this.paymentState === 'BankFileCreated') {
-                this.bankFileCreatedLocal = false;
-                this.persistBankFileCreated(batch_id);
-            } else if (this.paymentState === 'Settled') {
-                this.clearBankFilePersisted();
-            } else if (this.paymentState === 'SubmittedToBatch') {
-                this.bankFilePersisted = this.readBankFilePersisted(batch_id);
-            } else {
-                this.clearBankFilePersisted();
-            }
             if (!silent) this.isLoading = false;
         },
         goBack() {
@@ -217,21 +162,36 @@ export default{
                 this.currentPage = page;
             }
         },
+        downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        },
         async getBankFile(){
             try{
-                const result = await useAuthFetch(`https://9xcqber3p3.execute-api.af-south-1.amazonaws.com/prod/batch/capitec`,{
+                const batchId = String(this.$route.params.batch_id)
+                const now = new Date()
+                const yy = String(now.getFullYear()).slice(-2)
+                const mm = String(now.getMonth() + 1).padStart(2, '0')
+                const dd = String(now.getDate()).padStart(2, '0')
+                const filename = `UVND####_${yy}${mm}${dd}.txt`
+                const response = await useAuthFetch(`${STATEMENT_API}/bankfile/capitec`,{
                     method: "POST",
-                    body: {
-                        batchId: this.$route.params.batch_id
+                    headers: {
+                        'accept': 'text/plain',
+                        'Content-Type': 'application/json'
                     },
-                    cors: 'no-cors'
-                    })
-                console.log(result)
-                await this.getBatch(true);
-                if (this.paymentState !== 'BankFileCreated') {
-                    this.bankFileCreatedLocal = true;
-                    this.persistBankFileCreated(this.$route.params.batch_id);
-                }
+                    body: {
+                        batchId
+                    }
+                })
+                this.downloadFile(response, filename, 'text/plain;charset=utf-8');
                 this.$toast({
                     title: 'Success',
                     variant: "success"
@@ -273,17 +233,10 @@ export default{
             const startIndex = (this.currentPage - 1) * this.pageSize;
             const endIndex = startIndex + this.pageSize;
             return filteted.slice(startIndex, endIndex); // Paginate filtered payments
-        },
-        displayBatchState() {
-            if (this.shouldShowBankFileCreatedOverride()) {
-                return 'BankFileCreated';
-            }
-            return this.paymentState;
-        },
+        }
     },
     watch: {
         async '$route.params.batch_id'() {
-            this.bankFileCreatedLocal = false;
             await this.getBatch();
         },
     },
