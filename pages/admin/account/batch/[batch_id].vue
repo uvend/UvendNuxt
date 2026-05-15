@@ -66,7 +66,7 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <Button @click="getBankFile()" class="flex items-center gap-2">
+                        <Button @click="getBankFile()" :disabled="paymentState === 'Settled'" class="flex items-center gap-2">
                             <Icon name="lucide:landmark" class="w-5 h-5"/>
                             Bank File
                         </Button>
@@ -175,6 +175,7 @@ export default{
         },
         async getBankFile(){
             try{
+                if (this.paymentState === 'Settled') return
                 const batchId = String(this.$route.params.batch_id)
                 const now = new Date()
                 const yy = String(now.getFullYear()).slice(-2)
