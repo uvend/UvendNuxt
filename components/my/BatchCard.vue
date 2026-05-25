@@ -12,7 +12,7 @@
             <p class="flex justify-center font-bold truncate"> {{ batch.numberOfBatchRecords }}</p>
         </div>
         <div class="flex flex-col justify-end items-end">
-            <Badge :class="batchStateBadgeClass(effectiveBatchState)">{{ effectiveBatchState }}</Badge>
+            <Badge :class="batchStateBadgeClass(batch.batchPaymentState)">{{ batch.batchPaymentState }}</Badge>
             <p class="font-bold flex flex-col">
                 {{ batch.actualPayeePayOutAmount.toFixed(2) }}
             </p>
@@ -35,17 +35,6 @@ export default{
         selectedStatus: { type: Number, default: -1 }
     },
     methods: {
-        bankFileSessionKey(batchId) {
-            return `uvend:batchBankFileCreated:${batchId}`;
-        },
-        isBankFilePersistedForBatch(batchId) {
-            if (!import.meta.client || batchId == null) return false;
-            try {
-                return sessionStorage.getItem(this.bankFileSessionKey(batchId)) === '1';
-            } catch {
-                return false;
-            }
-        },
         batchStateBadgeClass(state) {
             if (state === 'Settled') return 'bg-green-500 text-white border-transparent';
             if (state === 'SubmittedToBatch') return 'bg-orange-500 text-white border-transparent';
@@ -68,13 +57,6 @@ export default{
         }
     },
     computed:{
-        effectiveBatchState() {
-            const actual = this.batch?.batchPaymentState;
-            if (actual === 'SubmittedToBatch' && this.isBankFilePersistedForBatch(this.batch?.paymentBatchId)) {
-                return 'BankFileCreated';
-            }
-            return actual;
-        },
         formattedDate(){
             return new Date(this.batch.batchSubmissionDate).toLocaleDateString('en-ZA', {
                 day: '2-digit',
