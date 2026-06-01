@@ -15,7 +15,7 @@
                                     :server="filePondServer"
                                     name="file"
                                     class="aeon-filepond"
-                                    label-idle="Upload an Aeon export file and validate against meter activity or <span class='filepond--label-action'>browse</span>"
+                                    label-idle="Upload an Aeon export file up to 25MB and validate against meter activity or <span class='filepond--label-action'>browse</span>"
                                     :allow-multiple="false"
                                     :instant-upload="true"
                                     :credits="false"
@@ -212,7 +212,7 @@ const secondaryReferenceCandidates = ['token', 'transactionType', 'channel', 'so
 const duplicateKeyCandidates = ['key', 'duplicateKey', 'compositeKey']
 const phoneKeyCandidates = ['phoneNumber', 'phone', 'mobileNumber', 'msisdn', 'cellphone', 'cellNumber']
 const acceptedAeonExtensions = ['.csv', '.txt', '.xlsx', '.xls', '.pdf']
-const maxFileSize = 10 * 1024 * 1024
+const maxFileSize = 25 * 1024 * 1024
 const summaryFilterLabels = {
     totalRows: 'Total rows',
     validRows: 'Valid rows',
@@ -802,7 +802,7 @@ function validateAeonFile(file) {
     }
 
     if (file.size > maxFileSize) {
-        return 'File size must be less than 10MB.'
+        return 'File size must be less than 25MB.'
     }
 
     return ''
