@@ -1,10 +1,17 @@
 <template>
     <div class="h-screen">
         <div class="flex flex-row justify-between items-center">
-            <div class="">
+            <div class="flex items-center gap-2">
+                <Button variant="outline" @click="goBack" class="flex items-center gap-2">
+                    <Icon name="lucide:arrow-left" class="w-5 h-5"/>
+                    Return
+                </Button>
                 <div class="flex flex-row gap-1.5 w-fit items-bottom">
                     <div class="flex flex-row gap-1">
-                        <Button variant="secondary" @click="toggleSearch"><Icon name="lucide:search"/></Button>
+                        <Button variant="secondary" @click="toggleSearch" class="flex items-center gap-2">
+                            <Icon name="lucide:search" class="w-5 h-5"/>
+                            Search
+                        </Button>
                         <Input type="text" placeholder="Search" v-if="searchActive" v-model="search" @input="debouncedSearch"/>
                     </div>
                 </div>
@@ -25,9 +32,15 @@
                         </SelectItem>
                     </SelectContent>
                 </Select>
-                <div>
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                <div class="flex flex-row gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                        Previous
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                        Next
+                    </Button>
                 </div>
                 <!--<MyPaymentSortPopover />-->
             </div>
@@ -45,16 +58,17 @@
                 <div class="flex flex-row items-center gap-4">
                     <div class="flex flex-row gap-2">
                         <div>
-                            {{ paymentState }}
+                            <Badge :class="batchStateBadgeClass(paymentState)">{{ paymentState }}</Badge>
                         </div>
                         <Badge>{{ totalBatch  }}</Badge>
                         <div>
-                            {{ totalBatchPayment }}
+                            {{ $formatMoney(totalBatchPayment) }}
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <Button @click="getBankFile()">
-                            <Icon name="lucide:landmark"/>
+                        <Button @click="getBankFile()" :disabled="paymentState === 'Settled'" class="flex items-center gap-2">
+                            <Icon name="lucide:landmark" class="w-5 h-5"/>
+                            Bank File
                         </Button>
                         <div v-if="paymentState != 'Settled'">
                             <MyBatchFinaliseDialog :batch="this.$route.params.batch_id"/>
@@ -67,7 +81,11 @@
             </div>
             <div class="">
                 <div v-for="payment in paginatedBatch">
-                    <MyBatchPaymentCard :payment="payment" @refresh="getBatch()"/>
+                    <MyBatchPaymentCard
+                        :payment="payment"
+                        :display-state="payment?.periodTotals?.batchPaymentState"
+                        @refresh="getBatch()"
+                    />
                 </div>
             </div>
         </div>
@@ -97,9 +115,15 @@ export default{
         }
     },
     methods:{
-        async getBatch(){
+        batchStateBadgeClass(state) {
+            if (state === 'Settled') return 'bg-green-500 text-white border-transparent';
+            if (state === 'SubmittedToBatch') return 'bg-orange-500 text-white border-transparent';
+            if (state === 'BankFileCreated') return 'bg-blue-500 text-white border-transparent';
+            return '';
+        },
+        async getBatch(silent = false){
             const batch_id = this.$route.params.batch_id
-            this.isLoading = true
+            if (!silent) this.isLoading = true
             const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/GetPaymentBatch`,{
                 method: "GET",
                 params: {
@@ -107,13 +131,28 @@ export default{
                 },
             })
             if(result.numberOfRecords == 0){
+                if (!silent) this.isLoading = false
                 return navigateTo('/admin/account/payments')
             }
             console.log(result)
             this.batch = result.listOfPeriodTotalsEntry;
             this.totalBatch = result.listOfPeriodTotalsEntry.length
             this.paymentState = this.batch[0].periodTotals.batchPaymentState
-            this.isLoading = false;
+            if (!silent) this.isLoading = false;
+        },
+        goBack() {
+            const params = new URLSearchParams()
+            const q = this.$route.query || {}
+            const page = parseInt(q.fromPage, 10)
+            const months = parseInt(q.fromMonths, 10)
+            const pageSize = parseInt(q.fromPageSize, 10)
+            const fromStatus = q.fromStatus
+            if (page >= 1) params.set('page', page)
+            if (months >= 1) params.set('monthsBack', months)
+            if (pageSize >= 1) params.set('pageSize', pageSize)
+            if (fromStatus !== undefined && fromStatus !== '') params.set('status', String(fromStatus))
+            const query = params.toString() ? '?' + params.toString() : ''
+            this.$router.push('/admin/account/batch' + query)
         },
         toggleSearch(){
             this.searchActive = !this.searchActive;
@@ -123,16 +162,37 @@ export default{
                 this.currentPage = page;
             }
         },
+        downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        },
         async getBankFile(){
             try{
-                const result = await useAuthFetch(`https://9xcqber3p3.execute-api.af-south-1.amazonaws.com/prod/batch/capitec`,{
+                if (this.paymentState === 'Settled') return
+                const batchId = String(this.$route.params.batch_id)
+                const now = new Date()
+                const yy = String(now.getFullYear()).slice(-2)
+                const mm = String(now.getMonth() + 1).padStart(2, '0')
+                const dd = String(now.getDate()).padStart(2, '0')
+                const filename = `UVND####_${yy}${mm}${dd}.txt`
+                const response = await useAuthFetch(`${STATEMENT_API}/bankfile/capitec`,{
                     method: "POST",
-                    body: {
-                        batchId: this.$route.params.batch_id
+                    headers: {
+                        'accept': 'text/plain',
+                        'Content-Type': 'application/json'
                     },
-                    cors: 'no-cors'
-                    })
-                console.log(result)
+                    body: {
+                        batchId
+                    }
+                })
+                this.downloadFile(response, filename, 'text/plain;charset=utf-8');
                 this.$toast({
                     title: 'Success',
                     variant: "success"
@@ -163,8 +223,8 @@ export default{
     computed:{
         totalBatchPayment() {
             return this.batch.reduce((total, payment) => {
-                return total + (parseFloat(payment.periodTotals.payeePayOutAmount) || 0); 
-            }, 0).toFixed(2);
+                return total + (parseFloat(payment.periodTotals.payeePayOutAmount) || 0);
+            }, 0);
         },
         totalPages() {
             return Math.ceil(this.batch.length / this.pageSize);
@@ -174,6 +234,11 @@ export default{
             const startIndex = (this.currentPage - 1) * this.pageSize;
             const endIndex = startIndex + this.pageSize;
             return filteted.slice(startIndex, endIndex); // Paginate filtered payments
+        }
+    },
+    watch: {
+        async '$route.params.batch_id'() {
+            await this.getBatch();
         },
     },
 }

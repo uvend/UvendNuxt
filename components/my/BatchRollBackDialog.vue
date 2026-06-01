@@ -1,8 +1,9 @@
 <template>
 <Dialog v-model:open="isOpen">
     <DialogTrigger as-child>
-        <Button variant="outline">
-            <Icon name="lucide:undo-2"/>
+        <Button variant="outline" class="flex items-center gap-2">
+            <Icon name="lucide:undo-2" class="w-5 h-5"/>
+            Rollback
         </Button>
     </DialogTrigger>
     <DialogContent>

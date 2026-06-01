@@ -1,0 +1,12 @@
+services:
+  uvend-app:
+    image: uvend/uvend-nuxt:main
+    ports:
+      - ${PORT:-3002}:3002
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-3002}
+    restart: unless-stopped
+    env_file:
+      - .env
+networks: {}

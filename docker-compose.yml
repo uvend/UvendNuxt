@@ -1,16 +1,17 @@
-version: '3.8'
-
 services:
-  nuxt:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  uvend-app:
+    build: .
     ports:
-      - "3000:3000"
+      - ${PORT:-3002}:3002
+    env_file:
+      - .env
     environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-3002}
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
     volumes:
       - .:/app
       - /app/node_modules
     restart: unless-stopped
+networks: {}

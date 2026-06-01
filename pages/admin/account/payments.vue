@@ -11,8 +11,13 @@
                         </NumberFieldContent>
                     </NumberField>
                     <div class="flex flex-row gap-1">
-                        <Button variant="secondary" @click="toggleSearch"><Icon name="lucide:search"/></Button>
+                        <Button variant="secondary" @click="toggleSearch" class="flex items-center gap-2">
+                            <Icon name="lucide:search" class="w-5 h-5"/>
+                            Search
+                        </Button>
                         <Input type="text" placeholder="Search" v-if="searchActive" v-model="search" @input="debouncedSearch"/>
+                        <Input type="number" placeholder="Min Amount" v-if="searchActive" v-model="minAmount" @input="debouncedSearch" class="w-32"/>
+                        <Input type="number" placeholder="Max Amount" v-if="searchActive" v-model="maxAmount" @input="debouncedSearch" class="w-32"/>
                     </div>
                 </div>
                 <div>
@@ -22,7 +27,7 @@
                 </div>
             </div>
             <div class="flex flex-row gap-x-1.5 items-center">
-                <p :class="[disableBatch ? 'text-red-500' : 'text-green-500']">{{ selectedDifference }}</p>                
+                <p :class="[disableBatch ? 'text-red-500' : 'text-green-500']">{{ $formatMoney(selectedDifference) }}</p>                
                 <div class="relative w-full max-w-sm items-center">
                     <Input id="search" type="text" placeholder="Max" class="pl-10" v-model="maxBatch"/>
                     <span class="absolute start-0 inset-y-0 flex items-center justify-center px-2">
@@ -30,28 +35,44 @@
                     </span>
                 </div>
                 <Button :disabled="disableBatch" @click="batch()">Batch</Button>
+                <Button variant="outline" @click="printPayments()" class="flex items-center gap-2">
+                    <Icon name="lucide:printer" class="w-4 h-4" />
+                    Print
+                </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
-                        <Button variant="ghost" class="rounded-full px-2 py-3">
+                        <Button variant="ghost" class="rounded-full px-2 py-3 flex items-center gap-2">
                             <Icon name="lucide:sliders-horizontal" class="w-5 h-5"/>
+                            Filters
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem  @click="toggleFilter('onRollback')" class="flex justify-between" >
-                            <p>Rollback</p>
+                            <p>Current period rollback only</p>
                             <Icon v-if="filters.onRollback" name="lucide:check" class="mr-1 h-4 w-4" />
                         </DropdownMenuItem>
                         <DropdownMenuItem @click="toggleFilter('hasValidBank')" class="flex justify-between">
-                            <p>Valid Bank</p>
+                            <p>Valid banking details only</p>
                             <Icon v-if="filters.hasValidBank" name="lucide:check" class="mr-1 h-4 w-4" />
                         </DropdownMenuItem>
                         <DropdownMenuItem  @click="toggleFilter('hasEmail')" class="flex justify-between">
-                            <p>Email</p>
+                            <p>Valid email only</p>
                             <Icon v-if="filters.hasEmail" name="lucide:check" class="mr-1 h-4 w-4" />
                         </DropdownMenuItem>
 
                     </DropdownMenuContent>
                 </DropdownMenu>
+                <Button
+                    variant="outline"
+                    type="button"
+                    title="Highlights payees who had a rollback in the reporting period immediately before the one you are viewing (one month back relative to the period selector)"
+                    :class="highlightPrevMonthRollback ? 'border-amber-500 bg-amber-50' : ''"
+                    class="flex items-center gap-2 shrink-0"
+                    @click="highlightPrevMonthRollback = !highlightPrevMonthRollback"
+                >
+                    <Icon name="lucide:history" class="w-4 h-4" />
+                    Prev period rollback
+                </Button>
                 <div>
                     <Select  v-model="pageSize">
                     <SelectTrigger class="w-[80px]">
@@ -65,9 +86,15 @@
                 </Select>
                 </div>
 
-                <div class="flex flex-row w-fit">
-                    <Button variant="secondary" @click="changePage(currentPage-1)"><Icon name="lucide:chevron-left" class="w-5 h-5"/></Button>
-                    <Button variant="secondary" @click="changePage(currentPage+1)"><Icon name="lucide:chevron-right" class="w-5 h-5"/></Button>
+                <div class="flex flex-row w-fit gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                        Previous
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                        Next
+                    </Button>
                 </div>
                 <MyPaymentSortPopover />
             </div>
@@ -75,21 +102,48 @@
         <MySkeletenCardList v-if="isLoading" :columns="8"/>
         <div v-else>
             <div class="flex flex-row justify-between w-full items-center bg-gray-50 p-1 my-1 rounded">
-                        <div class="flex flex-col items-start gap-1.5">
-                            <p class="font-bold">
-                                {{ rangeStart }} - {{ rangeEnd }}
-                            </p>
-                            <!--<p class="text-sm flex justify-end">Selected</p>-->
-                            <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ totalSelectedAmount }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm flex justify-end">Due</p>
-                            <p class="w-full text-center font-bold"><Badge>{{ totalRepsonse  }}</Badge>
-                                {{ totalAmount }}</p>
-                        </div>
-                    </div>
-            <div class="">
-                <MyPaymentCard v-for="payment in paginatedPayments" :key="payment.uniqueIdentification" :payment="payment" @click="toggleSelectedCard(payment)" :class="[ selectedPayments.includes(payment) ? 'bg-blue-100 shadow' : '' ]" class="cursor-pointer"/>
+                <div class="flex flex-col items-start gap-1.5">
+                    <p class="font-bold">
+                        {{ rangeStart }} - {{ rangeEnd }}
+                    </p>
+                    <!--<p class="text-sm flex justify-end">Selected</p>-->
+                    <p class="w-full font-bold"><Badge>{{ totalSelected  }}</Badge> {{ $formatMoney(totalSelectedAmount) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm flex justify-end">Due</p>
+                    <p class="w-full text-center font-bold">
+                        <Badge>{{ totalRepsonse  }}</Badge>
+                        {{ $formatMoney(totalAmount) }}
+                    </p>
+                </div>
+            </div>
+            <div>
+                <MyPaymentCard
+                    v-for="payment in paginatedPayments"
+                    :key="payment.periodTotals?.uniqueIdentification ?? payment.uniqueIdentification"
+                    :payment="payment"
+                    :highlight-prev-month="highlightPrevMonthRollback && isPrevPeriodRollback(payment)"
+                    @click="toggleSelectedCard(payment)"
+                    :class="[ selectedPayments.includes(payment) ? 'bg-blue-100 shadow' : '' ]"
+                    class="cursor-pointer"
+                />
+            </div>
+            <div class="mt-4 flex items-center justify-between">
+                <div class="flex flex-row w-fit gap-2">
+                    <Button variant="secondary" @click="changePage(currentPage-1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-left" class="w-5 h-5"/>
+                        Previous
+                    </Button>
+                    <Button variant="secondary" @click="changePage(currentPage+1)" class="flex items-center gap-1">
+                        <Icon name="lucide:chevron-right" class="w-5 h-5"/>
+                        Next
+                    </Button>
+                </div>
+                <div class="flex justify-end">
+                    <Button :disabled="disableBatch" @click="batch()">
+                        Batch
+                    </Button>
+                </div>
             </div>
         </div>
     </div>
@@ -112,6 +166,8 @@ export default{
             ],
             searchActive: false,
             search: '',
+            minAmount: null,
+            maxAmount: null,
             totalAmount: 0,
             totalSelectedAmount: 0,
             totalSelected: 0,
@@ -120,10 +176,11 @@ export default{
             maxBatch: null,
             monthsBack: 1,
             isLoading: true,
-            disableBatch: true,
             selectedDifference: "0.00",
             rangeStart: '',
             rangeEnd: '',
+            highlightPrevMonthRollback: false,
+            prevPeriodRollbackIds: {},
             filters: {
                 onRollback: false,
                 hasValidBank: false,
@@ -139,23 +196,61 @@ export default{
         debouncedSearch: debounce(function () {
             this.currentPage = 1;
         }, 500), // Delay of 500ms after the user stops typing
+        isPrevPeriodRollback(payment) {
+            const id = payment?.periodTotals?.uniqueIdentification;
+            return Boolean(id && this.prevPeriodRollbackIds[id]);
+        },
+        buildPrevPeriodRollbackMap(prevList) {
+            const map = {};
+            if (!Array.isArray(prevList)) return map;
+            for (const p of prevList) {
+                const comment = p?.periodTotals?.cancellationComment;
+                const id = p?.periodTotals?.uniqueIdentification;
+                if (comment != null && String(comment).trim() !== '' && id != null) {
+                    map[id] = true;
+                }
+            }
+            return map;
+        },
         async getPayments(){
             this.isLoading = true
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
-                method: "GET",
-                params: {
-                    "GoBackMonths" : this.monthsBack
-                }
-            });
+            const [mainRes, prevRes] = await Promise.allSettled([
+                useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
+                    method: "GET",
+                    params: {
+                        "GoBackMonths" : this.monthsBack
+                    }
+                }),
+                useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
+                    method: "GET",
+                    params: {
+                        "GoBackMonths" : this.monthsBack + 1
+                    }
+                })
+            ]);
+
+            if (mainRes.status !== 'fulfilled') {
+                this.isLoading = false;
+                throw mainRes.reason;
+            }
+
+            const result = mainRes.value;
             this.payments = result.value.listOfPeriodTotalsEntry
             this.totalRepsonse = this.payments.length;
             this.rangeStart = this.dateFormatter(result.value.reportPeriodStartDate)
             this.rangeEnd = this.dateFormatter(result.value.reportPeriodEndDate)
 
+            if (prevRes.status === 'fulfilled') {
+                const prevList = prevRes.value?.value?.listOfPeriodTotalsEntry ?? prevRes.value?.listOfPeriodTotalsEntry;
+                this.prevPeriodRollbackIds = this.buildPrevPeriodRollbackMap(prevList);
+            } else {
+                this.prevPeriodRollbackIds = {};
+            }
+
             // Calculate total payments
             this.totalAmount = this.payments.reduce((total, payment) => {
                 return total + (parseFloat(payment.periodTotals?.payeePayOutAmount) || 0);
-            }, 0).toFixed(2); // Format to two decimal places
+            }, 0);
 
             // Sort payments
             this.payments.sort((a, b) => {
@@ -192,11 +287,16 @@ export default{
             this.currentPage = 1; // Reset to first page when filter changes
         },
         filterPayments() {
-            return this.payments.filter(payment => {
-                // Text search filter
+            let filtered = this.payments.filter(payment => {
+                // Text search filter - show only results that START with the searched letter(s)
                 const matchesSearch = !this.search || 
                     (payment.payeeInfo && payment.payeeInfo.description && 
-                    payment.payeeInfo.description.toLowerCase().includes(this.search.toLowerCase()));
+                    payment.payeeInfo.description.toLowerCase().startsWith(this.search.toLowerCase()));
+                
+                // Amount range filter
+                const paymentAmount = parseFloat(payment.periodTotals?.payeePayOutAmount) || 0;
+                const matchesMinAmount = !this.minAmount || paymentAmount >= parseFloat(this.minAmount);
+                const matchesMaxAmount = !this.maxAmount || paymentAmount <= parseFloat(this.maxAmount);
                 
                 // Apply toggle filters
                 const matchesRollbackFilter = !this.filters.onRollback || 
@@ -208,8 +308,17 @@ export default{
                 const matchesEmailFilter = !this.filters.hasEmail || 
                     (payment.payeeInfo && payment.payeeInfo.isValidEmailAddress);
                 
-                return matchesSearch && matchesRollbackFilter && matchesBankFilter && matchesEmailFilter;
+                return matchesSearch && matchesMinAmount && matchesMaxAmount && matchesRollbackFilter && matchesBankFilter && matchesEmailFilter;
             });
+
+            // Always sort alphabetically by payee name
+            filtered.sort((a, b) => {
+                const nameA = (a.payeeInfo?.description || '').toLowerCase();
+                const nameB = (b.payeeInfo?.description || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+
+            return filtered;
         },
         isBatchDisabled(){
             let total = 0;
@@ -232,7 +341,7 @@ export default{
                 this.disableBatch = true;
             }
 
-            this.selectedDifference = (this.maxBatch - total).toFixed(2);
+            this.selectedDifference = this.maxBatch - total;
         },
         async batch(){
             let preparedPayments = [];
@@ -279,6 +388,131 @@ export default{
                 year: 'numeric'
             });
         },
+        async printPayments() {
+            try {
+                // Get the filtered payments (respects current filters and search)
+                const paymentsToPrint = this.filterPayments();
+                
+                // Show loading toast
+                this.$toast({
+                    title: 'Generating PDF',
+                    description: 'Please wait while we create your report...',
+                    variant: "default"
+                });
+                
+                // Generate PDF
+                await this.generatePDF(paymentsToPrint);
+                
+                // Show success toast
+                this.$toast({
+                    title: 'PDF Generated',
+                    description: 'Your payment report has been downloaded',
+                    variant: "success"
+                });
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                this.$toast({
+                    title: 'PDF Error',
+                    description: 'Failed to generate PDF report',
+                    variant: "destructive"
+                });
+            }
+        },
+        async generatePDF(payments) {
+            // Dynamically import jsPDF to avoid SSR issues
+            const { jsPDF } = await import('jspdf');
+            const { autoTable } = await import('jspdf-autotable');
+            
+            const currentDate = new Date().toLocaleDateString('en-ZA', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Calculate totals
+            const totalAmount = payments.reduce((sum, payment) => {
+                return sum + (parseFloat(payment.periodTotals?.payeePayOutAmount) || 0);
+            }, 0);
+
+            const activeFilters = [];
+            if (this.search) activeFilters.push(`Search: "${this.search}"`);
+            if (this.minAmount) activeFilters.push(`Min Amount: ${this.$formatMoney(this.minAmount)}`);
+            if (this.maxAmount) activeFilters.push(`Max Amount: ${this.$formatMoney(this.maxAmount)}`);
+            if (this.filters.onRollback) activeFilters.push('Current period rollback only');
+            if (this.filters.hasValidBank) activeFilters.push('Valid banking details only');
+            if (this.filters.hasEmail) activeFilters.push('Valid email only');
+            
+            const filterSummary = activeFilters.length > 0 ? `Filters: ${activeFilters.join(', ')}` : 'No filters applied';
+            
+            // Create PDF document
+            const doc = new jsPDF();
+            
+            // Add header
+            doc.setFontSize(20);
+            doc.text('Payment Report', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${currentDate}`, 20, 35);
+            doc.text(`Period: ${this.rangeStart} - ${this.rangeEnd}`, 20, 42);
+            doc.text(filterSummary, 20, 49);
+            
+            // Add summary
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Summary:', 20, 65);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Total Payments: ${payments.length}`, 20, 75);
+            doc.text(`Total Amount: ${this.$formatMoney(totalAmount)}`, 20, 82);
+
+            const tableData = payments.map(payment => [
+                payment.payeeInfo?.description || 'N/A',
+                payment.payeeBankingInfo?.hasValidBankDetails ? 'Valid' : 'Invalid',
+                payment.payeeInfo?.isValidEmailAddress ? 'Valid' : 'Invalid',
+                this.$formatMoney(parseFloat(payment.periodTotals?.payeePayOutAmount) || 0),
+                payment.periodTotals?.cancellationComment ? 'Rollback' : 'Active',
+                payment.periodTotals?.cancellationComment || ''
+            ]);
+
+            tableData.push(['', '', 'TOTAL', this.$formatMoney(totalAmount), '', '']);
+            
+            // Add table
+            autoTable(doc, {
+                head: [['Payee', 'Bank Details', 'Email', 'Amount', 'Status', 'Comments']],
+                body: tableData,
+                startY: 90,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 3
+                },
+                headStyles: {
+                    fillColor: [66, 66, 66],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                columnStyles: {
+                    3: { halign: 'right' } // Amount column right-aligned
+                },
+                didParseCell: function(data) {
+                    // Make total row bold
+                    if (data.row.index === tableData.length - 1) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fillColor = [240, 240, 240];
+                    }
+                }
+            });
+            
+            // Generate filename
+            const filename = `payment_report_${new Date().toISOString().split('T')[0]}.pdf`;
+            
+            // Save PDF
+            doc.save(filename);
+        },
     },
     async mounted(){
         await this.getPayments()
@@ -309,7 +543,7 @@ export default{
         totalSelectedAmount() {
             return this.selectedPayments.reduce((total, payment) => {
                 return total + (parseFloat(payment.periodTotals?.payeePayOutAmount) || 0);
-            }, 0).toFixed(2); // Format to two decimal places
+            }, 0);
         },
         totalSelected() {
             return this.selectedPayments.length; // Count of selected payments

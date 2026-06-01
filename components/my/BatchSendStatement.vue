@@ -1,8 +1,9 @@
 <template>
 <AlertDialog>
     <AlertDialogTrigger as-child>
-        <Button>
-            <Icon name="lucide:send"/>
+        <Button class="flex items-center gap-2">
+            <Icon name="lucide:send" class="w-5 h-5"/>
+            Send Statement
         </Button>
     </AlertDialogTrigger>
     <AlertDialogContent>

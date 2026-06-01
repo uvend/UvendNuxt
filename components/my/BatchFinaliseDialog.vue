@@ -1,8 +1,9 @@
 <template>
 <AlertDialog>
     <AlertDialogTrigger as-child>
-        <Button>
-            <Icon name="lucide:shield-check"/>
+        <Button class="flex items-center gap-2">
+            <Icon name="lucide:shield-check" class="w-5 h-5"/>
+            Finalise
         </Button>
     </AlertDialogTrigger>
     <AlertDialogContent>

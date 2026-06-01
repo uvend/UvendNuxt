@@ -14,12 +14,30 @@
       <div>
       </div>
       <div class="flex flex-col gap-2">
-        <MyBarChart :data="graphTransactions" index="date" :categories="['amount']"/>
-        <WalletCardTransaction v-if="meterTransactions.length > 0" v-for="payment in meterTransactions" :data="payment" />
+        <Card class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 p-4">
+          <CardHeader>
+            <CardTitle class="text-xl font-black">Transaction History</CardTitle>
+            <CardDescription class="text-base font-semibold">Daily vending amounts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div class="h-[400px]">
+              <MyBarChart 
+                :data="graphTransactions" 
+                index="date" 
+                :categories="['amount']"
+              />
+            </div>
+          </CardContent>
+        </Card>
+        <WalletCardTransaction 
+          v-if="meterTransactions.length > 0" 
+          v-for="payment in meterTransactions" 
+          :data="payment" 
+        />
       </div>
     </div>
     <div v-else>
-      <Card v-if="isLoading" class="bg-white border shadow-sm w-full">              
+      <Card v-if="isLoading" class="bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg w-full">              
         <CardContent class="p-0">
               <div  class="py-8 flex justify-center">
                   <MyLoader />
@@ -30,7 +48,7 @@
       <div v-if="meters" v-for="meter in meters">
         <WalletCardMeter :meter="meter" @click="selectedMeter = meter"/>
       </div>
-        <Card v-else class="py-8 text-center text-gray-500">
+        <Card v-else class="py-8 text-center text-gray-500 text-base font-semibold bg-white/95 backdrop-blur-sm border border-blue-200 shadow-lg">
             No meters found
         </Card>
       </div>
@@ -96,13 +114,31 @@
             meterNumber: this.selectedMeter.meterNumber
           }
         })
+        
+        // Group transactions by date and count transactions per date
+        const transactionsByDate = new Map()
         response.transactions.forEach(transaction => {
-          let element = {}
-          element.amount = parseFloat(transaction.amount)
-          element.date = transaction.created.split('T')[0]
-          this.graphTransactions.push(element)
-        });
-        this.meterTransactions = response.transactions
+          const date = transaction.created.split('T')[0]
+          const amount = parseFloat(transaction.amount)
+          
+          if (transactionsByDate.has(date)) {
+            const existing = transactionsByDate.get(date)
+            existing.amount += amount
+            existing.transactionCount++
+          } else {
+            transactionsByDate.set(date, {
+              date: date,
+              amount: amount,
+              transactionCount: 1
+            })
+          }
+        })
+
+        // Convert to array and sort by date
+        this.graphTransactions = Array.from(transactionsByDate.values())
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+
+        this.meterTransactions = response.transactions.reverse()
       },
       async getMeterInfo(){
         const meterNumber = this.selectedMeter.meterNumber;

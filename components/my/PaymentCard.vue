@@ -1,5 +1,11 @@
 <template>
-    <Card class="payment-card w-full p-2 my-2" :class="[payment.periodTotals.cancellationComment != '' ? 'bg-slate-300' : '']">
+    <Card
+        class="payment-card w-full p-2 my-2"
+        :class="[
+            payment.periodTotals.cancellationComment != '' ? 'bg-slate-300' : '',
+            highlightPrevMonth ? 'ring-2 ring-amber-500 ring-inset' : ''
+        ]"
+    >
         <div class="flex flex-col justify-center p-2">
             <p class="text-base font-bold">{{ payment.payeeInfo.description }}</p>
             <p class="text-sm font-light">{{ payment.payeeInfo.address[0] }} {{ payment.payeeInfo.address[1] }}</p>
@@ -34,15 +40,20 @@
                 <p class="w-full text-center font-bold">{{ payment.periodTotals.payeePayOutAmount.toFixed(2) }}</p>
             </div>
         </div>
-        <div class="flex flex-col justify-center items-center">
+        <div class="flex flex-col justify-center items-center gap-0.5">
             <Icon name="lucide:undo-2" v-if="payment.periodTotals.cancellationComment != ''" class="w-h h-5"/>
+            <Icon v-if="highlightPrevMonth" name="lucide:history" class="w-5 h-5 text-amber-600" title="Had a rollback in the previous reporting period"/>
         </div>
     </Card>
 </template>
 <script>
 export default{
     props: {
-        payment: Object
+        payment: Object,
+        highlightPrevMonth: {
+            type: Boolean,
+            default: false
+        }
     },
     computed:{
         formattedStartDate() {
