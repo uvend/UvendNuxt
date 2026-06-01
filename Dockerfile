@@ -1,21 +1,21 @@
-FROM node:20-alpine
+# syntax=docker/dockerfile:1
+
+FROM node:20-alpine AS app
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Install dependencies
 RUN npm install
 
-# Copy project files
 COPY . .
 
-# Build the app
 RUN npm run build
 
-# Expose port
-EXPOSE 3000
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3002
 
-# Start the app
-CMD ["npm", "run", "dev"]
+EXPOSE 3002
+
+CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"development\" ]; then npx nuxt dev --host 0.0.0.0 --port ${PORT}; else node .output/server/index.mjs; fi"]

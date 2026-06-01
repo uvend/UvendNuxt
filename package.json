@@ -5,6 +5,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "dev:host": "nuxt dev --host",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -15,6 +16,7 @@
     "@nuxtjs/tailwindcss": "^6.13.1",
     "@pinia/nuxt": "^0.10.1",
     "@radix-icons/vue": "^1.0.0",
+    "@tailwindcss/vite": "^4.1.14",
     "@unovis/react": "^1.5.1",
     "@unovis/ts": "^1.6.0",
     "@unovis/vue": "^1.6.0",
@@ -23,6 +25,7 @@
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "filepond": "^4.32.12",
     "html2pdf.js": "^0.14.0",
     "http-proxy-middleware": "^3.0.3",
     "jspdf": "^4.2.0",
@@ -33,7 +36,7 @@
     "nuxt": "^3.15.4",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.2.0",
-    "reka-ui": "^2.4.1",
+    "reka-ui": "^2.5.1",
     "shadcn-nuxt": "^0.11.3",
     "shadcn-vue": "^2.4.3",
     "tailwind-merge": "^3.2.0",
@@ -41,6 +44,7 @@
     "unstorage": "^1.17.4",
     "vaul-vue": "^0.4.1",
     "vue": "latest",
+    "vue-filepond": "^8.0.0",
     "vue-router": "latest",
     "vue3-apexcharts": "^1.8.0",
     "vue3-datepicker": "^0.4.0"

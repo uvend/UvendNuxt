@@ -28,7 +28,7 @@
                     </Button>
                 </div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 mb-6 flex-shrink-0">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-6 flex-shrink-0">
                 <!-- Water Utility -->
                 <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -72,7 +72,7 @@
                     <CardContent class="pt-0 relative z-10 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Spending:</span>
-                            <span class="text-sm font-semibold text-gray-900">R {{ gasSpending }}</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ $formatMoney(gasSpending) }}</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Vended:</span>
@@ -124,6 +124,8 @@
                     </CardContent>
                 </Card>
             </div>
+
+          
 
             <!-- Charts Section -->
             <div class="flex-1 flex flex-col lg:flex-row gap-6 lg:gap-8 min-h-0">
@@ -246,6 +248,9 @@
 <script>
 import Trend from '~/components/my/charts/Trend.vue'
 import ComplexSpendingBar from '~/components/my/charts/ComplexSpendingBar.vue'
+import MeterActivityOverview from '~/components/my/charts/MeterActivityOverview.vue'
+import TotalVendsKpi from '~/components/my/charts/TotalVendsKpi.vue'
+import { summarisedPayload } from '~/composables/summarisedPayload.js'
 
 definePageMeta({
     layout: 'my'
@@ -254,11 +259,19 @@ definePageMeta({
 export default {
     setup() {
         const { formatMoney } = useCurrency()
-        return { formatMoney }
+        const { metersWithLastVend, inactive40Days, fetchAndCompute } = useMeterActivity()
+        return {
+            formatMoney,
+            metersWithLastVend,
+            inactive40Days,
+            fetchAndCompute
+        }
     },
     components: {
         Trend,
-        ComplexSpendingBar
+        ComplexSpendingBar,
+        MeterActivityOverview,
+        TotalVendsKpi
     },
     data() {
         return {
@@ -268,7 +281,9 @@ export default {
             selectedTransaction: null,
             expandedRow: null, // Track expanded row index
             summaryData: {}, // Store summary data from API
-            kpiMonthOffset: 0 // 0 = current month, -1 = last month, etc.
+            kpiMonthOffset: 0, // 0 = current month, -1 = last month, etc.
+            meterActivityLoading: true,
+            transactionsLoading: true
         }
     },
     methods: {
@@ -328,11 +343,11 @@ export default {
             })
             this.originalTransactions = result.responseData.transactionData
         },
-        getTransactions() {
-            this.getAdminTransactions()
+        async getTransactions() {
+            await this.getAdminTransactions()
             // if (localStorage.getItem('customer') === 'admin') {
             // } else {
-            //     this.getVendTransactions()
+            //     await this.getVendTransactions()
             // }
         },
         selectTransaction(transaction) {
@@ -374,7 +389,15 @@ export default {
             start: ninetyDaysAgo.toISOString(),
             end: today.toISOString()
         }
-        await this.getTransactions()
+        this.meterActivityLoading = true
+        try {
+            await Promise.all([
+                this.getTransactions(),
+                this.fetchAndCompute(this.$route.params.customer_id)
+            ])
+        } finally {
+            this.meterActivityLoading = false
+        }
     },
     computed: {
         kpiMonthRange() {
@@ -389,6 +412,31 @@ export default {
             d.setMonth(d.getMonth() + this.kpiMonthOffset);
             return d.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
         },
+        meterActivityMeters() {
+            const list = this.metersWithLastVend
+            return Array.isArray(list) ? list : []
+        },
+        meterActiveCount() {
+            return this.meterActivityMeters.filter(m => m && m.isActive).length
+        },
+        meterInactiveCount() {
+            return this.meterActivityMeters.filter(m => m && !m.isActive).length
+        },
+        totalVendCount() {
+            if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                return 0
+            }
+            return this.originalTransactions.length
+        },
+        totalVendAmount() {
+            if (!this.originalTransactions || !Array.isArray(this.originalTransactions)) {
+                return 0
+            }
+            return this.originalTransactions.reduce((sum, t) => {
+                const n = parseFloat(t?.managedTenderAmount)
+                return sum + (Number.isNaN(n) ? 0 : n)
+            }, 0)
+        },
         filteredTransactionsForKPI() {
             if (!this.kpiMonthRange) return this.originalTransactions;
             const { start, end } = this.kpiMonthRange;
@@ -400,28 +448,23 @@ export default {
         waterSpending() {
             return this.filteredTransactionsForKPI
                 .filter(t => t.utilityType === 'Water')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                .toFixed(2);
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
         },
         electricitySpending() {
             return this.filteredTransactionsForKPI
                 .filter(t => t.utilityType === 'Electricity')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                .toFixed(2);
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
         },
         gasSpending() {
             return this.filteredTransactionsForKPI
                 .filter(t => t.utilityType === 'Gas')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0)
-                .toFixed(2);
+                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
         },
         totalRefunds() {
-            // Use refund from summary data (vendRefund field from API)
             if (this.summaryData && this.summaryData.vendRefund !== undefined) {
-                return parseFloat(this.summaryData.vendRefund || 0).toFixed(2);
+                return parseFloat(this.summaryData.vendRefund || 0);
             }
-            
-            return '0.00';
+            return 0;
         },
         klVended() {
             try {
@@ -490,13 +533,26 @@ export default {
     },
     watch: {
         dateRange: {
-            handler(newRange, oldRange) {
+            async handler(newRange, oldRange) {
                 if (newRange && oldRange &&
                     (newRange.start !== oldRange.start || newRange.end !== oldRange.end)) {
-                    this.getTransactions();
+                    await this.getTransactions()
                 }
             },
             deep: true
+        },
+        '$route.params.customer_id': {
+            async handler() {
+                this.meterActivityLoading = true
+                try {
+                    await Promise.all([
+                        this.getTransactions(),
+                        this.fetchAndCompute(this.$route.params.customer_id, true)
+                    ])
+                } finally {
+                    this.meterActivityLoading = false
+                }
+            }
         }
     }
 }

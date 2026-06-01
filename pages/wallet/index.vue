@@ -122,6 +122,7 @@ const activeMeters = ref(0)
 const totalMeters = ref(0)
 const totalTransactions = ref(0)
 const meterStats = ref([])
+const currencyCode = CURRENCY_CODE
 const filterOptions = ref([
     { key: "all", value: "All Transactions" },
     { key: "elect", value: "Electricity" },
@@ -132,7 +133,7 @@ const filterOptions = ref([
 function formatAmount(amount) {
     return new Intl.NumberFormat('en-ZA', {
         style: 'currency',
-        currency: 'ZAR',
+        currency: currencyCode,
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
         notation: amount > 999999 ? 'compact' : 'standard'

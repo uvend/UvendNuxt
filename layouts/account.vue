@@ -45,12 +45,16 @@
                         <p>Wallet</p>
                     </NuxtLink>
                     <nav class="sub-group">
-                        <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-yellow-500/10 font-medium" @click="navigateTo('/admin/account/wallet')">
-                            <Icon name="lucide:search" class="mr-2 h-5 w-5 text-yellow-400" />
-                            <p>Support Dashboard</p>
+                        <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/wallet')">
+                            <Icon name="lucide:search" class="mr-2 h-5 w-5" />
+                            <p class="">Accounts</p>
                         </NuxtLink>
                     </nav>
                 </nav>
+                <NuxtLink v-if="aeonEnabled" class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/aeon')">
+                    <Icon name="lucide:zap" class="mr-2 h-5 w-5" />
+                    <p class="">Aeon</p>
+                </NuxtLink>
             </nav>
             <ul>
             </ul>
@@ -60,8 +64,8 @@
                 <div></div>
                 <MyUserMenu />
             </header>
-            <div class="scroll hide-scrollbar bg-gray-50 p-4">
-                <slot class="overflow-y hide-scrollbar bg-gray-100"/>
+            <div class="account-page-slot hide-scrollbar bg-gray-50 px-4 pt-2 pb-4">
+                <slot />
             </div>
             <!-- Main content goes here -->
         </main>
@@ -69,16 +73,6 @@
 </template>
 <script>
 export default{
-    data(){
-        return{
-            mpesaUrl: false
-        }
-    },
-    mounted(){
-        if(MPESA_URL != ""){
-            this.mpesaUrl = true;
-        }
-    },
     methods: {
         goToLastCustomer() {
             // Get the last customer from localStorage or go to customer selection
@@ -100,6 +94,12 @@ export default{
         },
         fontColor(){
             return `#${APP_FONT_COLOR_1?.replace('#', '') || 'ffffff'}`
+        },
+        mpesaUrl(){
+            return MPESA_URL !== ""
+        },
+        aeonEnabled(){
+            return AEON_CHECK === '1'
         }
     }
 
@@ -112,8 +112,18 @@ export default{
 
 main {
     display: grid;
-    grid-template-rows: auto 1fr; /* Adjusted to allow content to take remaining space */
-    height: 100vh; /* Full viewport height */
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.account-page-slot {
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 .grid-container {
     display: grid;

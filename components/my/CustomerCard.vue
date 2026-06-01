@@ -16,8 +16,8 @@ export default{
     props:{
         customer: Object
     },
-    data(){
-
+    data() {
+        return {}
     },
 }
 </script>

@@ -42,6 +42,14 @@ export default{
         label : {
             type: String,
             default: "add"
+        },
+        userId: {
+            type: String,
+            default: null
+        },
+        accountNumber: {
+            type: String,
+            default: null
         }
     },
     data(){
@@ -54,28 +62,46 @@ export default{
             meterAddedSuccessfully: false
         } 
     },
+    computed: {
+        meterApiBase() {
+            if (this.accountNumber) {
+                return `${WALLET_API_URL}/admin/accounts/${encodeURIComponent(this.accountNumber)}/meter`
+            }
+            return `${WALLET_API_URL}/meter`
+        },
+        meterRequestOptions() {
+            if (!this.userId) return {}
+            return {
+                headers: {
+                    'X-Wallet-User-Id': this.userId,
+                },
+            }
+        },
+    },
     methods:{
         async validateMeterNumber(){
             this.isLoading = true
-            const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter/valid`,{
+            const response = await useWalletAuthFetch(`${this.meterApiBase}/valid`, {
+                ...this.meterRequestOptions,
                 params: {
                     meterNumber : this.meterNumber
                 }
             })
-            if(!response){
-              this.isValid = true;
-            }else{
+            if (response?.error || response?.statusCode >= 400) {
               this.$toast({
                 title: 'Uh oh! Something went wrong.',
-                description: 'There was a problem with your request.',
+                description: response?.error || response?.statusText || 'There was a problem with your request.',
                 variant: "destructive"
               })
+            } else {
+              this.isValid = true;
             }
             this.isLoading = false
         },
         async addNewMeter(){
           this.isLoading = true
-          const response = await useWalletAuthFetch(`${WALLET_API_URL}/meter`, {
+          const response = await useWalletAuthFetch(this.meterApiBase, {
+            ...this.meterRequestOptions,
             method: "POST",
             body: {
               meterNumber : this.meterNumber,
