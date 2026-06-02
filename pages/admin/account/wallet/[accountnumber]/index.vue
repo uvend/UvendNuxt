@@ -52,7 +52,7 @@
             <MySkeletenCardList v-if="isLoading" :columns="4" />
 
             <template v-else-if="account">
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 flex-shrink-0">
+                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-4 flex-shrink-0">
                     <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
                         <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-emerald-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <CardHeader class="pb-2 relative z-10">
@@ -116,31 +116,8 @@
                             </div>
                         </CardContent>
                     </Card>
-
-                    <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <CardHeader class="pb-2 relative z-10">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                                    <Icon name="lucide:layers" class="w-4 h-4 lg:w-5 lg:h-5 text-indigo-600" />
-                                </div>
-                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Combined Utilities</CardTitle>
-                            </div>
-                        </CardHeader>
-                        <CardContent class="pt-0 relative z-10 space-y-2">
-                            <div class="text-lg lg:text-2xl font-bold text-indigo-600">
-                                {{ formatMoney(stats.utilitySpentTotal) }}
-                            </div>
-                            <div class="text-xs text-gray-600">
-                                {{ stats.lifetimeMeterTransactions }} lifetime vends
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <Card
-                    v-if="stats.gasTransactionCount > 0 || stats.gasSpent > 0"
-                    class="relative flex-shrink-0 mb-4 max-w-sm bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group"
+                    <Card
+                    class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group"
                 >
                     <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-emerald-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader class="pb-2 relative z-10">
@@ -162,6 +139,30 @@
                         </div>
                     </CardContent>
                 </Card>
+
+                    <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <CardHeader class="pb-2 relative z-10">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                                    <Icon name="lucide:layers" class="w-4 h-4 lg:w-5 lg:h-5 text-indigo-600" />
+                                </div>
+                                <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Combined Utilities</CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent class="pt-0 relative z-10 space-y-2">
+                            <div class="text-lg lg:text-2xl font-bold text-indigo-600">
+                                {{ formatMoney(stats.utilitySpentTotal) }}
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                {{ stats.lifetimeMeterTransactions }} lifetime vends
+                            </div>
+                        </CardContent>
+                    </Card>
+                
+
+
+                </div>
 
                 <div class="flex-1 min-h-0 flex flex-col bg-white/80 backdrop-blur-sm border border-gray-200/80 shadow-lg rounded-xl overflow-hidden">
                     <div class="flex-shrink-0 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 pt-3">
@@ -224,136 +225,32 @@
                     <MySkeletenCardList v-if="tableLoading" :columns="4" class="p-4" />
 
                     <template v-else>
-                        <div v-if="activeTab === 'transactions'" class="flex-1 min-h-0 overflow-auto custom-scrollbar">
-                            <table v-if="transactions.length > 0" class="w-full">
-                                <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
-                                    <tr>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Date</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Meter</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Utility</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Amount</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr
-                                        v-for="tx in transactions"
-                                        :key="tx.id"
-                                        class="border-b border-gray-100 hover:bg-blue-50/50 transition-all duration-200"
-                                    >
-                                        <td class="py-2 px-4 text-sm text-gray-600">{{ formatDateTime(tx.created) }}</td>
-                                        <td class="py-2 px-4 text-sm font-medium text-gray-900">{{ tx.details?.meterNumber || tx.reference || '—' }}</td>
-                                        <td class="py-2 px-4 text-sm text-gray-700">{{ tx.details?.utilityType || '—' }}</td>
-                                        <td class="py-2 px-4 text-sm font-semibold text-green-600">{{ formatMoney(tx.amount) }}</td>
-                                        <td class="py-2 px-4 text-sm capitalize text-gray-600">{{ tx.status || '—' }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div v-else class="p-12 text-center text-gray-500">
-                                <p class="font-medium text-gray-600">No transactions found</p>
-                            </div>
-                        </div>
+                        <AdminAccountWalletTransactionsTab
+                            v-if="activeTab === 'transactions'"
+                            :transactions="transactions"
+                            :format-date-time="formatDateTime"
+                            :format-money="formatMoney"
+                        />
 
-                        <div v-else-if="activeTab === 'meters'" class="flex-1 min-h-0 overflow-auto custom-scrollbar">
-                            <table v-if="meters.length > 0" class="w-full">
-                                <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
-                                    <tr>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Meter Number</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Name</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Utility</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Favourite</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Added</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr
-                                        v-for="meter in meters"
-                                        :key="meter.id"
-                                        class="border-b border-gray-100 hover:bg-blue-50/50 transition-all duration-200"
-                                    >
-                                        <td class="py-2 px-4 text-sm font-medium text-gray-900">{{ meter.meterNumber || '—' }}</td>
-                                        <td class="py-2 px-4 text-sm text-gray-700">{{ meter.name || '—' }}</td>
-                                        <td class="py-2 px-4 text-sm text-gray-700">{{ meter.utilityType || '—' }}</td>
-                                        <td class="py-2 px-4 text-sm text-gray-600">
-                                            <Icon
-                                                v-if="meter.favourite"
-                                                name="lucide:star"
-                                                class="w-4 h-4 text-amber-500"
-                                            />
-                                            <span v-else>—</span>
-                                        </td>
-                                        <td class="py-2 px-4 text-sm text-gray-600">{{ formatDateTime(meter.created) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div v-else class="p-12 text-center text-gray-500">
-                                <p class="font-medium text-gray-600">No meters found</p>
-                            </div>
-                        </div>
+                        <AdminAccountWalletMetersTab
+                            v-else-if="activeTab === 'meters'"
+                            :meters="meters"
+                            :format-date-time="formatDateTime"
+                        />
 
-                        <div v-else class="flex-1 min-h-0 overflow-auto custom-scrollbar">
-                            <table v-if="payments.length > 0" class="w-full">
-                                <thead class="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 z-10 border-b border-gray-200">
-                                    <tr>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Date</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Type</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Channel</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Amount</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Transaction ID</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Status</th>
-                                        <th class="text-left py-2.5 px-4 font-semibold text-gray-700 text-sm">Notes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr
-                                        v-for="payment in payments"
-                                        :key="`${payment.recordType}-${payment.type}-${payment.id}`"
-                                        class="border-b border-gray-100 hover:bg-blue-50/50 transition-all duration-200 align-top"
-                                    >
-                                        <td class="py-2 px-4 text-sm text-gray-600 whitespace-nowrap">{{ formatDateTime(payment.created) }}</td>
-                                        <td class="py-2 px-4 text-sm text-gray-700">
-                                            <div class="font-medium">{{ formatRecordType(payment.recordType) }}</div>
-                                            <div class="text-xs text-gray-500">{{ payment.provider }}</div>
-                                        </td>
-                                        <td class="py-2 px-4 text-sm text-gray-700">{{ payment.channel || payment.paymentMethod || '—' }}</td>
-                                        <td class="py-2 px-4 text-sm font-semibold text-emerald-600 whitespace-nowrap">{{ formatMoney(payment.amount) }}</td>
-                                        <td class="py-2 px-4 text-xs text-gray-600 font-mono max-w-[160px]">
-                                            <div class="truncate" :title="paymentDisplayId(payment)">{{ paymentDisplayId(payment) }}</div>
-                                            <div
-                                                v-if="paymentSecondaryRef(payment)"
-                                                class="truncate text-gray-400 mt-0.5"
-                                                :title="paymentSecondaryRef(payment)"
-                                            >
-                                                {{ paymentSecondaryRef(payment) }}
-                                            </div>
-                                        </td>
-                                        <td class="py-2 px-4 text-sm">
-                                            <span
-                                                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize"
-                                                :class="paymentStatusClass(payment.status)"
-                                            >
-                                                {{ formatPaymentStatus(payment.status) }}
-                                            </span>
-                                            <p v-if="payment.resultCode" class="text-xs text-gray-400 mt-0.5">Code {{ payment.resultCode }}</p>
-                                        </td>
-                                        <td class="py-2 px-4 text-xs text-gray-600 max-w-[220px]">
-                                            <p
-                                                v-if="paymentNotes(payment)"
-                                                class="line-clamp-2"
-                                                :class="isFailureStatus(payment.status) ? 'text-red-600' : payment.status === 'completed' ? 'text-emerald-600' : 'text-gray-600'"
-                                                :title="paymentNotes(payment)"
-                                            >
-                                                {{ paymentNotes(payment) }}
-                                            </p>
-                                            <span v-else>—</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div v-else class="p-12 text-center text-gray-500">
-                                <p class="font-medium text-gray-600">No payments found</p>
-                            </div>
-                        </div>
+                        <AdminAccountWalletPaymentsTab
+                            v-else
+                            :payments="payments"
+                            :format-date-time="formatDateTime"
+                            :format-money="formatMoney"
+                            :format-record-type="formatRecordType"
+                            :payment-display-id="paymentDisplayId"
+                            :payment-secondary-ref="paymentSecondaryRef"
+                            :payment-status-class="paymentStatusClass"
+                            :format-payment-status="formatPaymentStatus"
+                            :payment-notes="paymentNotes"
+                            :is-failure-status="isFailureStatus"
+                        />
 
                         <div
                             v-if="tableTotal > 0 && activeTab !== 'meters'"
