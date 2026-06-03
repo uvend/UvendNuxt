@@ -794,7 +794,7 @@ export default{
                     filters: {
                         StartDate: this.dateRange?.start,
                         EndDate: this.dateRange?.end,
-                        ReportParentType: 4,
+                        ReportParentType: complexId ? 5 : 4,
                         ParentUniqueID: this.$route.params.customer_id,
                         UtilityType: this.selectedUtility,
                         IncludeMetersWithNoActivity: true,
