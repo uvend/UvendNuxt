@@ -782,7 +782,7 @@ export default{
                     template: 'statement',
                     StartDate: this.dateRange?.start || '',
                     EndDate: this.dateRange?.end || '',
-                    ReportParentType: '4',
+                    ReportParentType: complexId ? '5' : '4',
                     ParentUniqueID: String(this.$route.params.customer_id || ''),
                     UtilityType: String(this.selectedUtility ?? -1),
                     IncludeMetersWithNoActivity: 'true',
