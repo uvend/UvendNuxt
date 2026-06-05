@@ -436,9 +436,9 @@ export default{
                     IncludeMetersWithNoActivity : false,
                     StartDate : this.dateRange.start,
                     EndDate: this.dateRange.end,
-                    ReportParentType: 4,  // always customer
+                    ReportParentType: this.selectedMeterComplex ? 5 : 4,  // always customer
                     ResponseFormatType: 0,
-                    ParentUniqueID: this.$route.params.customer_id,
+                    ParentUniqueID: this.selectedMeterComplex ? this.selectedMeterComplex : this.$route.params.customer_id,
                     UtilityType: this.selectedUtility,
                     // If a specific complex is selected, scope the statement to it
                     ...(this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL' ? { ComplexUniqueID: Number(this.selectedMeterComplex) } : {})
