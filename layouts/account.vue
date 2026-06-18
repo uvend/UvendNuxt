@@ -22,6 +22,10 @@
                         <Icon name="lucide:wallet-cards" class="mr-2 h-5 w-5" />
                         <p class="">Payments</p>
                     </NuxtLink>
+                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/mining')">
+                        <Icon name="lucide:bar-chart-3" class="mr-2 h-5 w-5" />
+                        <p class="">Mining Portal</p>
+                    </NuxtLink>
                     <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/batch')">
                         <Icon name="lucide:layers" class="mr-2 h-5 w-5" />
                         <p class="">Payment Batch</p>
