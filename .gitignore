@@ -8,21 +8,31 @@ dist
 
 # Node dependencies
 node_modules
+.pnpm-store/
+
+# pnpm / Node tooling caches
+node-compile-cache/
 
 # Logs
 logs
 *.log
+npm-debug.log*
+pnpm-debug.log*
 
 # Misc
 .DS_Store
 .fleet
 .idea
+*.stackdump
 
 # Local env files
 .env
 .env.*
 !.env.example
 
-#lock
+# Other package managers (project uses pnpm)
 package-lock.json
+yarn.lock
+
+# Editor / tooling
 .cursor/worktrees.json
