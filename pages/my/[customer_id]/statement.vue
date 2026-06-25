@@ -430,18 +430,21 @@ export default{
         async getAdminTransactions(){
             this.isLoading = true;
             try {
+            const includeComplex = this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL'
+            const complexId = includeComplex ? Number(this.selectedMeterComplex) : undefined
             const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
                 method: "GET",
                 params:{
                     IncludeMetersWithNoActivity : false,
                     StartDate : this.dateRange.start,
                     EndDate: this.dateRange.end,
-                    ReportParentType: this.selectedMeterComplex ? 5 : 4,  // always customer
-                    ResponseFormatType: 0,
-                    ParentUniqueID: this.selectedMeterComplex ? this.selectedMeterComplex : this.$route.params.customer_id,
+                    // ParentUniqueID stays the customer so the server can resolve the
+                    // customer (and pick statement vs completestatement); ComplexUniqueID
+                    // narrows to a single complex when one is selected.
+                    ReportParentType: complexId ? 5 : 4,
+                    ParentUniqueID: this.$route.params.customer_id,
                     UtilityType: this.selectedUtility,
-                    // If a specific complex is selected, scope the statement to it
-                    ...(this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL' ? { ComplexUniqueID: Number(this.selectedMeterComplex) } : {})
+                    ...(complexId ? { ComplexUniqueID: complexId } : {})
                 },
             })
             const payload = summarisedPayload(result)
@@ -757,79 +760,30 @@ export default{
             try {
                 const includeComplex = this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL'
                 const complexId = includeComplex ? Number(this.selectedMeterComplex) : undefined
-                const plainData = JSON.parse(JSON.stringify(this.transactionResponseData || {}))
 
-                // If a complex is selected, hard-filter the export data to that complex only
-                if (complexId && plainData && plainData.transactionData) {
-                    const filteredTransactionData = {}
-                    for (const [meterNumber, meterData] of Object.entries(plainData.transactionData)) {
-                        if (meterData && Array.isArray(meterData.transactions)) {
-                            const txForComplex = meterData.transactions.filter(tx =>
-                                Number(tx.complexuniqueid || tx.complexUniqueId) === complexId
-                            )
-                            if (txForComplex.length > 0) {
-                                filteredTransactionData[meterNumber] = {
-                                    ...meterData,
-                                    transactions: txForComplex
-                                }
-                            }
-                        }
-                    }
-                    plainData.transactionData = filteredTransactionData
-                }
-
-                const qs = new URLSearchParams({
-                    template: 'statement',
-                    StartDate: this.dateRange?.start || '',
-                    EndDate: this.dateRange?.end || '',
-                    ReportParentType: complexId ? '5' : '4',
-                    ParentUniqueID: String(this.$route.params.customer_id || ''),
-                    UtilityType: String(this.selectedUtility ?? -1),
-                    IncludeMetersWithNoActivity: 'true',
-                })
-                if (complexId) qs.append('ComplexUniqueID', String(complexId))
-
-                const payload = {
-                    data: plainData,
-                    filters: {
+                // Server renders the statement (template chosen server-side) from the DB
+                // and returns a PDF blob (or an HTML attachment if Gotenberg is down).
+                const blob = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
+                    method: 'GET',
+                    responseType: 'blob',
+                    params: {
                         StartDate: this.dateRange?.start,
                         EndDate: this.dateRange?.end,
+                        // ParentUniqueID stays the customer so the server can resolve the
+                        // customer (and pick statement vs completestatement); ComplexUniqueID
+                        // narrows to a single complex when one is selected.
                         ReportParentType: complexId ? 5 : 4,
                         ParentUniqueID: this.$route.params.customer_id,
-                        UtilityType: this.selectedUtility,
+                        UtilityType: this.selectedUtility ?? -1,
                         IncludeMetersWithNoActivity: true,
-                        ComplexUniqueID: complexId,
-                    }
-                }
-                
-                // Request PDF as a blob with proper headers
-                const response = await fetch(`${STATEMENT_API}/export/pdf?${qs.toString()}`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/pdf'
+                        pdf: true,
+                        ...(complexId ? { ComplexUniqueID: complexId } : {}),
                     },
-                    body: JSON.stringify(payload)
                 })
 
-                
-
-                // Check if the response is ok
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                // Get the blob from the response
-                const blob = await response.blob();
-                
-                // Validate that we actually got a PDF blob
-                if (!blob || blob.size === 0) {
+                // Validate that we actually got a blob back
+                if (!(blob instanceof Blob) || blob.size === 0) {
                     throw new Error('Received empty or invalid PDF blob');
-                }
-
-                // Check if it's actually a PDF by looking at the content type
-                if (!blob.type.includes('pdf') && !blob.type.includes('application/octet-stream')) {
-                    console.warn('Unexpected content type:', blob.type);
                 }
 
                 // Create a blob URL

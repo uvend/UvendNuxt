@@ -476,14 +476,20 @@ export default{
         async getStatementPDF(){
             this.isGeneratingPDF = true;
             try{
-                const payload = {
-                    data: this.transactionResponseData
-                }
-                const blob = await useAuthFetch(`${STATEMENT_API}/export/pdf?template=statement`,{
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                // Raw transaction report rendered server-side from the DB; returns a PDF
+                // blob (or an HTML attachment if Gotenberg is down).
+                const blob = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivity`,{
+                    method: 'GET',
                     responseType: 'blob',
-                    body: JSON.stringify(payload)
+                    params: {
+                        StartDate: this.dateRange.start.slice(0, 10),
+                        EndDate: this.dateRange.end.slice(0, 10),
+                        ReportParentType: 4,
+                        ParentUniqueID: this.$route.params.customer_id,
+                        UtilityType: this.selectedUtility,
+                        IncludeMetersWithNoActivity: false,
+                        pdf: true,
+                    }
                 })
                 if (blob instanceof Blob === false) {
                     console.error('Unexpected response type')
