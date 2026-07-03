@@ -1,0 +1,28 @@
+node_modules
+.pnpm-store
+node-compile-cache
+
+# Nuxt build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Git / editor
+.git
+.gitignore
+.cursor
+.fleet
+.idea
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local env (injected at runtime via docker-compose env_file)
+.env
+.env.*
