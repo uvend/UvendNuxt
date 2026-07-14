@@ -91,6 +91,24 @@
                                     <div class="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-600">
                                         {{ listItemLabel }}
                                     </div>
+                                    <div class="relative w-full min-w-[200px] max-w-xs">
+                                        <Icon name="lucide:search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                        <Input
+                                            v-model="meterSearchQuery"
+                                            type="text"
+                                            placeholder="Search meter number..."
+                                            class="h-9 pl-9 pr-9"
+                                        />
+                                        <button
+                                            v-if="meterSearchQuery.trim()"
+                                            type="button"
+                                            class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                            aria-label="Clear meter search"
+                                            @click="clearMeterSearch"
+                                        >
+                                            <Icon name="lucide:x" class="h-4 w-4" />
+                                        </button>
+                                    </div>
                                     <Button
                                         v-if="canDownloadCurrentView"
                                         variant="outline"
@@ -126,9 +144,17 @@
                                     <p class="mt-2 text-sm text-slate-500">No Aeon rows with multiple related Suzie vend records were returned.</p>
                                 </div>
 
+                                <div v-else-if="!displayedDuplicateGroups.length" class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+                                    <p class="text-base font-semibold text-slate-900">No meters matching “{{ meterSearchQuery.trim() }}”</p>
+                                    <p class="mt-2 text-sm text-slate-500">Try another meter number or clear the search.</p>
+                                </div>
+
                                 <div v-else class="space-y-4">
 
-                                    <div class="grid gap-4 rounded-2xl border border-amber-200 bg-amber-50/50 p-4 md:grid-cols-3">
+                                    <div
+                                        v-if="!meterSearchQuery.trim()"
+                                        class="grid gap-4 rounded-2xl border border-amber-200 bg-amber-50/50 p-4 md:grid-cols-3"
+                                    >
                                         <div>
                                             <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Total requested</p>
                                             <p class="mt-2 text-base font-bold text-slate-900">{{ formatAmountValue(duplicateAmountTotals.requestedTotal) }}</p>
@@ -300,8 +326,14 @@
                             </div>
 
                             <div v-else-if="!displayedTransactions.length" class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
-                                <p class="text-base font-semibold text-slate-900">No records found for this filter</p>
-                                <p class="mt-2 text-sm text-slate-500">Try another summary card or click the active one again to clear the filter.</p>
+                                <template v-if="meterSearchQuery.trim()">
+                                    <p class="text-base font-semibold text-slate-900">No meters matching “{{ meterSearchQuery.trim() }}”</p>
+                                    <p class="mt-2 text-sm text-slate-500">Try another meter number or clear the search.</p>
+                                </template>
+                                <template v-else>
+                                    <p class="text-base font-semibold text-slate-900">No records found for this filter</p>
+                                    <p class="mt-2 text-sm text-slate-500">Try another summary card or click the active one again to clear the filter.</p>
+                                </template>
                             </div>
 
                             <div v-else class="space-y-3">
@@ -404,6 +436,7 @@ const hasUploadedFile = ref(false)
 const currentPage = ref(1)
 const activeSummaryFilter = ref('')
 const selectedDuplicateGroupKey = ref('')
+const meterSearchQuery = ref('')
 const isRawDataDialogOpen = ref(false)
 const selectedRawTransaction = ref(null)
 const pageSize = 20
@@ -456,6 +489,15 @@ const nonAmountSummaryEntries = computed(() =>
 const duplicateGroups = computed(() => {
     const groups = duplicates.value?.meterActivity
     return Array.isArray(groups) ? groups : []
+})
+const normalizedMeterSearch = computed(() => meterSearchQuery.value.trim().toLowerCase())
+const displayedDuplicateGroups = computed(() => {
+    const query = normalizedMeterSearch.value
+    if (!query) {
+        return duplicateGroups.value
+    }
+
+    return duplicateGroups.value.filter((group) => matchesMeterSearch(getDuplicateGroupMeterNumber(group), query))
 })
 const transactionsByRowNumber = computed(() => {
     const map = new Map()
@@ -532,27 +574,34 @@ const displayedTransactions = computed(() => {
     }
 
     const filterKey = activeSummaryFilter.value
-    if (!filterKey || filterKey === 'totalRows') {
-        return transactions.value
+    let rows = transactions.value
+
+    if (filterKey && filterKey !== 'totalRows' && filterableSummaryKeys.has(filterKey)) {
+        rows = transactionsByFilter.value[filterKey] ?? transactions.value
     }
 
-    if (!filterableSummaryKeys.has(filterKey)) {
-        return transactions.value
+    const query = normalizedMeterSearch.value
+    if (!query) {
+        return rows
     }
 
-    return transactionsByFilter.value[filterKey] ?? transactions.value
+    return rows.filter((transaction) =>
+        matchesMeterSearch(getPreferredValue(transaction, meterKeyCandidates, ''), query)
+    )
 })
 const displayedListItemCount = computed(() =>
-    isViewingDuplicateGroups.value ? duplicateGroups.value.length : displayedTransactions.value.length
+    isViewingDuplicateGroups.value ? displayedDuplicateGroups.value.length : displayedTransactions.value.length
 )
 const listItemLabel = computed(() => {
+    const searchSuffix = normalizedMeterSearch.value ? ' matching search' : ''
+
     if (isViewingDuplicateGroups.value) {
-        const count = duplicateGroups.value.length
-        return `${count} duplicate group${count === 1 ? '' : 's'}`
+        const count = displayedDuplicateGroups.value.length
+        return `${count} duplicate group${count === 1 ? '' : 's'}${searchSuffix}`
     }
 
     const count = displayedTransactions.value.length
-    return `${count} row${count === 1 ? '' : 's'}`
+    return `${count} row${count === 1 ? '' : 's'}${searchSuffix}`
 })
 const totalPages = computed(() => Math.max(1, Math.ceil(displayedListItemCount.value / pageSize)))
 const pageStartIndex = computed(() => (currentPage.value - 1) * pageSize)
@@ -560,7 +609,7 @@ const paginatedTransactions = computed(() =>
     displayedTransactions.value.slice(pageStartIndex.value, pageStartIndex.value + pageSize)
 )
 const paginatedDuplicateGroups = computed(() =>
-    duplicateGroups.value.slice(pageStartIndex.value, pageStartIndex.value + pageSize)
+    displayedDuplicateGroups.value.slice(pageStartIndex.value, pageStartIndex.value + pageSize)
 )
 const duplicateAmountTotals = computed(() => ({
     requestedTotal: summary.value?.duplicateRequestedAmount ?? null,
@@ -573,7 +622,7 @@ const canDownloadCurrentView = computed(() => {
     }
 
     if (isViewingDuplicateGroups.value) {
-        return duplicateGroups.value.length > 0
+        return displayedDuplicateGroups.value.length > 0
     }
 
     const filterKey = activeSummaryFilter.value
@@ -582,6 +631,11 @@ const canDownloadCurrentView = computed(() => {
     }
 
     return false
+})
+
+watch(meterSearchQuery, () => {
+    currentPage.value = 1
+    selectedDuplicateGroupKey.value = ''
 })
 const filePondServer = {
     process: (_fieldName, file, _metadata, load, onError, progress, abort) => {
@@ -624,6 +678,7 @@ function resetResults() {
     hasUploadedFile.value = false
     currentPage.value = 1
     activeSummaryFilter.value = ''
+    meterSearchQuery.value = ''
     uploadError.value = ''
     responseStatus.value = ''
     summary.value = {}
@@ -685,6 +740,7 @@ function applyAeonResponse(result) {
     transactions.value = normalizeTransactions(payload.transactions)
     currentPage.value = 1
     activeSummaryFilter.value = 'totalRows'
+    meterSearchQuery.value = ''
     selectedDuplicateGroupKey.value = ''
 }
 
@@ -704,6 +760,7 @@ function handleFilePondUpdate(fileItems) {
         filePondFiles.value = []
         hasUploadedFile.value = false
         activeSummaryFilter.value = ''
+        meterSearchQuery.value = ''
         resetResponseState()
         return
     }
@@ -714,6 +771,7 @@ function handleFilePondUpdate(fileItems) {
         filePondFiles.value = []
         hasUploadedFile.value = false
         activeSummaryFilter.value = ''
+        meterSearchQuery.value = ''
         resetResponseState()
         return
     }
@@ -756,7 +814,7 @@ function buildExcelExportPayload() {
         return {
             filename: `aeon-duplicates-${buildExportTimestamp()}.xls`,
             columns: duplicateExportColumns,
-            rows: buildDuplicateExportRows()
+            rows: buildDuplicateExportRows(displayedDuplicateGroups.value)
         }
     }
 
@@ -807,10 +865,10 @@ function buildTransactionExportRows(transactionList) {
     }))
 }
 
-function buildDuplicateExportRows() {
+function buildDuplicateExportRows(groups = duplicateGroups.value) {
     const rows = []
 
-    for (const group of duplicateGroups.value) {
+    for (const group of groups) {
         const linked = getLinkedAeonRow(group)
         const records = getGroupRecords(group)
 
@@ -944,6 +1002,23 @@ function handleRawDialogOpenChange(isOpen) {
 
 function changePage(page) {
     currentPage.value = Math.min(Math.max(page, 1), totalPages.value)
+}
+
+function clearMeterSearch() {
+    meterSearchQuery.value = ''
+}
+
+function matchesMeterSearch(meterValue, query = normalizedMeterSearch.value) {
+    if (!query) {
+        return true
+    }
+
+    return String(meterValue ?? '').toLowerCase().includes(query)
+}
+
+function getDuplicateGroupMeterNumber(group) {
+    const linkedMeter = getLinkedAeonRow(group)?.meterNumber
+    return group?.meterNumber || linkedMeter || getPrimaryGroupRecord(group)?.meterNumber || ''
 }
 
 function toggleSummaryFilter(key) {
