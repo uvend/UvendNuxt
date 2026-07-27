@@ -58,7 +58,7 @@
                 <div class="flex flex-row items-center gap-4">
                     <div class="flex flex-row gap-2">
                         <div>
-                            <Badge :class="batchStateBadgeClass(paymentState)">{{ paymentState }}</Badge>
+                            <Badge :class="batchStateBadgeClass(displayPaymentState)">{{ displayPaymentState }}</Badge>
                         </div>
                         <Badge>{{ totalBatch  }}</Badge>
                         <div>
@@ -83,7 +83,7 @@
                 <div v-for="payment in paginatedBatch">
                     <MyBatchPaymentCard
                         :payment="payment"
-                        :display-state="payment?.periodTotals?.batchPaymentState"
+                        :display-state="displayPaymentState"
                         @refresh="getBatch()"
                     />
                 </div>
@@ -111,7 +111,8 @@ export default{
                 10,50,100,200
             ],
             currentPage: 1,
-            isLoading: true
+            isLoading: true,
+            bankFileGenerated: false,
         }
     },
     methods:{
@@ -120,6 +121,27 @@ export default{
             if (state === 'SubmittedToBatch') return 'bg-orange-500 text-white border-transparent';
             if (state === 'BankFileCreated') return 'bg-blue-500 text-white border-transparent';
             return '';
+        },
+        statementApiBase() {
+            return (typeof STATEMENT_API === 'string' ? STATEMENT_API : '').replace(/\/$/, '')
+        },
+        async loadBankFileGeneratedStatus() {
+            const base = this.statementApiBase()
+            const batchId = this.$route.params.batch_id
+            if (!base || !batchId) {
+                this.bankFileGenerated = false
+                return
+            }
+
+            try {
+                const response = await $fetch(`${base}/bankfile/generated/${encodeURIComponent(batchId)}`, {
+                    method: 'GET',
+                })
+                this.bankFileGenerated = Boolean(response?.generated)
+            } catch (error) {
+                console.error('Failed to load bank-file generation status', error)
+                this.bankFileGenerated = false
+            }
         },
         async getBatch(silent = false){
             const batch_id = this.$route.params.batch_id
@@ -138,6 +160,7 @@ export default{
             this.batch = result.listOfPeriodTotalsEntry;
             this.totalBatch = result.listOfPeriodTotalsEntry.length
             this.paymentState = this.batch[0].periodTotals.batchPaymentState
+            await this.loadBankFileGeneratedStatus()
             if (!silent) this.isLoading = false;
         },
         goBack() {
@@ -182,7 +205,7 @@ export default{
                 const mm = String(now.getMonth() + 1).padStart(2, '0')
                 const dd = String(now.getDate()).padStart(2, '0')
                 const filename = `UVND####_${yy}${mm}${dd}.txt`
-                const response = await useAuthFetch(`${STATEMENT_API}/bankfile/capitec`,{
+                const response = await useAuthFetch(`${this.statementApiBase()}/bankfile/capitec`,{
                     method: "POST",
                     headers: {
                         'accept': 'text/plain',
@@ -193,8 +216,11 @@ export default{
                     }
                 })
                 this.downloadFile(response, filename, 'text/plain;charset=utf-8');
+                this.bankFileGenerated = true
+                await this.getBatch(true)
                 this.$toast({
                     title: 'Success',
+                    description: 'Bank file downloaded. Batch marked as generated.',
                     variant: "success"
                 });
             }catch(e){
@@ -221,6 +247,11 @@ export default{
         await this.getBatch();
     },
     computed:{
+        displayPaymentState() {
+            if (this.paymentState === 'Settled') return 'Settled'
+            if (this.bankFileGenerated || this.paymentState === 'BankFileCreated') return 'BankFileCreated'
+            return this.paymentState
+        },
         totalBatchPayment() {
             return this.batch.reduce((total, payment) => {
                 return total + (parseFloat(payment.periodTotals.payeePayOutAmount) || 0);

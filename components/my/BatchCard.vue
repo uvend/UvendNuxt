@@ -1,5 +1,9 @@
 <template>
-    <Card class="batch-card w-full p-2 my-2 items-center" @click="openBatch">
+    <Card
+        class="batch-card w-full p-2 my-2 items-center"
+        :class="rowClass"
+        @click="openBatch"
+    >
         <div>
             <p class="text-sm font-light">Batch</p>
             <p class="text-base font-bold">{{ batch.paymentBatchId }}</p>
@@ -12,7 +16,7 @@
             <p class="flex justify-center font-bold truncate"> {{ batch.numberOfBatchRecords }}</p>
         </div>
         <div class="flex flex-col justify-end items-end">
-            <Badge :class="batchStateBadgeClass(batch.batchPaymentState)">{{ batch.batchPaymentState }}</Badge>
+            <Badge :class="batchStateBadgeClass(displayState)">{{ displayState }}</Badge>
             <p class="font-bold flex flex-col">
                 {{ batch.actualPayeePayOutAmount.toFixed(2) }}
             </p>
@@ -32,7 +36,8 @@ export default{
         currentPage: { type: Number, default: 1 },
         monthsBack: { type: Number, default: 1 },
         pageSize: { type: Number, default: 10 },
-        selectedStatus: { type: Number, default: -1 }
+        selectedStatus: { type: Number, default: -1 },
+        bankFileGenerated: { type: Boolean, default: false }
     },
     methods: {
         batchStateBadgeClass(state) {
@@ -57,6 +62,19 @@ export default{
         }
     },
     computed:{
+        displayState() {
+            const actual = this.batch?.batchPaymentState
+            if (actual === 'Settled') return 'Settled'
+            if (this.bankFileGenerated || actual === 'BankFileCreated') return 'BankFileCreated'
+            return actual != null ? String(actual) : 'N/A'
+        },
+        rowClass() {
+            if (this.batch?.batchPaymentState === 'Settled') return ''
+            if (this.bankFileGenerated || this.batch?.batchPaymentState === 'BankFileCreated') {
+                return 'bg-sky-100 border-sky-200'
+            }
+            return ''
+        },
         formattedDate(){
             return new Date(this.batch.batchSubmissionDate).toLocaleDateString('en-ZA', {
                 day: '2-digit',

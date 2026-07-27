@@ -74,6 +74,7 @@
                 :months-back="monthsBack"
                 :page-size="pageSize"
                 :selected-status="selectedStatus"
+                :bank-file-generated="isBankFileGenerated(batch)"
             />
             <div class="mt-4 flex items-center justify-between">
                 <div class="flex flex-row w-fit gap-2">
@@ -133,7 +134,8 @@ export default{
             totalBatchesAmount: 0,
             rangeStart: '',
             rangeEnd: '',
-            batchListHydrating: true
+            batchListHydrating: true,
+            generatedBankFileIds: [],
         }
     },
     methods:{
@@ -152,7 +154,29 @@ export default{
             this.totalBatches = this.batches.length
             this.rangeStart = this.dateFormatter(result.rangeSelectStartDate)
             this.rangeEnd = this.dateFormatter(result.rangeSelectEndDate)
+            await this.loadGeneratedBankFiles()
             this.isLoading = false;
+        },
+        async loadGeneratedBankFiles() {
+            const base = (typeof STATEMENT_API === 'string' ? STATEMENT_API : '').replace(/\/$/, '')
+            if (!base) {
+                this.generatedBankFileIds = []
+                return
+            }
+
+            try {
+                const response = await $fetch(`${base}/bankfile/generated`, { method: 'GET' })
+                const ids = Array.isArray(response?.batchIds) ? response.batchIds : []
+                this.generatedBankFileIds = ids.map((id) => String(id))
+            } catch (error) {
+                console.error('Failed to load generated bank-file registry', error)
+                this.generatedBankFileIds = []
+            }
+        },
+        isBankFileGenerated(batch) {
+            const id = batch?.paymentBatchId ?? batch?.batchPaymentID
+            if (id == null) return false
+            return this.generatedBankFileIds.includes(String(id))
         },
         changePage(page){
             if (page >= 1 && page <= this.totalPages) {
@@ -295,13 +319,9 @@ export default{
         },
         getBatchListDisplayState(batch) {
             const actual = batch?.batchPaymentState;
-            if (actual === 'SubmittedToBatch' && import.meta.client) {
-                try {
-                    const id = batch?.paymentBatchId ?? batch?.batchPaymentID;
-                    if (id != null && sessionStorage.getItem(`uvend:batchBankFileCreated:${id}`) === '1') {
-                        return 'BankFileCreated';
-                    }
-                } catch { /* ignore */ }
+            if (actual === 'Settled') return 'Settled';
+            if (this.isBankFileGenerated(batch) || actual === 'BankFileCreated') {
+                return 'BankFileCreated';
             }
             return actual != null ? String(actual) : 'N/A';
         },
