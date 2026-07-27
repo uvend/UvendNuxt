@@ -4,13 +4,15 @@ FROM node:20-alpine AS app
 
 WORKDIR /app
 
-COPY package*.json ./
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-RUN npm install
+COPY package.json pnpm-lock.yaml ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN npm run build
+RUN pnpm run build
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
@@ -18,4 +20,4 @@ ENV PORT=3002
 
 EXPOSE 3002
 
-CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"development\" ]; then npx nuxt dev --host 0.0.0.0 --port ${PORT}; else node .output/server/index.mjs; fi"]
+CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"development\" ]; then pnpm exec nuxt dev --host 0.0.0.0 --port ${PORT}; else node .output/server/index.mjs; fi"]
