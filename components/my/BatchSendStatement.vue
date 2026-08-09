@@ -1,7 +1,7 @@
 <template>
 <AlertDialog>
     <AlertDialogTrigger as-child>
-        <Button class="flex items-center gap-2">
+        <Button class="flex items-center gap-2" :disabled="sending">
             <Icon name="lucide:send" class="w-5 h-5"/>
             Send Statement
         </Button>
@@ -14,8 +14,8 @@
             </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction @click="mail()">Continue</AlertDialogAction>
+            <AlertDialogCancel :disabled="sending">Cancel</AlertDialogCancel>
+            <AlertDialogAction :disabled="sending" @click.prevent="mail()">Continue</AlertDialogAction>
         </AlertDialogFooter>
     </AlertDialogContent>
 </AlertDialog>
@@ -27,22 +27,52 @@ export default{
     },
     data(){
         return {
+            sending: false,
         }
     },
     methods:{
+        statementApiBase() {
+            return (typeof STATEMENT_API === 'string' ? STATEMENT_API : '').replace(/\/$/, '')
+        },
         async mail(){
-            const result = await useAuthFetch(`https://9xcqber3p3.execute-api.af-south-1.amazonaws.com/prod/qstatement`,{
-                method: "POST",
-                body: {
-                    "batchId": this.batch
-                }
-            })
-            console.log(result);
-            this.$toast({
-                title: 'Success',
-                variant: "success"
-            });
+            const base = this.statementApiBase()
+            if (!base) {
+                this.$toast({
+                    title: 'Uh oh! Something went wrong.',
+                    description: 'Statement API is not configured.',
+                    variant: 'destructive'
+                })
+                return
+            }
 
+            this.sending = true
+            try {
+                const result = await useAuthFetch(`${base}/statement/send-batch-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: {
+                        batchId: this.batch,
+                        logOnly: false
+                    }
+                })
+
+                this.$toast({
+                    title: 'Success',
+                    description: `Queued ${result?.queuedCount ?? 0} statement emails.`,
+                    variant: 'success'
+                })
+            } catch (error) {
+                const message = error?.data?.message || error?.message || 'There was a problem with your request.'
+                this.$toast({
+                    title: 'Uh oh! Something went wrong.',
+                    description: message,
+                    variant: 'destructive'
+                })
+            } finally {
+                this.sending = false
+            }
         }
     }
 }
