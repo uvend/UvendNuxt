@@ -43,6 +43,7 @@ const PUBLIC_ENV_KEYS = [
   'APP_CURRENCY',
   'CURRENCY_CODE',
   'AEON_CHECK',
+  'METER_ACTIVITY_LOOKBACK_DAYS',
 ] as const
 
 export default defineNitroPlugin((nitroApp) => {

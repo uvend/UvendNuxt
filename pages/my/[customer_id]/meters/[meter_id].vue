@@ -497,9 +497,13 @@ const getAdminMeterActivity = async () => {
         });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
         console.log('Admin meter transactions:', result)
-        meterNumber.value = meterTransactions.value[0]?.meterNumber ?? ''
-        complexName.value = meterTransactions.value[0]?.complexName?? ''
-        unitInfo.value = meterTransactions.value[0]?.address0??''
+        if (meterTransactions.value[0]?.meterNumber) {
+            meterNumber.value = meterTransactions.value[0].meterNumber
+            complexName.value = meterTransactions.value[0]?.complexName ?? ''
+            unitInfo.value = meterTransactions.value[0]?.address0 ?? ''
+        } else if (!normalizeText(meterNumber.value)) {
+            await resolveMeterIdentity()
+        }
 
         await getMeterComplex()
         isLoading.value = false
@@ -588,6 +592,60 @@ const normalizeText = (value) => {
     if (value === null || value === undefined) return null
     const text = typeof value === 'string' ? value.trim() : String(value)
     return text ? text : null
+}
+
+const getLookbackDays = () => {
+    const parsed = Number(METER_ACTIVITY_LOOKBACK_DAYS)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 90
+}
+
+const applyMeterIdentityFromPayload = (payload) => {
+    const entries = Object.entries(payload?.transactionData || {})
+    if (!entries.length) return false
+
+    const [key, meterData] = entries[0]
+    const first = Array.isArray(meterData?.transactions) ? meterData.transactions[0] : null
+    const resolvedNumber = normalizeText(first?.meternumber || first?.meterNumber || key)
+    if (!resolvedNumber || resolvedNumber === 'unknown') return false
+
+    meterNumber.value = resolvedNumber
+    complexName.value = first?.complexDescription || first?.complexName || complexName.value
+    unitInfo.value = first?.address0 || unitInfo.value
+    return true
+}
+
+const resolveMeterIdentity = async () => {
+    try {
+        const days = getLookbackDays()
+        const today = new Date()
+        const start = new Date()
+        start.setDate(today.getDate() - days)
+        const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
+            method: "GET",
+            params: {
+                StartDate: start.toISOString(),
+                EndDate: today.toISOString(),
+                ResponseFormatType: 0,
+                ReportParentType: 6,
+                ParentUniqueID: route.params.meter_id,
+                UtilityType: -1,
+                IncludeMetersWithNoActivity: true
+            }
+        })
+        applyMeterIdentityFromPayload(summarisedPayload(result))
+    } catch (error) {
+        console.error('Error resolving meter identity:', error)
+    }
+}
+
+const requireMeterNumber = () => {
+    if (normalizeText(meterNumber.value)) return true
+    $toast({
+        title: 'Meter number unavailable',
+        description: 'No meter number could be resolved for this period. Widen the date range or increase METER_ACTIVITY_LOOKBACK_DAYS.',
+        variant: "destructive"
+    })
+    return false
 }
 
 const buildTenantName = (tenant) => {
@@ -714,6 +772,7 @@ const getMeterInfo = async () => {
 }
 
 const blockMeter = async (state = true) => {
+    if (!requireMeterNumber()) return
     try {
         const response = await useAuthFetch(`${VEND_URL}/MeterVend/SetMeterBlockState`, {
             method: "GET",
@@ -756,6 +815,7 @@ const blockMeter = async (state = true) => {
 }
 
 const resetTamper = _.debounce(async () => {
+    if (!requireMeterNumber()) return
     try {
         const response = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterTamperToken`, {
             method: "GET",

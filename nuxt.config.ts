@@ -37,6 +37,7 @@ const RUNTIME_KEYS = [
   'APP_CURRENCY',
   'CURRENCY_CODE',
   'AEON_CHECK',
+  'METER_ACTIVITY_LOOKBACK_DAYS',
 ] as const
 
 // esbuild/Vite require `define` values to be a JS literal or a plain entity-name
