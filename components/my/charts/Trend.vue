@@ -7,7 +7,7 @@
             <CardTitle class="text-lg font-semibold">{{ title }}</CardTitle>
             <CardDescription>{{ description }}</CardDescription>
             
-            <!-- Date Range Selector -->
+            <!-- Utility Selector -->
             <div class="flex flex-col lg:flex-row gap-4 mt-3">
               <div class="flex gap-2">
                 <Button 
@@ -38,44 +38,6 @@
                 >
                   All
                 </Button>
-              </div>
-              
-              <!-- Date Range Controls -->
-              <div class="flex flex-col lg:flex-row gap-2">
-                <Select v-model="selectedDateRange" @update:model-value="onDateRangeChange">
-                  <SelectTrigger class="w-32 bg-white border-gray-200 rounded-lg">
-                    <SelectValue placeholder="Period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="lastDay">Last Day</SelectItem>
-                    <SelectItem value="lastWeek">Last Week</SelectItem>
-                    <SelectItem value="lastMonth">Last Month</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <!-- Custom Date Inputs -->
-                <div v-if="selectedDateRange === 'custom'" class="flex gap-2">
-                  <Input 
-                    type="date" 
-                    v-model="startDate"
-                    class="max-w-40 bg-white border-gray-200 rounded-lg"
-                    @change="updateCustomDateRange"
-                  />
-                  <Input 
-                    type="date" 
-                    v-model="endDate"
-                    class="max-w-40 bg-white border-gray-200 rounded-lg"
-                    @change="updateCustomDateRange"
-                  />
-                </div>
-                
-                <!-- Current Range Display -->
-                <div class="flex items-center">
-                  <div class="bg-gray-50 rounded-lg px-2 py-1">
-                    <div class="text-xs text-gray-500">{{ formattedDateRange }}</div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -116,7 +78,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   transactions: {
@@ -130,18 +92,21 @@ const props = defineProps({
   description: {
     type: String,
     required: true
+  },
+  startDate: {
+    type: String,
+    default: null
+  },
+  endDate: {
+    type: String,
+    default: null
   }
 })
-
-const emit = defineEmits(['dateRangeChanged'])
 
 const { formatMoney, currencyCode } = useCurrency()
 
 const selectedUtility = ref('All')
 const chartRef = ref(null)
-const selectedDateRange = ref('lastMonth')
-const startDate = ref(null)
-const endDate = ref(null)
 
 const chartData = computed(() => {
   // console.log('Trend component received transactions:', props.transactions)
@@ -151,11 +116,11 @@ const chartData = computed(() => {
 
   // Filter transactions by date range
   const filteredTransactions = props.transactions.filter(transaction => {
-    if (!startDate.value || !endDate.value) return true
+    if (!props.startDate || !props.endDate) return true
     
     const transactionDate = new Date(transaction.transactionDate)
-    const start = new Date(startDate.value)
-    const end = new Date(endDate.value)
+    const start = new Date(props.startDate)
+    const end = new Date(props.endDate)
     
     return transactionDate >= start && transactionDate <= end
   })
@@ -402,121 +367,5 @@ const downloadCSV = () => {
   link.click()
   document.body.removeChild(link)
 }
-
-const zoomIn = () => {
-  if (chartRef.value && chartRef.value.chart) {
-    chartRef.value.chart.zoomX(0.8, 1.2)
-  }
-}
-
-const zoomOut = () => {
-  if (chartRef.value && chartRef.value.chart) {
-    chartRef.value.chart.zoomX(1.2, 0.8)
-  }
-}
-
-const resetZoom = () => {
-  if (chartRef.value && chartRef.value.chart) {
-    chartRef.value.chart.resetSeries()
-  }
-}
-
-// Date range methods
-const onDateRangeChange = (value) => {
-  const today = new Date();
-  let newStartDate, newEndDate;
-  
-  switch (value) {
-    case 'lastDay':
-      newStartDate = new Date(today);
-      newStartDate.setDate(today.getDate() - 1);
-      newEndDate = new Date(today);
-      break;
-      
-    case 'lastWeek':
-      newStartDate = new Date(today);
-      newStartDate.setDate(today.getDate() - 7);
-      newEndDate = new Date(today);
-      break;
-      
-    case 'lastMonth':
-      newStartDate = new Date(today);
-      newStartDate.setDate(today.getDate() - 30);
-      newEndDate = new Date(today);
-      break;
-      
-    case 'custom':
-      // Keep existing dates for custom range
-      return;
-      
-    default:
-      return;
-  }
-  
-  // Update the date inputs
-  startDate.value = newStartDate.toISOString().split('T')[0];
-  endDate.value = newEndDate.toISOString().split('T')[0];
-  
-  // Emit the date range change to parent
-  emit('dateRangeChanged', {
-    start: newStartDate.toISOString(),
-    end: newEndDate.toISOString()
-  });
-}
-
-const updateCustomDateRange = () => {
-  // This method is called when custom date inputs change
-  // The chartData computed property will automatically update
-  
-  // Emit the custom date range change to parent
-  if (startDate.value && endDate.value) {
-    emit('dateRangeChanged', {
-      start: new Date(startDate.value).toISOString(),
-      end: new Date(endDate.value).toISOString()
-    });
-  }
-}
-
-const formattedDateRange = computed(() => {
-  if (!startDate.value || !endDate.value) {
-    return 'No date range selected';
-  }
-  
-  const start = new Date(startDate.value);
-  const end = new Date(endDate.value);
-  
-  // Check if it's the same day
-  if (start.toDateString() === end.toDateString()) {
-    return start.toLocaleDateString('en-ZA', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-  }
-  
-  // Check if it's the same month
-  if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
-    return `${start.getDate()} - ${end.getDate()} ${start.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' })}`;
-  }
-  
-  // Different months/years
-  return `${start.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short' })} - ${end.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' })}`;
-})
-
-// Initialize date range on component mount
-onMounted(() => {
-  const today = new Date()
-  const lastMonth = new Date()
-  lastMonth.setDate(today.getDate() - 30)
-  
-  startDate.value = lastMonth.toISOString().split('T')[0];
-  endDate.value = today.toISOString().split('T')[0];
-  
-  // Emit initial date range to parent
-  emit('dateRangeChanged', {
-    start: lastMonth.toISOString(),
-    end: today.toISOString()
-  });
-})
 
 </script>
