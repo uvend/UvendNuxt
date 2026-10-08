@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isRegistrationEnabled" class="min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
+    <div v-if="isRegistrationEnabled" class="min-h-screen bg-gradient-to-br from-brand-blue-200 via-brand-blue-100 to-brand-lime-50">
         <!-- Mobile Header -->
         <div class="md:hidden bg-white/90 backdrop-blur-sm px-4 py-3 border-b border-blue-300 fixed top-0 left-0 right-0 z-10 shadow-sm">
             <h1 class="text-lg font-semibold text-center text-gray-800">Registration</h1>
@@ -10,9 +10,9 @@
             <div class="hidden md:block py-12">
                 <div class="relative flex justify-between">
                     <!-- Progress Line -->
-                    <div class="absolute top-1/2 left-0 right-0 h-1 -translate-y-1/2 bg-gradient-to-r from-blue-400 to-orange-200 rounded-full">
+                    <div class="absolute top-1/2 left-0 right-0 h-1 -translate-y-1/2 bg-gradient-to-r from-brand-blue-200 to-brand-lime-200 rounded-full">
                         <div
-                            class="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-700 to-orange-500 rounded-full transition-all duration-500 ease-out"
+                            class="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-blue-dark to-brand-lime rounded-full transition-all duration-500 ease-out"
                             :style="{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }"
                         />
                     </div>
@@ -23,7 +23,7 @@
                             :class="[
                                 'w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10 shadow-lg',
                                 currentStep > index + 1
-                                    ? 'bg-gradient-to-br from-blue-700 to-orange-500 border-transparent text-white shadow-blue-400'
+                                    ? 'bg-gradient-to-br from-brand-blue-dark to-brand-lime border-transparent text-white shadow-blue-400'
                                     : currentStep === index + 1
                                     ? 'bg-white border-blue-600 text-blue-700 shadow-blue-300'
                                     : 'bg-white border-gray-300 text-gray-500 shadow-gray-200'
@@ -75,7 +75,7 @@
             />
         </div>
     </div>
-    <div v-else class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
+    <div v-else class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-blue-200 via-brand-blue-100 to-brand-lime-50">
         <div class="text-center px-4 bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-blue-200">
             <h2 class="text-2xl font-bold text-gray-900">Registration Not Available</h2>
             <p class="mt-2 text-gray-600">Registration is currently not enabled in this environment.</p>

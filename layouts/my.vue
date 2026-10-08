@@ -1,31 +1,19 @@
 <template>
     <div class="flex h-screen">
         <aside 
-            class="hidden md:block bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen transition-all duration-300 ease-in-out flex-shrink-0 relative flex flex-col shadow-xl" 
+            class="hidden md:block bg-gradient-to-b from-brand-blue-dark to-brand-blue min-h-screen transition-all duration-300 ease-in-out flex-shrink-0 relative flex flex-col shadow-xl" 
             :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'w-64' : 'w-20'"
             :style="{ backgroundColor: bgColor, color: fontColor }"
             @mouseenter="handleSidebarHover(true)"
             @mouseleave="handleSidebarHover(false)"
         >
             <!-- Logo Section -->
-            <div class="flex items-center justify-between p-6 border-b border-blue-500/30">
-                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex items-center gap-4">
-                    <!-- U-Vend Logo Text -->
-                    <div class="flex items-center gap-3">
-                        <h1 class="text-white font-bold text-xl leading-tight tracking-wide" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                            U-Vend
-                        </h1>
-                        <div class="text-orange-400 font-semibold text-xs leading-tight tracking-wider">
-                            <div>PREPAID</div>
-                            <div>UTILITIES</div>
-                            <div>MANAGEMENT</div>
-                        </div>
-                    </div>
+            <div class="flex items-center justify-between p-4 border-b border-white/20">
+                <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex items-center w-full">
+                    <img src="/sssm-logo-transparent.png" alt="SSSM" class="w-full max-h-20 object-contain" />
                 </div>
                 <div v-else class="flex flex-col items-center mx-auto">
-                    <h1 class="text-white font-bold text-lg leading-tight tracking-wide" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                        U-Vend
-                    </h1>
+                    <img src="/sssm-logo-transparent.png" alt="SSSM" class="w-12 h-12 object-contain" />
                 </div>
                 
                 <!-- Pin/Unpin Button -->
@@ -240,7 +228,8 @@ export default{
             return route.at(-1)
         },
         bgColor(){
-            return `#${APP_BG_2?.replace('#', '') || '1287c9'}`
+            if (!APP_BG_2) return undefined
+            return `#${APP_BG_2.replace('#', '')}`
         },
         fontColor(){
             return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`

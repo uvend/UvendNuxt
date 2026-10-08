@@ -2,7 +2,7 @@
   <div>
     <div class="space-y-8">
       <div class="text-center md:text-left">
-        <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">Document Upload</h2>
+        <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-brand-blue to-brand-lime bg-clip-text text-transparent">Document Upload</h2>
         <p class="mt-2 text-sm text-gray-600">Please upload the required documents</p>
       </div>
 
@@ -14,7 +14,7 @@
                :class="errors.idDocument ? 'border-red-300 bg-red-50' : 'border-blue-200 hover:border-blue-400'">
             <div v-if="!formData.idDocument" class="space-y-4">
               <div class="flex justify-center">
-                <div class="p-3 bg-gradient-to-br from-blue-100 to-orange-100 rounded-full">
+                <div class="p-3 bg-gradient-to-br from-brand-blue-100 to-brand-lime-100 rounded-full">
                   <Upload class="h-8 w-8 text-blue-600" />
                 </div>
               </div>
@@ -51,7 +51,7 @@
                :class="errors.proofOfAddress ? 'border-red-300 bg-red-50' : 'border-blue-200 hover:border-blue-400'">
             <div v-if="!formData.proofOfAddress" class="space-y-4">
               <div class="flex justify-center">
-                <div class="p-3 bg-gradient-to-br from-blue-100 to-orange-100 rounded-full">
+                <div class="p-3 bg-gradient-to-br from-brand-blue-100 to-brand-lime-100 rounded-full">
                   <Upload class="h-8 w-8 text-blue-600" />
                 </div>
               </div>
@@ -88,7 +88,7 @@
                :class="errors.bankStatement ? 'border-red-300 bg-red-50' : 'border-blue-200 hover:border-blue-400'">
             <div v-if="!formData.bankStatement" class="space-y-4">
               <div class="flex justify-center">
-                <div class="p-3 bg-gradient-to-br from-blue-100 to-orange-100 rounded-full">
+                <div class="p-3 bg-gradient-to-br from-brand-blue-100 to-brand-lime-100 rounded-full">
                   <Upload class="h-8 w-8 text-blue-600" />
                 </div>
               </div>

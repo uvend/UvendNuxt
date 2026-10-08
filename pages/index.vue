@@ -120,6 +120,6 @@ export default {
 
 .logo-container img {
     padding: 10px;
-    width: 230px;
+    width: 280px;
 }
 </style>

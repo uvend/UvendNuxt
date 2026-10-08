@@ -9,58 +9,33 @@
     <!-- Main Card Container -->
     <div class="relative z-10 flex w-[1000px] h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden">
         <!-- Left Panel - Branding/Features -->
-        <div class="w-3/5 bg-gray-800 p-8 flex flex-col justify-center">
+        <div class="w-3/5 bg-gradient-to-b from-brand-blue-dark to-brand-blue p-8 flex flex-col justify-center">
             <!-- Logo -->
             <div class="flex flex-col items-center mb-8">
-                <div class="relative mb-4">
-                    <!-- Logo Container with Checkerboard Background -->
-                    <div class="relative bg-gray-900 p-4 rounded-lg shadow-lg">
-                        <!-- Checkerboard Pattern Background -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 opacity-50 rounded-lg"></div>
-                        
-                        <!-- Logo Content -->
-                        <div class="relative z-10 flex items-center space-x-3">
-                            <!-- U-Vend Text -->
-                            <div class="text-white font-bold text-2xl tracking-wide">
-                                U-Vend
-                            </div>
-                            
-                            <!-- Vertical Separator -->
-                            <div class="w-px h-8 bg-orange-500"></div>
-                            
-                            <!-- PREPAID UTILITIES MANAGEMENT Text -->
-                            <div class="flex flex-col text-orange-500 font-bold text-xs leading-tight">
-                                <span>PREPAID</span>
-                                <span>UTILITIES</span>
-                                <span>MANAGEMENT</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
+                <img src="/sssm-logo-transparent.png" alt="SSSM" class="w-72 max-w-full object-contain" />
             </div>
             
             <!-- Feature List -->
             <div class="space-y-4">
                 <div class="flex items-center space-x-3">
-                    <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-6 h-6 bg-brand-lime rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
                     <span class="text-white text-sm">Instant power purchases</span>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-6 h-6 bg-brand-lime rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
                     <span class="text-white text-sm">Smart meter management</span>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-6 h-6 bg-brand-lime rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
@@ -81,7 +56,7 @@
                         <Input 
                             type="text" 
                             v-model="username"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-lime focus:border-transparent"
                             placeholder="Enter your username"
                         />
                     </div>
@@ -92,7 +67,7 @@
                             <Input 
                                 :type="showPassword ? 'text' : 'password'" 
                                 v-model="password"
-                                class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-lime focus:border-transparent"
                                 placeholder="Enter your password"
                             />
                             <button 
@@ -113,7 +88,7 @@
                     
                     <Button 
                         type="submit"
-                        class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors duration-200"
+                        class="w-full bg-brand-lime hover:bg-brand-lime-dark text-gray-900 font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors duration-200"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>

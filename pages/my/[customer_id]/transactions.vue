@@ -36,7 +36,7 @@
              <!-- Transaction Table View -->
              <div v-if="!showCharts" class="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
                  <!-- Table Header -->
-                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-6">
+                 <div class="bg-gradient-to-r from-brand-blue-50 to-brand-blue-100 border-b border-gray-200 p-6">
                      <div class="flex justify-between items-center">
                          <div>
                              <h2 class="text-xl font-semibold text-gray-800">Recent Transactions</h2>

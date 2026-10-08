@@ -43,7 +43,7 @@
 
             <!-- Statement Summary Card -->
             <Card v-if="transactions.length > 0 && showStatementSummary" class="mb-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
-                <CardHeader class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                <CardHeader class="bg-gradient-to-r from-brand-blue-50 to-brand-blue-100 border-b border-gray-200">
                     <CardTitle class="text-xl font-semibold text-gray-800">Statement Summary</CardTitle>
                     <p class="text-gray-600 text-sm">{{ statement.name }} - {{ statement.startDate }} to {{ statement.endDate }}</p>
                 </CardHeader>
@@ -116,7 +116,7 @@
             <!-- Statement Table View -->
             <div v-if="!showStatementSummary" class="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden flex-1">
                 <!-- Table Header -->
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-6">
+                <div class="bg-gradient-to-r from-brand-blue-50 to-brand-blue-100 border-b border-gray-200 p-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-xl font-semibold text-gray-800">Statement Details</h2>

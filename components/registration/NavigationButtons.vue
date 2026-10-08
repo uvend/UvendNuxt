@@ -20,7 +20,7 @@
             :key="i"
             :class="[
               'h-2 w-2 rounded-full transition-all duration-300',
-              i <= currentStep ? 'bg-gradient-to-r from-blue-700 to-orange-500' : 'bg-gray-200'
+              i <= currentStep ? 'bg-gradient-to-r from-brand-blue-dark to-brand-lime' : 'bg-gray-200'
             ]"
           />
         </div>
@@ -31,7 +31,7 @@
 
       <Button
         type="submit"
-        class="w-[120px] bg-gradient-to-r from-blue-700 to-orange-600 hover:from-blue-800 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+        class="w-[120px] bg-gradient-to-r from-brand-blue-dark to-brand-lime hover:from-brand-blue hover:to-brand-lime-dark text-white shadow-lg hover:shadow-xl transition-all duration-200"
         :disabled="loading"
         form="registrationForm"
       >

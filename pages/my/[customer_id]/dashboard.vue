@@ -108,19 +108,19 @@
 
                 <!-- Total Refunds -->
                 <Card class="relative bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-orange-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-lime/10 to-brand-lime-dark/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardHeader class="pb-2 relative z-10">
                         <div class="flex justify-between items-start">
                             <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
-                                    <Icon name="lucide:refresh-cw" class="w-4 h-4 lg:w-5 lg:h-5 text-orange-600" />
+                                <div class="w-8 h-8 bg-brand-lime-100 rounded-xl flex items-center justify-center group-hover:bg-brand-lime-200 transition-colors">
+                                    <Icon name="lucide:refresh-cw" class="w-4 h-4 lg:w-5 lg:h-5 text-brand-lime-dark" />
                                 </div>
                                 <CardTitle class="text-xs lg:text-sm font-semibold text-gray-700">Total Refunds</CardTitle>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent class="pt-0 relative z-10">
-                        <div class="text-lg lg:text-2xl font-bold text-orange-600">{{ formatMoney(totalRefunds) }}</div>
+                        <div class="text-lg lg:text-2xl font-bold text-brand-lime-dark">{{ formatMoney(totalRefunds) }}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -145,7 +145,7 @@
                 <!-- Today's Transactions Sidebar -->
                 <div class="w-full lg:w-96 xl:w-[28rem] flex-shrink-0">
                     <Card class="h-full flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden">
-                        <CardHeader class="pb-3 flex-shrink-0 bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <CardHeader class="pb-3 flex-shrink-0 bg-gradient-to-r from-brand-blue-50 to-brand-blue-100">
                             <CardTitle class="text-lg font-semibold text-gray-800">Today's Transactions</CardTitle>
                             <CardDescription class="text-gray-600">Recent transactions from today</CardDescription>
                         </CardHeader>
@@ -185,7 +185,7 @@
                                             </tr>
                                             
                                             <!-- Expanded Details Row -->
-                                            <tr v-if="expandedRow === index" class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200">
+                                            <tr v-if="expandedRow === index" class="bg-gradient-to-r from-brand-blue-50 to-brand-blue-100 border-b border-blue-200">
                                                 <td colspan="5" class="py-4 px-3">
                                                     <div class="space-y-3">
                                                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs">

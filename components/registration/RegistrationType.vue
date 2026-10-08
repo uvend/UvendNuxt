@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="text-center md:text-left">
-      <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">Registration Type</h2>
+      <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-brand-blue to-brand-lime bg-clip-text text-transparent">Registration Type</h2>
       <p class="mt-2 text-sm text-gray-600">Please select your registration type</p>
     </div>
 
@@ -11,7 +11,7 @@
         :key="option.value"
         class="relative flex cursor-pointer rounded-xl border bg-white p-6 shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none"
         :class="{
-          'border-blue-500 ring-2 ring-blue-200 bg-gradient-to-r from-blue-50 to-orange-50': selectedType === option.value,
+          'border-blue-500 ring-2 ring-blue-200 bg-gradient-to-r from-brand-blue-50 to-brand-lime-50': selectedType === option.value,
           'border-gray-200 hover:border-blue-300': selectedType !== option.value
         }"
         @click="selectType(option.value)"
@@ -23,7 +23,7 @@
               <p class="text-gray-600 mt-1">{{ option.description }}</p>
             </div>
           </div>
-          <div v-if="selectedType === option.value" class="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-blue-500 to-orange-500 rounded-full">
+          <div v-if="selectedType === option.value" class="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-brand-blue to-brand-lime rounded-full">
             <CheckIcon class="h-4 w-4 text-white" />
           </div>
         </div>

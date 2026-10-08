@@ -1,14 +1,14 @@
 <template>
   <div class="space-y-8">
     <div class="text-center md:text-left">
-      <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">Registration Summary</h2>
+      <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-brand-blue to-brand-lime bg-clip-text text-transparent">Registration Summary</h2>
       <p class="mt-2 text-sm text-gray-600">Please review your information before submitting</p>
       
       <!-- Print Button -->
       <div class="mt-4 flex justify-center md:justify-start">
         <Button 
           @click="generatePDF" 
-          class="bg-gradient-to-r from-blue-600 to-orange-600 hover:from-blue-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          class="bg-gradient-to-r from-brand-blue to-brand-lime hover:from-brand-blue-dark hover:to-brand-lime-dark text-white shadow-lg hover:shadow-xl transition-all duration-200"
           :disabled="isGeneratingPDF"
         >
           <PrinterIcon v-if="!isGeneratingPDF" class="h-4 w-4 mr-2" />

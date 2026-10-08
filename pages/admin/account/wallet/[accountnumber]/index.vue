@@ -14,7 +14,7 @@
 
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue-dark to-brand-blue shadow-sm">
                             <Icon name="lucide:user-round" class="h-5 w-5 text-white" />
                         </div>
                         <div class="min-w-0">

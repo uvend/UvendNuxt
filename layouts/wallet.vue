@@ -3,8 +3,8 @@
         @click="toggleNav"
         class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300">
     </div>
-    <div class="flex min-h-screen bg-gradient-to-br from-blue-200 via-blue-100 to-orange-50">
-        <aside class="flex flex-col justify-between bg-gradient-to-b from-blue-600 to-blue-700 min-h-screen shadow-xl"
+    <div class="flex min-h-screen bg-gradient-to-br from-brand-blue-200 via-brand-blue-100 to-brand-lime-50">
+        <aside class="flex flex-col justify-between bg-gradient-to-b from-brand-blue-dark to-brand-blue min-h-screen shadow-xl"
             :class="[
                 !isMobile ? 'w-64 p-4' : '',
                 isMobile && !isNavOpen ? 'w-0 p-0 overflow-hidden' : '',
@@ -83,7 +83,8 @@ export default{
             return route.at(-1)
         },
         bgColor(){
-            return `#${APP_BG_2?.replace('#', '') || '1287c9'}`
+            if (!APP_BG_2) return undefined
+            return `#${APP_BG_2.replace('#', '')}`
         },
         fontColor(){
             return `#${APP_FONT_COLOR_2?.replace('#', '') || 'ffffff'}`

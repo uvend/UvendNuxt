@@ -2,7 +2,7 @@
   <div>
     <div class="space-y-8">
       <div class="text-center md:text-left">
-        <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">Banking Details</h2>
+        <h2 class="text-2xl font-bold text-gray-900 bg-gradient-to-r from-brand-blue to-brand-lime bg-clip-text text-transparent">Banking Details</h2>
         <p class="mt-2 text-sm text-gray-600">Please provide your banking information for payments</p>
       </div>
 
@@ -19,7 +19,7 @@
             v-model="formData.accountHolder"
             type="text"
             placeholder="Enter account holder name"
-            class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200"
+            class="transition-all duration-200 focus:border-brand-lime focus:ring-brand-lime-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.accountHolder,
               'border-green-500 focus:ring-green-500': formData.accountHolder && !errors.accountHolder
@@ -45,7 +45,7 @@
             v-model="formData.bankName"
             type="text"
             placeholder="Enter bank name"
-            class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200"
+            class="transition-all duration-200 focus:border-brand-lime focus:ring-brand-lime-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.bankName,
               'border-green-500 focus:ring-green-500': formData.bankName && !errors.bankName
@@ -75,7 +75,7 @@
             type="text"
             maxlength="16"
             placeholder="Enter account number"
-            class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200"
+            class="transition-all duration-200 focus:border-brand-lime focus:ring-brand-lime-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.accountNumber,
               'border-green-500 focus:ring-green-500': formData.accountNumber && !errors.accountNumber
@@ -102,7 +102,7 @@
             }"
             @update:model-value="handleDataChange"
           >
-            <SelectTrigger id="accountType" aria-describedby="accountType-error" class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200">
+            <SelectTrigger id="accountType" aria-describedby="accountType-error" class="transition-all duration-200 focus:border-brand-lime focus:ring-brand-lime-200">
               <SelectValue placeholder="Select account type" />
             </SelectTrigger>
             <SelectContent>
@@ -134,7 +134,7 @@
             type="text"
             maxlength="6"
             placeholder="Enter 6-digit branch code"
-            class="transition-all duration-200 focus:border-orange-400 focus:ring-orange-200"
+            class="transition-all duration-200 focus:border-brand-lime focus:ring-brand-lime-200"
             :class="{ 
               'border-red-500 focus:ring-red-500': errors.branchCode,
               'border-green-500 focus:ring-green-500': formData.branchCode && !errors.branchCode

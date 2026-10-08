@@ -1,6 +1,6 @@
 <template>
     <div class="grid-container">
-        <aside class="flex flex-col sidebar hide-scrollbar justify-between" :style="{ backgroundColor: bgColor, color: fontColor }">
+        <aside class="flex flex-col sidebar hide-scrollbar justify-between bg-gradient-to-b from-brand-blue-dark to-brand-blue" :style="{ backgroundColor: bgColor, color: fontColor }">
             <nav>
                 <MyLogo />
                 <!-- Back to Last Customer Button -->
@@ -91,7 +91,8 @@ export default{
     },
     computed:{
         bgColor(){
-            return `#${APP_BG_3?.replace('#', '') || '0c4a6e'}`
+            if (!APP_BG_3) return undefined
+            return `#${APP_BG_3.replace('#', '')}`
         },
         fontColor(){
             return `#${APP_FONT_COLOR_1?.replace('#', '') || 'ffffff'}`
