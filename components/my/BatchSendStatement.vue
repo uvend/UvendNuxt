@@ -21,6 +21,8 @@
 </AlertDialog>
 </template>
 <script>
+import { batchService } from '~/services/batch'
+
 export default{
     props:{
         batch: String
@@ -31,32 +33,10 @@ export default{
         }
     },
     methods:{
-        statementApiBase() {
-            return (typeof STATEMENT_API === 'string' ? STATEMENT_API : '').replace(/\/$/, '')
-        },
         async mail(){
-            const base = this.statementApiBase()
-            if (!base) {
-                this.$toast({
-                    title: 'Uh oh! Something went wrong.',
-                    description: 'Statement API is not configured.',
-                    variant: 'destructive'
-                })
-                return
-            }
-
             this.sending = true
             try {
-                const result = await useAuthFetch(`${base}/statement/send-batch-email`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: {
-                        batchId: this.batch,
-                        logOnly: false
-                    }
-                })
+                const result = await batchService.sendBatchEmail(this.batch, { logOnly: false })
 
                 this.$toast({
                     title: 'Success',

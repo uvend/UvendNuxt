@@ -332,6 +332,9 @@
 <script>
 import _ from 'lodash';
 import { summarisedPayload } from '~/composables/summarisedPayload.js';
+import { statementService } from '~/services/statement'
+import { vendService } from '~/services/vend'
+import { customerService } from '~/services/customer'
 const { debounce } = _;
 definePageMeta({
     layout: 'my'
@@ -432,20 +435,17 @@ export default{
             try {
             const includeComplex = this.selectedMeterComplex && this.selectedMeterComplex !== 'ALL'
             const complexId = includeComplex ? Number(this.selectedMeterComplex) : undefined
-            const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
-                method: "GET",
-                params:{
-                    IncludeMetersWithNoActivity : false,
-                    StartDate : this.dateRange.start,
-                    EndDate: this.dateRange.end,
-                    // ParentUniqueID stays the customer so the server can resolve the
-                    // customer (and pick statement vs completestatement); ComplexUniqueID
-                    // narrows to a single complex when one is selected.
-                    ReportParentType: complexId ? 5 : 4,
-                    ParentUniqueID: this.$route.params.customer_id,
-                    UtilityType: this.selectedUtility,
-                    ...(complexId ? { ComplexUniqueID: complexId } : {})
-                },
+            const result = await statementService.getSummarisedMeterActivity({
+                IncludeMetersWithNoActivity : false,
+                StartDate : this.dateRange.start,
+                EndDate: this.dateRange.end,
+                // ParentUniqueID stays the customer so the server can resolve the
+                // customer (and pick statement vs completestatement); ComplexUniqueID
+                // narrows to a single complex when one is selected.
+                ReportParentType: complexId ? 5 : 4,
+                ParentUniqueID: this.$route.params.customer_id,
+                UtilityType: this.selectedUtility,
+                ...(complexId ? { ComplexUniqueID: complexId } : {})
             })
             const payload = summarisedPayload(result)
             
@@ -560,12 +560,10 @@ export default{
         },
         async getVendTransactions(){
             this.isLoading = true;
-            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`, {
-                params : {
-                    StartDate : this.dateRange.start,
-                    EndDate: this.dateRange.end,
-                    VendTransactionReportType: 1
-                }
+            const result = await vendService.getMeterReport({
+                StartDate : this.dateRange.start,
+                EndDate: this.dateRange.end,
+                VendTransactionReportType: 1
             });
             await this.hydrateStatementData(result)
             this.isLoading = false;
@@ -642,15 +640,7 @@ export default{
 
         },
         async getCustomerDefinition(){
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/Customer/GetCustomerMeterInstallationList`,{
-                method: "GET",
-                params: {
-                    CustomerUnique: this.$route.params.customer_id
-                },
-                headers:{
-                    Authorization : `Basic ${ADMIN_AUTH}`
-                }
-            })
+            const result = await customerService.getCustomerMeterInstallationList(this.$route.params.customer_id)
             this.customer =  result.customer?.description || this.customer
             if (result.customer?.billingStartDays && result.customer.billingStartDays.length > 0) {
                 this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
@@ -763,22 +753,17 @@ export default{
 
                 // Server renders the statement (template chosen server-side) from the DB
                 // and returns a PDF blob (or an HTML attachment if Gotenberg is down).
-                const blob = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
-                    method: 'GET',
-                    responseType: 'blob',
-                    params: {
-                        StartDate: this.dateRange?.start,
-                        EndDate: this.dateRange?.end,
-                        // ParentUniqueID stays the customer so the server can resolve the
-                        // customer (and pick statement vs completestatement); ComplexUniqueID
-                        // narrows to a single complex when one is selected.
-                        ReportParentType: complexId ? 5 : 4,
-                        ParentUniqueID: this.$route.params.customer_id,
-                        UtilityType: this.selectedUtility ?? -1,
-                        IncludeMetersWithNoActivity: true,
-                        pdf: true,
-                        ...(complexId ? { ComplexUniqueID: complexId } : {}),
-                    },
+                const blob = await statementService.getSummarisedMeterActivityPdf({
+                    StartDate: this.dateRange?.start,
+                    EndDate: this.dateRange?.end,
+                    // ParentUniqueID stays the customer so the server can resolve the
+                    // customer (and pick statement vs completestatement); ComplexUniqueID
+                    // narrows to a single complex when one is selected.
+                    ReportParentType: complexId ? 5 : 4,
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: this.selectedUtility ?? -1,
+                    IncludeMetersWithNoActivity: true,
+                    ...(complexId ? { ComplexUniqueID: complexId } : {}),
                 })
 
                 // Validate that we actually got a blob back

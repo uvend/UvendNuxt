@@ -298,6 +298,8 @@
 
 <script>
 import { summarisedPayload } from '~/composables/summarisedPayload.js';
+import { statementService } from '~/services/statement'
+import { vendService } from '~/services/vend'
 definePageMeta({
     layout: 'my'
 })
@@ -356,17 +358,14 @@ export default{
     methods:{
             async getAdminTransactions(){
              this.isLoading = true;
-             const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
-                 method: "GET",
-                 params:{
-                     IncludeMetersWithNoActivity : false,
-                     StartDate : this.dateRange.start,
-                     EndDate: this.dateRange.end,
-                     ReportParentType: 4,  // customer
-                     ResponseFormatType: 0,
-                     ParentUniqueID: this.$route.params.customer_id,
-                     UtilityType: this.selectedUtility
-                 }
+             const result = await statementService.getSummarisedMeterActivity({
+                 IncludeMetersWithNoActivity : false,
+                 StartDate : this.dateRange.start,
+                 EndDate: this.dateRange.end,
+                 ReportParentType: 4,  // customer
+                 ResponseFormatType: 0,
+                 ParentUniqueID: this.$route.params.customer_id,
+                 UtilityType: this.selectedUtility
              })
             const payload = summarisedPayload(result)
             // Keep full response for report generation
@@ -418,14 +417,11 @@ export default{
                 
         async getVendTransactions(){
              this.isLoading = true;
-             const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
-                 method: "GET",
-                 params:{
-                     StartDate : this.dateRange.start,
-                     EndDate: this.dateRange.end,
-                     VendTransactionReportType: 0,  // customer
-                     UtilityType: this.selectedUtility
-                 }
+             const result = await vendService.getMeterReport({
+                 StartDate : this.dateRange.start,
+                 EndDate: this.dateRange.end,
+                 VendTransactionReportType: 0,  // customer
+                 UtilityType: this.selectedUtility
              })
              
             // Keep full response for report generation
@@ -478,18 +474,13 @@ export default{
             try{
                 // Raw transaction report rendered server-side from the DB; returns a PDF
                 // blob (or an HTML attachment if Gotenberg is down).
-                const blob = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivity`,{
-                    method: 'GET',
-                    responseType: 'blob',
-                    params: {
-                        StartDate: this.dateRange.start.slice(0, 10),
-                        EndDate: this.dateRange.end.slice(0, 10),
-                        ReportParentType: 4,
-                        ParentUniqueID: this.$route.params.customer_id,
-                        UtilityType: this.selectedUtility,
-                        IncludeMetersWithNoActivity: false,
-                        pdf: true,
-                    }
+                const blob = await statementService.getDbMeterActivityPdf({
+                    StartDate: this.dateRange.start.slice(0, 10),
+                    EndDate: this.dateRange.end.slice(0, 10),
+                    ReportParentType: 4,
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: this.selectedUtility,
+                    IncludeMetersWithNoActivity: false,
                 })
                 if (blob instanceof Blob === false) {
                     console.error('Unexpected response type')

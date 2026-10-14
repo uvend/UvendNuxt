@@ -256,6 +256,7 @@
 </template>
 <script>
 import _ from 'lodash';
+import { mpesaService } from '~/services/mpesa'
 const { debounce } = _;
 definePageMeta({
     layout: 'account'
@@ -347,14 +348,6 @@ export default{
             const year = d.getFullYear();
             return `${day}-${month}-${year}`;
         },
-        /** Base URL for M-Pesa API (no trailing slash). */
-        mpesaApiBase() {
-            return (typeof MPESA_URL === 'string' ? MPESA_URL : '').replace(/\/$/, '');
-        },
-        whatsappApiBase() {
-            const base = this.mpesaApiBase();
-            return base ? `${base}/api/whatsapp` : '';
-        },
         whatsappLinkingStatuses() {
             return ['SCAN_QR_CODE', 'STARTING', 'STARTED', 'OPENING', 'PAIRING', 'CONNECTING'];
         },
@@ -425,8 +418,7 @@ export default{
             }
         },
         async refreshWhatsAppStatus({ silent = false } = {}) {
-            const base = this.whatsappApiBase();
-            if (!base) {
+            if (!mpesaService.isConfigured()) {
                 this.whatsappError = 'MPESA_URL is not configured';
                 this.whatsappLoading = false;
                 return;
@@ -438,11 +430,11 @@ export default{
             }
 
             try {
-                const data = await $fetch(`${base}/status`, { method: 'GET' });
+                const data = await mpesaService.getWhatsAppStatus();
                 this.applyWhatsAppStatus(data);
                 this.whatsappError = '';
             } catch (e) {
-                console.error('WhatsApp status failed', base, e);
+                console.error('WhatsApp status failed', e);
                 if (!silent) {
                     this.whatsappError = 'Unable to load WhatsApp status';
                 }
@@ -453,8 +445,7 @@ export default{
             }
         },
         async startWhatsAppLink() {
-            const base = this.whatsappApiBase();
-            if (!base) {
+            if (!mpesaService.isConfigured()) {
                 this.$toast({
                     title: 'Configuration error',
                     description: 'MPESA_URL is not configured',
@@ -467,7 +458,7 @@ export default{
             this.whatsappLinkingRequested = true;
             this.whatsappError = '';
             try {
-                const data = await $fetch(`${base}/link`, { method: 'POST' });
+                const data = await mpesaService.linkWhatsApp();
                 this.applyWhatsAppStatus(data);
                 if (data?.status === 'SCAN_QR_CODE' && !data?.qr) {
                     await this.refreshWhatsAppQr({ silent: true });
@@ -492,15 +483,14 @@ export default{
             }
         },
         async refreshWhatsAppQr({ silent = false } = {}) {
-            const base = this.whatsappApiBase();
-            if (!base) return;
+            if (!mpesaService.isConfigured()) return;
 
             if (!silent) {
                 this.whatsappActionLoading = true;
             }
 
             try {
-                const data = await $fetch(`${base}/qr`, { method: 'GET' });
+                const data = await mpesaService.getWhatsAppQr();
                 this.applyWhatsAppStatus(data);
                 if (data?.linked) {
                     this.$toast({
@@ -524,14 +514,13 @@ export default{
             }
         },
         async unlinkWhatsApp() {
-            const base = this.whatsappApiBase();
-            if (!base) return;
+            if (!mpesaService.isConfigured()) return;
 
             this.whatsappActionLoading = true;
             this.whatsappLinkingRequested = false;
             this.stopWhatsAppPolling();
             try {
-                const data = await $fetch(`${base}/unlink`, { method: 'POST' });
+                const data = await mpesaService.unlinkWhatsApp();
                 this.applyWhatsAppStatus(data);
                 this.whatsappLinkingRequested = false;
                 this.stopWhatsAppPolling();
@@ -563,11 +552,10 @@ export default{
             }
         },
         async sendWhatsAppTestMessage() {
-            const base = this.whatsappApiBase();
             const phoneNumber = this.whatsappTestPhone.trim();
             const message = this.whatsappTestMessage.trim();
 
-            if (!base) {
+            if (!mpesaService.isConfigured()) {
                 this.$toast({
                     title: 'Configuration error',
                     description: 'MPESA_URL is not configured',
@@ -587,12 +575,9 @@ export default{
 
             this.whatsappTestLoading = true;
             try {
-                const data = await $fetch(`${base}/message`, {
-                    method: 'POST',
-                    body: {
-                        phoneNumber,
-                        message,
-                    },
+                const data = await mpesaService.sendWhatsAppMessage({
+                    phoneNumber,
+                    message,
                 });
                 this.$toast({
                     title: 'Test message sent',
@@ -649,14 +634,13 @@ export default{
             this.smsCreditLabel = 'SMS Balance';
             this.smsCreditValue = null;
             this.smsCreditMessage = '';
-            const base = this.mpesaApiBase();
-            if (!base) {
+            if (!mpesaService.isConfigured()) {
                 this.smsCreditMessage = 'MPESA_URL is not configured';
                 return;
             }
 
             try {
-                const data = await $fetch(`${base}/status`, { method: 'GET' });
+                const data = await mpesaService.getStatus();
                 const credit = this.parseSmsCreditFromStatusResponse(data);
                 if (credit) {
                     this.smsCreditLabel = credit.label;
@@ -666,7 +650,7 @@ export default{
                 this.smsCreditMessage = 'Unable to load SMS credit info';
             } catch (e) {
                 this.smsCreditMessage = 'Unable to load SMS credit info';
-                console.error('SMS credit: GET /status failed', base, e);
+                console.error('SMS credit: GET /status failed', e);
             }
         },
         debouncedSearch: debounce(async function(){
@@ -675,11 +659,7 @@ export default{
         }),
         resend: debounce(async function (id){
             try{
-                const response = await $fetch(`${MPESA_URL}/api/admin/resend-sms`,{
-                    params : {
-                        id : id
-                    }
-                })
+                await mpesaService.resendSms(id)
                 this.activeDialogRequestId = null;
                 this.$toast({
                     title: 'Success',
@@ -739,14 +719,12 @@ export default{
         async getAllTransactions(){
             this.isLoading = true
             try {
-                const response = await $fetch(`${MPESA_URL}/api/admin/transactions`, {
-                    params: {
-                        page: this.page,
-                        limit: this.pageSize,
-                        fromDate: this.formatDate(this.dateRange.start),
-                        toDate: this.formatDate(this.dateRange.end),
-                        search: this.search
-                    }
+                const response = await mpesaService.getTransactions({
+                    page: this.page,
+                    limit: this.pageSize,
+                    fromDate: this.formatDate(this.dateRange.start),
+                    toDate: this.formatDate(this.dateRange.end),
+                    search: this.search
                 })
                 this.page = response.pagination.currentPage
                 this.hasNextPage = response.pagination.hasNextPage

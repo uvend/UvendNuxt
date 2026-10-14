@@ -251,6 +251,8 @@ import ComplexSpendingBar from '~/components/my/charts/ComplexSpendingBar.vue'
 import MeterActivityOverview from '~/components/my/charts/MeterActivityOverview.vue'
 import TotalVendsKpi from '~/components/my/charts/TotalVendsKpi.vue'
 import { summarisedPayload } from '~/composables/summarisedPayload.js'
+import { statementService } from '~/services/statement'
+import { vendService } from '~/services/vend'
 
 definePageMeta({
     layout: 'my'
@@ -288,17 +290,14 @@ export default {
     },
     methods: {
         async getAdminTransactions() {
-            const result = await useAuthFetch(`${STATEMENT_API}/statement/GetDBMeterActivitySummarised`, {
-                method: "GET",
-                params: {
-                    IncludeMetersWithNoActivity: false,
-                    StartDate: this.dateRange.start,
-                    EndDate: this.dateRange.end,
-                    ReportParentType: 4,  // customer
-                    ResponseFormatType: 0,
-                    ParentUniqueID: this.$route.params.customer_id,
-                    UtilityType: -1
-                }
+            const result = await statementService.getDbMeterActivitySummarised({
+                IncludeMetersWithNoActivity: false,
+                StartDate: this.dateRange.start,
+                EndDate: this.dateRange.end,
+                ReportParentType: 4,  // customer
+                ResponseFormatType: 0,
+                ParentUniqueID: this.$route.params.customer_id,
+                UtilityType: -1
             })
             
             // Store summary data for refund calculation
@@ -332,14 +331,11 @@ export default {
             }
         },
         async getVendTransactions() {
-            const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`, {
-                method: "GET",
-                params: {
-                    StartDate: this.dateRange.start,
-                    EndDate: this.dateRange.end,
-                    VendTransactionReportType: 0,  // customer
-                    UtilityType: -1
-                }
+            const result = await vendService.getMeterReport({
+                StartDate: this.dateRange.start,
+                EndDate: this.dateRange.end,
+                VendTransactionReportType: 0,  // customer
+                UtilityType: -1
             })
             this.originalTransactions = result.responseData.transactionData
         },

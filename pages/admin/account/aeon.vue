@@ -417,6 +417,7 @@
 <script setup>
 import vueFilePond from 'vue-filepond'
 import 'filepond/dist/filepond.min.css'
+import { aeonService } from '~/services/aeon'
 
 definePageMeta({
     layout: 'account'
@@ -700,14 +701,7 @@ async function processAeonFile(file, load, onError, progress, controller) {
     progress(true, 0, file.size || 1)
 
     try {
-        const formData = new FormData()
-        formData.append('file', file)
-
-        const result = await useAuthFetch(`${normalizeBaseUrl(STATEMENT_API)}/aeon/check`, {
-            method: 'POST',
-            body: formData,
-            signal: controller.signal
-        })
+        const result = await aeonService.checkFile(file, { signal: controller.signal })
 
         applyAeonResponse(result)
         progress(true, file.size || 1, file.size || 1)
@@ -1389,12 +1383,6 @@ function formatPossibleDateTime(value) {
 
 function stringifyRow(row) {
     return JSON.stringify(row?._raw ?? row, null, 2)
-}
-
-function normalizeBaseUrl(value) {
-    const raw = String(value || '').trim()
-    const withoutDuplicateProtocol = raw.replace(/^(https?:\/\/)(https?:\/\/)+/i, '$1')
-    return withoutDuplicateProtocol.replace(/\/+$/, '')
 }
 
 function validateAeonFile(file) {

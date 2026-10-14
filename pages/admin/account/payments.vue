@@ -150,6 +150,8 @@
 </template>
 <script>
 import _ from 'lodash';
+import { batchService } from '~/services/batch'
+import { paymentsService } from '~/services/payments'
 const { debounce } = _;
 definePageMeta({
     layout: 'account'
@@ -215,18 +217,8 @@ export default{
         async getPayments(){
             this.isLoading = true
             const [mainRes, prevRes] = await Promise.allSettled([
-                useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
-                    method: "GET",
-                    params: {
-                        "GoBackMonths" : this.monthsBack
-                    }
-                }),
-                useAuthFetch(`${API_URL}/AdminSystem/TransactionPeriod/GetCurrentTransactionPeriodTotals`,{
-                    method: "GET",
-                    params: {
-                        "GoBackMonths" : this.monthsBack + 1
-                    }
-                })
+                paymentsService.getCurrentTransactionPeriodTotals(this.monthsBack),
+                paymentsService.getCurrentTransactionPeriodTotals(this.monthsBack + 1),
             ]);
 
             if (mainRes.status !== 'fulfilled') {
@@ -356,12 +348,7 @@ export default{
                 preparedPayments.push(p);
             })
             try{
-                const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/SubmitPaymentBatch`,{
-                    method: "POST",
-                    body : {
-                        batchPaymentDataCollection: preparedPayments
-                    }
-                })
+                const result = await batchService.submitPaymentBatch(preparedPayments)
                 this.$toast({
                     title: 'Success',
                     description: result.paymentBatchID,

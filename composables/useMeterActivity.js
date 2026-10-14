@@ -1,4 +1,5 @@
 import { summarisedPayload } from './summarisedPayload.js'
+import { statementService } from '~/services/statement'
 
 /**
  * Composable for meter activity status (last vend date, 30/40 day inactive).
@@ -23,17 +24,14 @@ export function useMeterActivity() {
             const today = new Date()
             const start = new Date(today)
             start.setDate(today.getDate() - 90)
-            const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
-                method: 'GET',
-                params: {
-                    IncludeMetersWithNoActivity: true,
-                    StartDate: start.toISOString(),
-                    EndDate: today.toISOString(),
-                    ReportParentType: 4,
-                    ResponseFormatType: 0,
-                    ParentUniqueID: customerId,
-                    UtilityType: -1
-                }
+            const result = await statementService.getSummarisedMeterActivity({
+                IncludeMetersWithNoActivity: true,
+                StartDate: start.toISOString(),
+                EndDate: today.toISOString(),
+                ReportParentType: 4,
+                ResponseFormatType: 0,
+                ParentUniqueID: customerId,
+                UtilityType: -1
             })
             lastFetch.value = now
             lastFetchCustomerId.value = customerId

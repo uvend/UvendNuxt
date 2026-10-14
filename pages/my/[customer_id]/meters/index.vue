@@ -226,6 +226,8 @@
 <script>
 import _ from 'lodash';
 import { summarisedPayload } from '~/composables/summarisedPayload.js';
+import { statementService } from '~/services/statement'
+import { vendService } from '~/services/vend'
 const { debounce } = _;
 
 definePageMeta({
@@ -280,17 +282,14 @@ export default{
                 const today = new Date()
                 const activityStart = new Date(today)
                 activityStart.setDate(today.getDate() - 90)
-                const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
-                    method: 'GET',
-                    params:{
-                        IncludeMetersWithNoActivity : true,
-                        StartDate : activityStart.toISOString(),
-                        EndDate: this.dateRange.end,
-                        ReportParentType: 4,  // customer
-                        ResponseFormatType: 0,
-                        ParentUniqueID: this.$route.params.customer_id,
-                        UtilityType: this.selectedUtility
-                    }
+                const result = await statementService.getSummarisedMeterActivity({
+                    IncludeMetersWithNoActivity : true,
+                    StartDate : activityStart.toISOString(),
+                    EndDate: this.dateRange.end,
+                    ReportParentType: 4,  // customer
+                    ResponseFormatType: 0,
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: this.selectedUtility
                 })
                 this._buildFromTransactionData(summarisedPayload(result).transactionData, this.dateRange)
                 await this.getMeterComplex()
@@ -307,14 +306,11 @@ export default{
         async getVendMeters(){
             try{
                 this.isLoading = true
-                const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`,{
-                    method: 'GET',
-                    params:{
-                        StartDate : this.dateRange.start,
-                        EndDate: this.dateRange.end,
-                        VendTransactionReportType: 0,
-                        UtilityType: this.selectedUtility
-                    }
+                const result = await vendService.getMeterReport({
+                    StartDate : this.dateRange.start,
+                    EndDate: this.dateRange.end,
+                    VendTransactionReportType: 0,
+                    UtilityType: this.selectedUtility
                 })
                 this._buildFromTransactionData(result.responseData.transactionData)
                 await this.getMeterComplex()

@@ -383,6 +383,9 @@
 <script setup>
 import { summarisedPayload } from '~/composables/summarisedPayload.js'
 import _ from 'lodash';
+import { statementService } from '~/services/statement'
+import { vendService } from '~/services/vend'
+import { customerService } from '~/services/customer'
 
 definePageMeta({
     layout: 'my'
@@ -443,16 +446,13 @@ const tenantUpdateLoading = ref(false)
 const getAdminMeterActivity = async () => {
     try {
         isLoading.value = true
-        const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
-            method: "GET",
-            params: {
-                StartDate: dateRange.value.start,
-                EndDate: dateRange.value.end,
-                ResponseFormatType: 0,
-                ReportParentType: 6, //specific meter
-                ParentUniqueID: route.params.meter_id,
-                UtilityType: -1
-            }
+        const result = await statementService.getSummarisedMeterActivity({
+            StartDate: dateRange.value.start,
+            EndDate: dateRange.value.end,
+            ResponseFormatType: 0,
+            ReportParentType: 6, //specific meter
+            ParentUniqueID: route.params.meter_id,
+            UtilityType: -1
         })
         const payload = summarisedPayload(result)
         
@@ -518,15 +518,12 @@ const getAdminMeterActivity = async () => {
 const getVendMeterActivity = async () => {
     try {
         isLoading.value = true
-        const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterReport`, {
-            method: "GET",
-            params: {
-                StartDate: dateRange.value.start,
-                EndDate: dateRange.value.end,
-                HasMeterIdentifier: true,
-                SpecificMeterIdentifier: route.params.meter_id,
-                UtilityType: selectedUtility.value
-            }
+        const result = await vendService.getMeterReport({
+            StartDate: dateRange.value.start,
+            EndDate: dateRange.value.end,
+            HasMeterIdentifier: true,
+            SpecificMeterIdentifier: route.params.meter_id,
+            UtilityType: selectedUtility.value
         })
         
         // Clear existing transactions
@@ -611,10 +608,7 @@ const fetchTenantDetails = async () => {
             return
         }
 
-        const result = await $fetch(
-            `${CUSTOMER_API}/meter/${encodeURIComponent(currentMeterNumber)}/tenant`,
-            { method: "GET" }
-        )
+        const result = await customerService.getMeterTenant(currentMeterNumber)
 
         const tenant = result?.data?.tenant || null
         tenantName.value = buildTenantName(tenant)
@@ -647,16 +641,10 @@ const updateTenantDetails = async () => {
         }
 
         tenantUpdateLoading.value = true
-        await $fetch(
-            `${CUSTOMER_API}/meter/${encodeURIComponent(currentMeterNumber)}/tenant`,
-            {
-                method: "PATCH",
-                body: {
-                    firstname: tenantNameInput.value,
-                    emailaddress: tenantEmailInput.value
-                }
-            }
-        )
+        await customerService.updateMeterTenant(currentMeterNumber, {
+            firstname: tenantNameInput.value,
+            emailaddress: tenantEmailInput.value
+        })
 
         tenantName.value = normalizeText(tenantNameInput.value)
         tenantEmail.value = normalizeText(tenantEmailInput.value)
@@ -684,15 +672,7 @@ const getMeterInfo = async () => {
             return
         }
         
-        const result = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterInfo`, {
-            method: "GET",
-            params: {
-                "MeterNumber": meterNumber.value,
-                "ApiUserParams.TerminalID": VEND_TerminalID,
-                "ApiUserParams.OperatorID": VEND_OperatorID,
-                "ApiUserParams.RequestID": new Date()
-            }
-        })
+        const result = await vendService.getMeterInfo(meterNumber.value)
         meterInfo.value = result
         
         // Determine the actual meter blocked state
@@ -715,16 +695,7 @@ const getMeterInfo = async () => {
 
 const blockMeter = async (state = true) => {
     try {
-        const response = await useAuthFetch(`${VEND_URL}/MeterVend/SetMeterBlockState`, {
-            method: "GET",
-            params: {
-                "Block": state,
-                "MeterNumber": meterNumber.value,
-                "ApiUserParams.TerminalID": VEND_TerminalID,
-                "ApiUserParams.OperatorID": VEND_OperatorID,
-                "ApiUserParams.RequestID": new Date()
-            }
-        })
+        const response = await vendService.setMeterBlockState(meterNumber.value, state)
         
         // Update meter status based on the API response
         // Check if the response contains the new meter state
@@ -757,15 +728,7 @@ const blockMeter = async (state = true) => {
 
 const resetTamper = _.debounce(async () => {
     try {
-        const response = await useAuthFetch(`${VEND_URL}/MeterVend/GetMeterTamperToken`, {
-            method: "GET",
-            params: {
-                "MeterNumber": meterNumber.value,
-                "ApiUserParams.TerminalID": VEND_TerminalID,
-                "ApiUserParams.OperatorID": VEND_OperatorID,
-                "ApiUserParams.RequestID": new Date()
-            }
-        })
+        const response = await vendService.getMeterTamperToken(meterNumber.value)
         console.log('Reset response:', response)
         printJob.value = response.listOfTokenTransactions[0].tokens[0].delimitedTokenNumber
         isOpen.value = true
