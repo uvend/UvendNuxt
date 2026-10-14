@@ -17,7 +17,6 @@ const isDev = process.env.NODE_ENV !== 'production'
 const RUNTIME_KEYS = [
   'API_URL',
   'VEND_URL',
-  'WALLET_API_URL',
   'STATEMENT_API',
   'STATEMENT_SUMMARISED_PATH',
   'JSREPORT_URL',

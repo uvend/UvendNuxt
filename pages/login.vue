@@ -127,6 +127,8 @@
 </div>
 </template>
 <script>
+import { authService } from '~/services/auth'
+
 definePageMeta({
     layout: 'noauth'
 })
@@ -144,14 +146,7 @@ export default{
                 return;
             }
             try{
-                const credentials = btoa(`${this.username}:${this.password}`);
-                const result = await $fetch(`${VEND_URL}/user/VendUserFunctions/ValidateUser`,{
-                    method: "GET",
-                    headers: {
-                        "Authorization" : `Basic ${credentials}`,
-                        "Content-Type": "application/json",
-                    }
-                })
+                const { result, credentials } = await authService.validateUser(this.username, this.password)
 
                 console.log(result)
 

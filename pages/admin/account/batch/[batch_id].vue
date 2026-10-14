@@ -93,6 +93,7 @@
 </template>
 <script>
 import _ from 'lodash';
+import { batchService } from '~/services/batch'
 const { debounce } = _;
 definePageMeta({
     layout: 'account'
@@ -122,22 +123,16 @@ export default{
             if (state === 'BankFileCreated') return 'bg-blue-500 text-white border-transparent';
             return '';
         },
-        statementApiBase() {
-            return (typeof STATEMENT_API === 'string' ? STATEMENT_API : '').replace(/\/$/, '')
-        },
         async loadBankFileGeneratedStatus() {
-            const base = this.statementApiBase()
             const batchId = this.$route.params.batch_id
-            if (!base || !batchId) {
+            if (!batchId) {
                 this.bankFileGenerated = false
                 return
             }
 
             try {
-                const response = await $fetch(`${base}/bankfile/generated/${encodeURIComponent(batchId)}`, {
-                    method: 'GET',
-                })
-                this.bankFileGenerated = Boolean(response?.generated)
+                const response = await batchService.getGeneratedBankFile(batchId)
+                this.bankFileGenerated = response.generated
             } catch (error) {
                 console.error('Failed to load bank-file generation status', error)
                 this.bankFileGenerated = false
@@ -146,12 +141,7 @@ export default{
         async getBatch(silent = false){
             const batch_id = this.$route.params.batch_id
             if (!silent) this.isLoading = true
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/GetPaymentBatch`,{
-                method: "GET",
-                params: {
-                    PaymentBatchID : batch_id
-                },
-            })
+            const result = await batchService.getPaymentBatch(batch_id)
             if(result.numberOfRecords == 0){
                 if (!silent) this.isLoading = false
                 return navigateTo('/admin/account/payments')
@@ -205,16 +195,7 @@ export default{
                 const mm = String(now.getMonth() + 1).padStart(2, '0')
                 const dd = String(now.getDate()).padStart(2, '0')
                 const filename = `UVND####_${yy}${mm}${dd}.txt`
-                const response = await useAuthFetch(`${this.statementApiBase()}/bankfile/capitec`,{
-                    method: "POST",
-                    headers: {
-                        'accept': 'text/plain',
-                        'Content-Type': 'application/json'
-                    },
-                    body: {
-                        batchId
-                    }
-                })
+                const response = await batchService.generateCapitecBankFile(batchId)
                 this.downloadFile(response, filename, 'text/plain;charset=utf-8');
                 this.bankFileGenerated = true
                 await this.getBatch(true)

@@ -21,6 +21,8 @@
 </AlertDialog>
 </template>
 <script>
+import { batchService } from '~/services/batch'
+
 export default{
     props:{
         batch: String
@@ -33,13 +35,7 @@ export default{
     },
     methods:{
         async settle(){
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/FinalisePaymentBatch`,{
-                method: "POST",
-                body: {
-                    "settlementComment": "",
-                    "paymentBatchID": this.batch
-                }
-            })
+            const result = await batchService.finalisePaymentBatch(this.batch)
             console.log(result);
             this.$router.go(0)
         }
