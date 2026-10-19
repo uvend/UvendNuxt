@@ -108,6 +108,20 @@ const { formatMoney, currencyCode } = useCurrency()
 const selectedUtility = ref('All')
 const chartRef = ref(null)
 
+function parseRangeDate(value, endOfDay) {
+  if (!value) return null
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    const year = Number(match[1])
+    const month = Number(match[2]) - 1
+    const day = Number(match[3])
+    return endOfDay
+      ? new Date(year, month, day, 23, 59, 59, 999)
+      : new Date(year, month, day, 0, 0, 0, 0)
+  }
+  return new Date(value)
+}
+
 const chartData = computed(() => {
   // console.log('Trend component received transactions:', props.transactions)
   if (!props.transactions || props.transactions.length === 0) {
@@ -119,8 +133,8 @@ const chartData = computed(() => {
     if (!props.startDate || !props.endDate) return true
     
     const transactionDate = new Date(transaction.transactionDate)
-    const start = new Date(props.startDate)
-    const end = new Date(props.endDate)
+    const start = parseRangeDate(props.startDate, false)
+    const end = parseRangeDate(props.endDate, true)
     
     return transactionDate >= start && transactionDate <= end
   })

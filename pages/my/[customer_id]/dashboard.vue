@@ -11,12 +11,16 @@
                         <Input
                             type="date"
                             v-model="startDate"
+                            :min="dateInputMin"
+                            :max="endDate || dateInputMax"
                             class="max-w-40 bg-white border-gray-200 rounded-lg"
                             @change="updateCustomDateRange"
                         />
                         <Input
                             type="date"
                             v-model="endDate"
+                            :min="startDate || dateInputMin"
+                            :max="dateInputMax"
                             class="max-w-40 bg-white border-gray-200 rounded-lg"
                             @change="updateCustomDateRange"
                         />
@@ -382,6 +386,35 @@ export default {
                 hour12: true 
             })
         },
+        returnFormatDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            // YYYY-MM-DD, same format the statement page sends to the API
+            return `${year}-${month}-${day}`;
+        },
+        calculateStatementPeriod() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            let start;
+            let end;
+
+            // Statement billing window: 26th through the 25th
+            if (today.getDate() >= 26) {
+                start = new Date(currentYear, currentMonth, 26);
+                end = new Date(currentYear, currentMonth + 1, 25);
+            } else {
+                start = new Date(currentYear, currentMonth - 1, 26);
+                end = new Date(currentYear, currentMonth, 25);
+            }
+
+            return {
+                start: this.returnFormatDate(start),
+                end: this.returnFormatDate(end)
+            };
+        },
         onTopDateRangeChange(value) {
             const today = new Date();
             let newStartDate;
@@ -398,19 +431,21 @@ export default {
                     newStartDate.setDate(today.getDate() - 7);
                     newEndDate = new Date(today);
                     break;
-                case 'lastMonth':
-                    newStartDate = new Date(today);
-                    newStartDate.setDate(today.getDate() - 30);
-                    newEndDate = new Date(today);
-                    break;
+                case 'lastMonth': {
+                    const period = this.calculateStatementPeriod();
+                    this.startDate = period.start;
+                    this.endDate = period.end;
+                    this.updateDateRangeFromInputs();
+                    return;
+                }
                 case 'custom':
                     return;
                 default:
                     return;
             }
 
-            this.startDate = newStartDate.toISOString().split('T')[0];
-            this.endDate = newEndDate.toISOString().split('T')[0];
+            this.startDate = this.returnFormatDate(newStartDate);
+            this.endDate = this.returnFormatDate(newEndDate);
             this.updateDateRangeFromInputs();
         },
         updateCustomDateRange() {
@@ -419,20 +454,18 @@ export default {
         updateDateRangeFromInputs() {
             if (!this.startDate || !this.endDate) return;
             const dateRange = {
-                start: new Date(this.startDate).toISOString(),
-                end: new Date(this.endDate).toISOString()
+                start: this.returnFormatDate(this.startDate),
+                end: this.returnFormatDate(this.endDate)
             };
             this.chartDateRange = dateRange;
             this.dateRange = dateRange;
         }
     },
     async mounted() {
-        const today = new Date()
-        const lastMonth = new Date()
-        lastMonth.setDate(today.getDate() - 30)
-
-        this.startDate = lastMonth.toISOString().split('T')[0]
-        this.endDate = today.toISOString().split('T')[0]
+        const period = this.calculateStatementPeriod()
+        this.selectedDateRange = 'lastMonth'
+        this.startDate = period.start
+        this.endDate = period.end
         this.updateDateRangeFromInputs()
         this.meterActivityLoading = true
         try {
@@ -452,12 +485,23 @@ export default {
             const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
             return { start, end };
         },
+        dateInputMin() {
+            const year = new Date().getFullYear() - 5;
+            return `${year}-01-01`;
+        },
+        dateInputMax() {
+            return `${new Date().getFullYear()}-12-31`;
+        },
         formattedDateRange() {
             if (!this.startDate || !this.endDate) {
                 return 'No date range selected';
             }
-            const start = new Date(this.startDate);
-            const end = new Date(this.endDate);
+            const parseLocal = (value) => {
+                const [year, month, day] = String(value).split('-').map(Number);
+                return new Date(year, (month || 1) - 1, day || 1);
+            };
+            const start = parseLocal(this.startDate);
+            const end = parseLocal(this.endDate);
 
             if (start.toDateString() === end.toDateString()) {
                 return start.toLocaleDateString('en-ZA', {
