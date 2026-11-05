@@ -571,7 +571,10 @@ export default{
             this.isLoading = false;
         },
         async getTransactions(){
-            await this.getAdminTransactions()
+            await Promise.all([
+                this.getAdminTransactions(),
+                this.loadMeterComplexOptions(),
+            ])
             // if(localStorage.getItem('customer') === 'admin'){
             // }else{
             //     await this.getVendTransactions()
@@ -655,33 +658,70 @@ export default{
             if (result.customer?.billingStartDays && result.customer.billingStartDays.length > 0) {
                 this.customerStatementPeriod = result.customer.billingStartDays[0] - 1;
             }
-
-            // Build complexes list from DB response
-            const possibleLists = [
-                result.installations,
-                result.meterInstallations,
-                result.customerMeters,
-                result.list,
-                result?.customer?.installations,
-                result?.customer?.meterInstallations
-            ].filter(Boolean)
-
-            this.meterComplexes = []
+            // Complex dropdown options are loaded via loadMeterComplexOptions()
+        },
+        extractComplexesFromPayload(payload){
             const seen = new Set()
-            possibleLists.forEach(list => {
-                if (Array.isArray(list)) {
-                    list.forEach(item => {
-                        const id = item.complexUniqueId || item.complexuniqueid || item.complexUniqueID || item.complexId || item.complexid
-                        const name = item.complexDescription || item.complexdescription || item.complexName || item.complex || item.description
-                        if (id && name && !seen.has(id)) {
-                            seen.add(id)
-                            this.meterComplexes.push({ complexUniqueId: id, complexName: name })
-                        }
+            const complexes = []
+            const push = (id, name) => {
+                if (id == null || id === '' || !name) return
+                const key = String(id)
+                if (seen.has(key)) return
+                seen.add(key)
+                complexes.push({ complexUniqueId: id, complexName: String(name) })
+            }
+            const txnData = payload?.transactionData || {}
+            for (const [meterNumber, meterData] of Object.entries(txnData)) {
+                if (!meterData || typeof meterData !== 'object') continue
+                // Meter-level fields (no-activity meters may have no transactions)
+                push(
+                    meterData.complexuniqueid ?? meterData.complexUniqueId ?? meterData.complexId ?? meterData.ComplexUniqueID,
+                    meterData.complexDescription ?? meterData.complexName ?? meterData.complexdescription
+                )
+                if (Array.isArray(meterData.transactions)) {
+                    meterData.transactions.forEach(t => {
+                        push(
+                            t.complexuniqueid ?? t.complexUniqueId ?? t.complexId,
+                            t.complexDescription ?? t.complexName ?? t.complexdescription
+                        )
                     })
                 }
+            }
+            // Some payloads expose complexes as a top-level collection
+            const topLists = [payload?.complexes, payload?.complexList, payload?.complexesList].filter(Array.isArray)
+            topLists.forEach(list => {
+                list.forEach(c => {
+                    push(
+                        c.complexUniqueId ?? c.complexuniqueid ?? c.complexId ?? c.uniqueIdentification,
+                        c.complexDescription ?? c.complexName ?? c.description ?? c.name
+                    )
+                })
             })
-
-            // Fallback: if API didn’t return complexes, we’ll derive from transactions later
+            return complexes
+        },
+        async loadMeterComplexOptions(){
+            if (!this.dateRange?.start || !this.dateRange?.end) return
+            try {
+                const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
+                    method: "GET",
+                    params:{
+                        // Match PDF: include meters/complexes with no activity in period
+                        IncludeMetersWithNoActivity : true,
+                        StartDate : this.dateRange.start,
+                        EndDate: this.dateRange.end,
+                        ReportParentType: 4,
+                        ParentUniqueID: this.$route.params.customer_id,
+                        UtilityType: -1,
+                    },
+                })
+                const payload = summarisedPayload(result)
+                const complexes = this.extractComplexesFromPayload(payload)
+                if (complexes.length > 0) {
+                    this.meterComplexes = complexes.sort((a, b) => String(a.complexName).localeCompare(String(b.complexName)))
+                }
+            } catch (e) {
+                console.error('loadMeterComplexOptions', e)
+            }
         },
         filteredTransactions(){
             try {
@@ -830,7 +870,6 @@ export default{
                     complexName : meter.complexName,
                     complexUniqueId: meter.complexUniqueId
                 }
-                //console.log(complex)
                 if(!this.meterComplexes.some(listComplex => listComplex.complexUniqueId === complex.complexUniqueId)){
                     this.meterComplexes.push(complex);
                 }
