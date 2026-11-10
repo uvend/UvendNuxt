@@ -119,16 +119,19 @@ async function generateInvoice() {
 
     isGenerating.value = true
     try {
-        const result = await useAuthFetch(`${statementBase()}/invoices`, {
+        // Build query explicitly so CustomerVatNumber is always present
+        // (same shape as admin + the documented /invoices URL).
+        const params = new URLSearchParams({
+            CustomerID: String(route.params.customer_id).trim(),
+            StartDate: startDate.value,
+            EndDate: endDate.value,
+            CustomerVatNumber: customerVatNumber.value.trim(),
+            html: 'true',
+        })
+
+        const result = await useAuthFetch(`${statementBase()}/invoices?${params.toString()}`, {
             method: 'GET',
             responseType: 'text',
-            params: {
-                CustomerID: route.params.customer_id,
-                StartDate: startDate.value,
-                EndDate: endDate.value,
-                CustomerVatNumber: customerVatNumber.value.trim(),
-                html: true,
-            },
         })
 
         const html = typeof result === 'string'

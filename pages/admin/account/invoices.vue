@@ -152,20 +152,19 @@ async function generateInvoice() {
 
     isGenerating.value = true
     try {
-        const params = {
+        const params = new URLSearchParams({
             CustomerID: customerId.value.trim(),
             StartDate: startDate.value,
             EndDate: endDate.value,
             CustomerVatNumber: customerVatNumber.value.trim(),
-        }
+        })
         if (asHtml.value) {
-            params.html = true
+            params.set('html', 'true')
         }
 
-        const result = await useAuthFetch(`${statementBase()}/invoices`, {
+        const result = await useAuthFetch(`${statementBase()}/invoices?${params.toString()}`, {
             method: 'GET',
             ...(asHtml.value ? { responseType: 'text' } : {}),
-            params,
         })
 
         if (asHtml.value) {
