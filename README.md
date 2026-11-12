@@ -4,30 +4,17 @@ Nuxt 3 admin / customer UI for UVend prepaid utilities.
 
 ## Branching & releases
 
-Integration branch is **`dev`**. Production is **`main`**.
+Integration branch is **`dev`**. Production is **`main`**. No direct pushes to either — everything goes through a PR.
 
 ```text
-feature/*  →  PR into dev   →  image :dev           (DEV servers)
-dev        →  PR into main  →  image :latest / :main (production)
-git tag v*.*.* on main      →  image :vX.Y.Z
+feature/MYV-NNN-…  →  PR into dev   →  image :dev           (DEV)
+dev                →  PR into main  →  image :latest / :main (production)
+hotfix/MYV-NNN-…   →  PR into main  →  then merge main → dev
 ```
 
-| Environment | Branch / event | Docker Hub tags pushed |
-|-------------|----------------|-------------------------|
-| DEV | push to `dev` | `uvend-nuxt:dev`, `uvend-nuxt:<sha>` |
-| Production | push to `main` | `uvend-nuxt:latest`, `uvend-nuxt:main`, `uvend-nuxt:<sha>` |
-| Release | tag `v*.*.*` | `uvend-nuxt:vX.Y.Z`, `uvend-nuxt:<sha>` |
+Full guide (staying current with `dev`, hotfixes, environment table, Docker tags): **[docs/branching.md](docs/branching.md)**.
 
-**Server pulls (confirm with Jared before changing compose):**
-
-| Environment | Image tag to pull |
-|-------------|-------------------|
-| DEV | `…/uvend-nuxt:dev` |
-| Production | `…/uvend-nuxt:latest` (or `:main` — match what the host already uses) |
-
-`docker-compose.example.yml` currently references `:main`. Do not change live server compose in the branch-flow ticket; point DEV hosts at `:dev` when ready.
-
-Feature work: branch from `dev`, open PRs **into `dev`**. Only promote `dev` → `main` when DEV is verified.
+**Confirm with Jared** which tag production pulls (`:latest` vs `:main`) and the DEV/production URLs before changing live compose.
 
 ## Setup
 
