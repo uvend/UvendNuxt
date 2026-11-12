@@ -144,28 +144,30 @@ export default{
                 return;
             }
             try{
-                const credentials = btoa(`${this.username}:${this.password}`);
-                const result = await $fetch(`${VEND_URL}/user/VendUserFunctions/ValidateUser`,{
-                    method: "GET",
+                const result = await $fetch(`${VEND_URL}/identity/auth/login`,{
+                    method: "POST",
                     headers: {
-                        "Authorization" : `Basic ${credentials}`,
                         "Content-Type": "application/json",
+                    },
+                    body: {
+                        username: this.username,
+                        password: this.password
                     }
                 })
 
                 console.log(result)
 
                 localStorage.setItem('user',btoa(result))
-                localStorage.setItem('token',credentials)
+                localStorage.setItem('token',result.token)
 
-                const userType = result.userInfo.userType;
+                const userType = result.actor;
 
                 if(userType === 'Customer'){
                     localStorage.setItem('customer',result.userInfo.userParent.uniqueIdentification);
                     return navigateTo(`/my/${result.userInfo.userParent.uniqueIdentification}/dashboard`)
                 }
                 
-                if(userType == "Administration"){
+                if(userType == "admin"){
                     localStorage.setItem('customer','admin');
                     return navigateTo('');
                 }

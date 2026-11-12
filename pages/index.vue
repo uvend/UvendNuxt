@@ -16,7 +16,7 @@
                 <div class="">
                     <MySkeletenCardList v-if="isLoading" :columns="1"/>
                     <div v-else class="customer-container hide-scrollbar">
-                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in customers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueidentification}/dashboard`)"/> 
+                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in customers" :customer="customer" @click="navigateTo(`/my/${customer.id}/dashboard`)"/> 
                     </div>
                 </div>
             </div>
@@ -39,28 +39,21 @@ export default {
     methods: {
         async getCustomers() {
             try {
-                // Fix malformed CUSTOMER_API URL
-                let baseUrl = CUSTOMER_API || 'https://customer-api.uatvend.co.za'
-                
-                // If the URL contains two domains concatenated, extract the first one
-                if (baseUrl.includes('https://') && baseUrl.indexOf('https://', 8) !== -1) {
-                    baseUrl = baseUrl.substring(0, baseUrl.indexOf('https://', 8))
-                }
-                
-                // Ensure it ends with a slash if needed
-                if (!baseUrl.endsWith('/')) {
-                    baseUrl += '/'
-                }
-                
-                const result = await useAuthFetch(`${baseUrl}customer`, {
+                let baseUrl = VEND_URL
+                                
+                const result = await useAuthFetch(`${baseUrl}/customers`, {
                     method: "GET",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
                     query: {
                         page: 1,
                         limit: 100,
-                        search: this.search
+                        q: this.search
                     }
                 })
-                this.customers = result.data
+                this.customers = result.items
                 console.log(this.customers)
             } catch (error) {
                 console.error('Error fetching customers:', error)

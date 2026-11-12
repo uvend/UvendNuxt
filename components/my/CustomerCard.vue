@@ -6,7 +6,7 @@
         </p>
         <p> {{ customer.firstname }} {{ customer.surname }}</p>
         <p>
-            C{{ customer.uniqueidentification }}
+            {{ customer.id }}
         </p>
     </Card>
 

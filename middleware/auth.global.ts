@@ -31,8 +31,12 @@ export default defineNuxtRouteMiddleware((to, from) => {
     var customer = localStorage.getItem('customer') ?? ''
     //console.log('fullPath', to.fullPath);
     if(customer != 'admin' && (to.path.startsWith('/admin') || to.fullPath == '/')){
-        customer = customer?.slice(1);
-        return navigateTo(`/my/${customer}/transaction`)
+        // Stored as e.g. "C12345" or raw id — strip leading letter prefix if present
+        const customerId = customer?.replace(/^C/i, '') || customer
+        if (!customerId) {
+            return redirectToLogin()
+        }
+        return navigateTo(`/my/${customerId}/dashboard`)
     }
 
 

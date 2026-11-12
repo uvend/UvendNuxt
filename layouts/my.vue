@@ -49,7 +49,7 @@
                 <NuxtLink 
                     class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
-                    @click="navigateTo(`/my/${$route.params.customer_id}/dashboard`)"
+                    :to="`/my/${$route.params.customer_id}/dashboard`"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
                         <Icon name="lucide:layout-dashboard" class="h-5 w-5"/>
@@ -64,7 +64,7 @@
                 <NuxtLink 
                     class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
-                    @click="navigateTo(`/my/${$route.params.customer_id}/transactions`)"
+                    :to="`/my/${$route.params.customer_id}/transactions`"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
                         <Icon name="lucide:receipt" class="h-5 w-5"/>
@@ -79,7 +79,7 @@
                 <NuxtLink 
                     class="menu-item group flex items-center px-4 py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start' : 'justify-center'"
-                    @click="navigateTo(`/my/${$route.params.customer_id}/meters`)"
+                    :to="`/my/${$route.params.customer_id}/meters`"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
                         <Icon name="lucide:gauge" :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'h-5 w-5' : 'h-5 w-5'"/>
@@ -94,7 +94,7 @@
                 <NuxtLink 
                     class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
-                    @click="navigateTo(`/my/${$route.params.customer_id}/statement`)"
+                    :to="`/my/${$route.params.customer_id}/statement`"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
                         <Icon name="lucide:bar-chart-3" class="h-5 w-5"/>
@@ -109,7 +109,7 @@
                 <NuxtLink 
                     class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
                     :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
-                    @click="navigateTo(`/my/${$route.params.customer_id}/invoices`)"
+                    :to="`/my/${$route.params.customer_id}/invoices`"
                 >
                     <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
                         <Icon name="lucide:file-text" class="h-5 w-5"/>
@@ -139,7 +139,7 @@
             
                          <!-- Customer Support Section -->
              <div class="p-4 border-t border-blue-500/30">
-                 <NuxtLink 
+                 <a 
                      href="https://wa.me/27833147484" 
                      target="_blank" 
                      rel="noopener"
@@ -153,7 +153,7 @@
                          <span class="text-sm font-medium">Customer Support</span>
                          <span class="text-xs text-green-200">WhatsApp Chat</span>
                      </div>
-                 </NuxtLink>
+                 </a>
              </div>
             
             <!-- User Section at Bottom -->
