@@ -1,75 +1,47 @@
-# Nuxt Minimal Starter
+# UvendNuxt
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Nuxt 3 admin / customer UI for UVend prepaid utilities.
+
+## Branching & releases
+
+Integration branch is **`dev`**. Production is **`main`**. No direct pushes to either — everything goes through a PR.
+
+```text
+feature/MYV-NNN-…  →  PR into dev   →  image :dev           (DEV)
+dev                →  PR into main  →  image :latest / :main (production)
+hotfix/MYV-NNN-…   →  PR into main  →  then merge main → dev
+```
+
+Full guide (staying current with `dev`, hotfixes, environment table, Docker tags): **[docs/branching.md](docs/branching.md)**.
+
+**Confirm with Jared** which tag production pulls (`:latest` vs `:main`) and the DEV/production URLs before changing live compose.
 
 ## Setup
 
-Make sure to install dependencies:
-
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
+cp .env.example .env   # if present; fill DEV values out of band
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+See [docs/dev-setup.md](docs/dev-setup.md) when that runbook is on your branch.
 
-Build the application for production:
+## Scripts
+
+| Command | Purpose |
+|---------|---------|
+| `pnpm dev` | Dev server |
+| `pnpm run dev:host` | Dev server bound for LAN access |
+| `pnpm build` | Production build |
+| `pnpm preview` | Preview production build |
+
+## Docker
+
+CI builds and pushes images via [`.github/workflows/dockerhub-push.yml`](.github/workflows/dockerhub-push.yml) on pushes to `dev` / `main` and on `v*.*.*` tags (see table above).
+
+Local example (published image + `env_file`):
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+# use a local copy of docker-compose.example.yml + your .env
+docker compose up -d
 ```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

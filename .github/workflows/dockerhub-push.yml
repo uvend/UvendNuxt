@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - master
-      - dev-1     
+      - dev
     tags:
       - "v*.*.*"
 
@@ -30,14 +29,27 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Tag policy (do not put :latest on every build):
+      #   push to dev  → uvend-nuxt:dev, uvend-nuxt:<sha>
+      #   push to main → uvend-nuxt:latest, uvend-nuxt:main, uvend-nuxt:<sha>
+      #   tag v*.*.*   → uvend-nuxt:<tag> (e.g. v1.2.3), uvend-nuxt:<sha>
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/uvend-nuxt
+          tags: |
+            type=raw,value=${{ github.sha }}
+            type=raw,value=dev,enable=${{ github.ref_name == 'dev' }}
+            type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
+            type=raw,value=main,enable=${{ github.ref_name == 'main' }}
+            type=ref,event=tag
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/uvend-nuxt:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/uvend-nuxt:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/uvend-nuxt:${{ github.ref_name }}
-
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
