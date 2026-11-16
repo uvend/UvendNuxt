@@ -14,6 +14,8 @@ hotfix/MYV-NNN-…   →  PR into main  →  then merge main → dev
 
 Full guide (staying current with `dev`, hotfixes, environment table, Docker tags): **[docs/branching.md](docs/branching.md)**.
 
+Services migration inventory (inline `useAuthFetch` / backends / gaps vs api-services): **[docs/services-checklist.md](docs/services-checklist.md)**.
+
 **Confirm with Jared** which tag production pulls (`:latest` vs `:main`) and the DEV/production URLs before changing live compose.
 
 ## Setup

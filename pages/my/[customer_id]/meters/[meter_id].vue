@@ -617,17 +617,14 @@ const resolveMeterIdentity = async () => {
         const today = new Date()
         const start = new Date()
         start.setDate(today.getDate() - days)
-        const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
-            method: "GET",
-            params: {
-                StartDate: start.toISOString(),
-                EndDate: today.toISOString(),
-                ResponseFormatType: 0,
-                ReportParentType: 6,
-                ParentUniqueID: route.params.meter_id,
-                UtilityType: -1,
-                IncludeMetersWithNoActivity: true
-            }
+        const result = await statementService.getSummarisedMeterActivity({
+            StartDate: start.toISOString(),
+            EndDate: today.toISOString(),
+            ResponseFormatType: 0,
+            ReportParentType: 6,
+            ParentUniqueID: route.params.meter_id,
+            UtilityType: -1,
+            IncludeMetersWithNoActivity: true
         })
         applyMeterIdentityFromPayload(summarisedPayload(result))
     } catch (error) {
