@@ -127,6 +127,8 @@
 </div>
 </template>
 <script>
+import { authService } from '~/services/auth'
+
 definePageMeta({
     layout: 'noauth'
 })
@@ -144,16 +146,7 @@ export default{
                 return;
             }
             try{
-                const result = await $fetch(`${VEND_URL}/identity/auth/login`,{
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: {
-                        username: this.username,
-                        password: this.password
-                    }
-                })
+                const { result, credentials } = await authService.validateUser(this.username, this.password)
 
                 console.log(result)
 

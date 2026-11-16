@@ -25,6 +25,7 @@
 </template>
 <script>
 import { debounce } from 'lodash'
+import { customerService } from '~/services/customer'
 export default {
     data() {
         return {
@@ -39,19 +40,10 @@ export default {
     methods: {
         async getCustomers() {
             try {
-                let baseUrl = VEND_URL
-                                
-                const result = await useAuthFetch(`${baseUrl}/customers`, {
-                    method: "GET",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    query: {
-                        page: 1,
-                        limit: 100,
-                        q: this.search
-                    }
+                const result = await customerService.listCustomers({
+                    page: 1,
+                    limit: 100,
+                    search: this.search
                 })
                 this.customers = result.items
                 console.log(this.customers)

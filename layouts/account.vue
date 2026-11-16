@@ -47,19 +47,7 @@
                         </NuxtLink>
                     </nav>
                 </nav>
-                <nav>
-                    <div class="menu-item flex items-center px-3 py-2 rounded-md text-white font-medium">
-                        <Icon name="lucide:wallet" class="mr-2 h-5 w-5" />
-                        <p class="">Wallet</p>
-                    </div>
-                    <nav class="sub-group">
-                        <NuxtLink to="/admin/account/wallet" class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium">
-                            <Icon name="lucide:search" class="mr-2 h-5 w-5" />
-                            <p class="">Accounts</p>
-                        </NuxtLink>
-                    </nav>
-                </nav>
-                <NuxtLink v-if="aeonEnabled" to="/admin/account/aeon" class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium">
+                <NuxtLink v-if="aeonEnabled" class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/aeon')">
                     <Icon name="lucide:zap" class="mr-2 h-5 w-5" />
                     <p class="">Aeon</p>
                 </NuxtLink>
