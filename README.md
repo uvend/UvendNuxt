@@ -10,7 +10,7 @@ cp .env.example .env   # then fill DEV values (from Jared, out of band)
 pnpm dev
 ```
 
-Full local runbook (required keys, `APP_ENV` / pages tree, smoke pages, Docker notes): **[docs/dev-setup.md](docs/dev-setup.md)**.
+Full local runbook (required keys, pages tree, smoke pages, auth caveats, Docker notes): **[docs/dev-setup.md](docs/dev-setup.md)**.
 
 ## Scripts
 
@@ -25,7 +25,7 @@ Full local runbook (required keys, `APP_ENV` / pages tree, smoke pages, Docker n
 
 - Runtime keys are listed in `nuxt.config.ts` (`RUNTIME_KEYS`) and documented in `.env.example`.
 - Copy `.env.example` → `.env`. **Do not commit `.env`.**
-- Leave `APP_ENV` empty for the default `pages/` tree (admin + `my/…`). Set `APP_ENV=wallet` only for the wallet-only page tree.
+- Leave `APP_ENV` empty for the default `pages/` tree (admin + `my/…`). Do **not** set `APP_ENV=wallet` for normal DEV setup — that switches to the wallet-only pages root and is outside this runbook.
 
 ## Docker
 
