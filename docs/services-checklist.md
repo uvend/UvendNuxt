@@ -1,10 +1,10 @@
 # Services migration checklist (UvendNuxt)
 
-Inventory of screens that call **statement-api**, **AdminSystem** (`API_URL`), **Vend**, **Customer API**, **Mpesa**, or **Wallet**, taken from **`main` @ `e653166`** (includes invoices, 10 Nov 2026).
+Inventory of screens that call **statement-api**, **AdminSystem** (`API_URL`), **Vend**, **Customer API**, or **Mpesa**, taken from **`main` @ `e653166`** (includes invoices, 10 Nov 2026). Wallet is out of this repo.
 
-**MYV-78 (in progress on `feature/MYV-78` → PR into `feature/jared/api-services`):** customer portal activity / summarised activity / statements in `pages/my/**` (except invoices) now call `statementService` / `customerService` / `vendService` — no raw `STATEMENT_API` / `useAuthFetch` to statement-api in those files.
+**MYV-78 (ready for review `feature/MYV-78` → PR into `feature/jared/api-services`):** customer portal activity / summarised activity / statements in `pages/my/**` (except invoices) now call `statementService` / `customerService` / `vendService` — no raw `STATEMENT_API` / `useAuthFetch` to statement-api in those files.
 
-Suggested modules match the `services/` tree (`statementService`, `batchService`, `paymentsService`, `vendService`, `customerService`, `aeonService`, `authService`, `mpesaService`). Wallet stays on `useWalletAuthFetch` unless a later ticket says otherwise.
+Suggested modules match the `services/` tree (`statementService`, `batchService`, `paymentsService`, `vendService`, `customerService`, `aeonService`, `authService`, `mpesaService`). The in-repo wallet app and `useWalletAuthFetch` are removed on this branch — wallet now lives in its own repo.
 
 ### Legend
 
@@ -49,8 +49,6 @@ Also used by customer UI: `composables/useMeterActivity.js` → summarised path 
 | `mining.vue` | summarised meter activity | statement-api | `statementService.getSummarisedMeterActivity` | Yes (reuse statement) | ☐ |
 | `aeon.vue` | `STATEMENT_API/aeon/check` (`AEON_CHECK` gates UI) | statement-api | `aeonService.checkFile` | Yes | ☐ |
 | **`invoices.vue`** | `STATEMENT_API/invoices` | statement-api | **new statement invoice helper** | **No** | ☐ |
-| `wallet/index.vue` | `useWalletAuthFetch` admin accounts / search | Wallet API | _(wallet — keep as-is for now)_ | N/A | ☐ |
-| `wallet/[accountnumber]/index.vue` | meters, account, transactions, payments | Wallet API | _(wallet)_ | N/A | ☐ |
 | `rollback.vue` | stub `fetch` placeholder URL | — | — | N/A (dead stub) | ☐ |
 
 ### Admin shared components
@@ -69,15 +67,11 @@ Also used by customer UI: `composables/useMeterActivity.js` → summarised path 
 |------|--------------|---------|-------------------|--------------|----|
 | `pages/admin/mpesa/requests.vue` | multiple `$fetch` → `MPESA_URL` | Mpesa | `mpesaService` (v1/v2 on branch) | Yes | ☐ |
 
-### Wallet app (`APP_ENV=wallet` / `pages/wallet/**`)
-
-Out of scope for statement/AdminSystem services merge. Calls use `useWalletAuthFetch` + `WALLET_API_URL` (login, meters, payments, tokens, etc.). Track separately if wallet is migrated later.
-
 ---
 
 ## 2. Remaining inline call sites on `main` (file list)
 
-Files under `pages/`, `components/`, `composables/` with real `useAuthFetch` / `$fetch` / `fetch` to backends (**excluding** pure wallet `useWalletAuthFetch` sites). ~17 files:
+Files under `pages/`, `components/`, `composables/` with real `useAuthFetch` / `$fetch` / `fetch` to backends. ~17 files:
 
 ### Statement-api / AdminSystem / Vend / Customer (services-merge targets)
 
@@ -138,14 +132,12 @@ Env: local / DEV image against DEV backends. **Do not paste secrets or full `.en
 | Admin invoices | Generate | ☐ | Not tested yet |
 | Mpesa requests (if `MPESA_URL` set) | Status / list | ☐ | Not tested yet |
 | Admin → admin portal | Redirect works | ✅ | |
-| Wallet accounts / account detail | Loads | ✅ | View account OK |
-| Wallet account transactions / payments / meters | Lists + filters | ✅ | |
-
 Known limitations (from related tickets; not regressions of this inventory):
 
 - Customer login / opaque public IDs vs statement-api may already fail depending on which identity stack DEV uses.
 - Do not treat those as blockers for completing this checklist document.
-- **DEV DB schema gap (2026-11-13):** local/DEV `uvend-statement-api` selects `v.commissionableamountincludessurcharge` in `src/service/dbMeterActivity.js`; that column is **not** on the DEV `vendtransactions` table Postgres is using. Breaks summarised meter activity → dashboard, transactions, meters, statement. AdminSystem / Wallet paths above still work. Fix is DB migration (add column) or temporarily drop the select/mapper field until DEV schema matches.
+- **Wallet smoke (2026-11-13):** accounts / account detail / transactions / payments / meters were tested on `main` and passed; those screens are **removed on this branch** (wallet own repo), so they are not listed above.
+- **DEV DB schema gap (2026-11-13):** local/DEV `uvend-statement-api` selects `v.commissionableamountincludessurcharge` in `src/service/dbMeterActivity.js`; that column is **not** on the DEV `vendtransactions` table Postgres is using. Breaks summarised meter activity → dashboard, transactions, meters, statement. AdminSystem paths above still work. Fix is DB migration (add column) or temporarily drop the select/mapper field until DEV schema matches.
 
 ---
 
