@@ -99,6 +99,7 @@
 </template>
 <script>
 import _ from 'lodash';
+import { batchService } from '~/services/batch'
 const { debounce } = _;
 definePageMeta({
     layout: 'account'
@@ -141,12 +142,9 @@ export default{
     methods:{
         async getBatch(){
             this.isLoading = true
-            const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/GetCurrentBatchList`,{
-                method: "GET",
-                params: {
-                    "GoBackMonths" : this.monthsBack,
-                    "BatchPaymentState" : this.selectedStatus
-                },
+            const result = await batchService.getCurrentBatchList({
+                goBackMonths: this.monthsBack,
+                batchPaymentState: this.selectedStatus,
             });
             console.log(result)
             this.batches = result.batchList;
@@ -158,16 +156,9 @@ export default{
             this.isLoading = false;
         },
         async loadGeneratedBankFiles() {
-            const base = (typeof STATEMENT_API === 'string' ? STATEMENT_API : '').replace(/\/$/, '')
-            if (!base) {
-                this.generatedBankFileIds = []
-                return
-            }
-
             try {
-                const response = await $fetch(`${base}/bankfile/generated`, { method: 'GET' })
-                const ids = Array.isArray(response?.batchIds) ? response.batchIds : []
-                this.generatedBankFileIds = ids.map((id) => String(id))
+                const response = await batchService.listGeneratedBankFiles()
+                this.generatedBankFileIds = response.batchIds
             } catch (error) {
                 console.error('Failed to load generated bank-file registry', error)
                 this.generatedBankFileIds = []

@@ -119,6 +119,7 @@
 <script setup>
 import { miningCustomers } from '~/config/miningCustomers'
 import { summarisedPayload } from '~/composables/summarisedPayload.js'
+import { statementService } from '~/services/statement'
 
 definePageMeta({
   layout: 'account'
@@ -169,17 +170,14 @@ async function fetchTransactions() {
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return
   isLoading.value = true
   try {
-    const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
-      method: 'GET',
-      params: {
-        IncludeMetersWithNoActivity: false,
-        StartDate: start.toISOString(),
-        EndDate: end.toISOString(),
-        ReportParentType: 4,
-        ResponseFormatType: 0,
-        ParentUniqueID: Number(selectedCustomerCode.value),
-        UtilityType: -1
-      }
+    const result = await statementService.getSummarisedMeterActivity({
+      IncludeMetersWithNoActivity: false,
+      StartDate: start.toISOString(),
+      EndDate: end.toISOString(),
+      ReportParentType: 4,
+      ResponseFormatType: 0,
+      ParentUniqueID: Number(selectedCustomerCode.value),
+      UtilityType: -1
     })
 
     const payload = summarisedPayload(result)
