@@ -496,7 +496,6 @@ const getAdminMeterActivity = async () => {
             return sortOrder.value === 'latest' ? dateB - dateA : dateA - dateB;
         });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
-        console.log('Admin meter transactions:', result)
         if (meterTransactions.value[0]?.meterNumber) {
             meterNumber.value = meterTransactions.value[0].meterNumber
             complexName.value = meterTransactions.value[0]?.complexName ?? ''
