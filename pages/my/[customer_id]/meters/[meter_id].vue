@@ -496,7 +496,6 @@ const getAdminMeterActivity = async () => {
             return sortOrder.value === 'latest' ? dateB - dateA : dateA - dateB;
         });
         displayedTransactions.value = filteredTransactions.value.slice(0, pageSize.value)
-        console.log('Admin meter transactions:', result)
         if (meterTransactions.value[0]?.meterNumber) {
             meterNumber.value = meterTransactions.value[0].meterNumber
             complexName.value = meterTransactions.value[0]?.complexName ?? ''
@@ -617,17 +616,14 @@ const resolveMeterIdentity = async () => {
         const today = new Date()
         const start = new Date()
         start.setDate(today.getDate() - days)
-        const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`, {
-            method: "GET",
-            params: {
-                StartDate: start.toISOString(),
-                EndDate: today.toISOString(),
-                ResponseFormatType: 0,
-                ReportParentType: 6,
-                ParentUniqueID: route.params.meter_id,
-                UtilityType: -1,
-                IncludeMetersWithNoActivity: true
-            }
+        const result = await statementService.getSummarisedMeterActivity({
+            StartDate: start.toISOString(),
+            EndDate: today.toISOString(),
+            ResponseFormatType: 0,
+            ReportParentType: 6,
+            ParentUniqueID: route.params.meter_id,
+            UtilityType: -1,
+            IncludeMetersWithNoActivity: true
         })
         applyMeterIdentityFromPayload(summarisedPayload(result))
     } catch (error) {

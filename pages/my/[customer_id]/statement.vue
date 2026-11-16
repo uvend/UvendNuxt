@@ -692,17 +692,14 @@ export default{
         async loadMeterComplexOptions(){
             if (!this.dateRange?.start || !this.dateRange?.end) return
             try {
-                const result = await useAuthFetch(`${STATEMENT_API}${STATEMENT_SUMMARISED_PATH}`,{
-                    method: "GET",
-                    params:{
-                        // Match PDF: include meters/complexes with no activity in period
-                        IncludeMetersWithNoActivity : true,
-                        StartDate : this.dateRange.start,
-                        EndDate: this.dateRange.end,
-                        ReportParentType: 4,
-                        ParentUniqueID: this.$route.params.customer_id,
-                        UtilityType: -1,
-                    },
+                const result = await statementService.getSummarisedMeterActivity({
+                    // Match PDF: include meters/complexes with no activity in period
+                    IncludeMetersWithNoActivity : true,
+                    StartDate : this.dateRange.start,
+                    EndDate: this.dateRange.end,
+                    ReportParentType: 4,
+                    ParentUniqueID: this.$route.params.customer_id,
+                    UtilityType: -1,
                 })
                 const payload = summarisedPayload(result)
                 const complexes = this.extractComplexesFromPayload(payload)
