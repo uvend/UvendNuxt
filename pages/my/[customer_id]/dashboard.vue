@@ -5,27 +5,42 @@
             <!-- KPI Cards - Monthly vending trend with month cycle -->
             <div class="mb-4 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-800">Monthly Vending Trend</h2>
-                <div class="flex items-center gap-2">
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        @click="prevKpiMonth"
-                        class="rounded-xl"
-                    >
-                        <Icon name="lucide:chevron-left" class="w-4 h-4" />
-                        Previous
-                    </Button>
-                    <span class="text-sm font-medium text-gray-700 min-w-[140px] text-center">{{ kpiMonthLabel }}</span>
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        @click="nextKpiMonth"
-                        :disabled="kpiMonthOffset >= 0"
-                        class="rounded-xl"
-                    >
-                        Next
-                        <Icon name="lucide:chevron-right" class="w-4 h-4" />
-                    </Button>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <div v-if="selectedDateRange === 'custom'" class="flex flex-row gap-2">
+              
+                        <Input
+                            type="date"
+                            v-model="startDate"
+                            :min="dateInputMin"
+                            :max="endDate || dateInputMax"
+                            class="max-w-40 bg-white border-gray-200 rounded-lg"
+                            @change="updateCustomDateRange"
+                        />
+                        <Input
+                            type="date"
+                            v-model="endDate"
+                            :min="startDate || dateInputMin"
+                            :max="dateInputMax"
+                            class="max-w-40 bg-white border-gray-200 rounded-lg"
+                            @change="updateCustomDateRange"
+                        />
+                    </div>
+
+                    <Select v-model="selectedDateRange" @update:model-value="onTopDateRangeChange">
+                        <SelectTrigger class="w-32 bg-white border-gray-200 rounded-lg">
+                            <SelectValue placeholder="Period" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="lastDay">Last Day</SelectItem>
+                            <SelectItem value="lastWeek">Last Week</SelectItem>
+                            <SelectItem value="lastMonth">Last Month</SelectItem>
+                            <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <div class="bg-gray-50 rounded-lg px-2 py-1">
+                        <div class="text-xs text-gray-500">{{ formattedDateRange }}</div>
+                    </div>
                 </div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-6 flex-shrink-0">
@@ -137,7 +152,8 @@
                             :transactions="originalTransactions" 
                             title="Utility Spending Trend"
                             description="Track your water, electricity, and gas spending over time"
-                            @dateRangeChanged="onChartDateRangeChanged"
+                            :start-date="startDate"
+                            :end-date="endDate"
                         />
                     </div>
                 </div>
@@ -279,7 +295,10 @@ export default {
         return {
             originalTransactions: [], // Store original unfiltered data
             dateRange: null,
-            chartDateRange: null, // Date range from chart component
+            chartDateRange: null, // Kept for compatibility with existing flow
+            selectedDateRange: 'lastMonth',
+            startDate: null,
+            endDate: null,
             selectedTransaction: null,
             expandedRow: null, // Track expanded row index
             summaryData: {}, // Store summary data from API
@@ -363,28 +382,87 @@ export default {
                 hour12: true 
             })
         },
-        onChartDateRangeChanged(dateRange) {
+        returnFormatDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            // YYYY-MM-DD, same format the statement page sends to the API
+            return `${year}-${month}-${day}`;
+        },
+        calculateStatementPeriod() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            let start;
+            let end;
+
+            // Statement billing window: 26th through the 25th
+            if (today.getDate() >= 26) {
+                start = new Date(currentYear, currentMonth, 26);
+                end = new Date(currentYear, currentMonth + 1, 25);
+            } else {
+                start = new Date(currentYear, currentMonth - 1, 26);
+                end = new Date(currentYear, currentMonth, 25);
+            }
+
+            return {
+                start: this.returnFormatDate(start),
+                end: this.returnFormatDate(end)
+            };
+        },
+        onTopDateRangeChange(value) {
+            const today = new Date();
+            let newStartDate;
+            let newEndDate;
+
+            switch (value) {
+                case 'lastDay':
+                    newStartDate = new Date(today);
+                    newStartDate.setDate(today.getDate() - 1);
+                    newEndDate = new Date(today);
+                    break;
+                case 'lastWeek':
+                    newStartDate = new Date(today);
+                    newStartDate.setDate(today.getDate() - 7);
+                    newEndDate = new Date(today);
+                    break;
+                case 'lastMonth': {
+                    const period = this.calculateStatementPeriod();
+                    this.startDate = period.start;
+                    this.endDate = period.end;
+                    this.updateDateRangeFromInputs();
+                    return;
+                }
+                case 'custom':
+                    return;
+                default:
+                    return;
+            }
+
+            this.startDate = this.returnFormatDate(newStartDate);
+            this.endDate = this.returnFormatDate(newEndDate);
+            this.updateDateRangeFromInputs();
+        },
+        updateCustomDateRange() {
+            this.updateDateRangeFromInputs();
+        },
+        updateDateRangeFromInputs() {
+            if (!this.startDate || !this.endDate) return;
+            const dateRange = {
+                start: this.returnFormatDate(this.startDate),
+                end: this.returnFormatDate(this.endDate)
+            };
             this.chartDateRange = dateRange;
-            // Also update the main dateRange to trigger API calls
             this.dateRange = dateRange;
-        },
-        prevKpiMonth() {
-            this.kpiMonthOffset -= 1;
-        },
-        nextKpiMonth() {
-            if (this.kpiMonthOffset < 0) this.kpiMonthOffset += 1;
         }
     },
     async mounted() {
-        const today = new Date()
-        const ninetyDaysAgo = new Date()
-        ninetyDaysAgo.setDate(today.getDate() - 90)
-        
-        // Fetch 90 days so we have data for multiple months when cycling
-        this.dateRange = {
-            start: ninetyDaysAgo.toISOString(),
-            end: today.toISOString()
-        }
+        const period = this.calculateStatementPeriod()
+        this.selectedDateRange = 'lastMonth'
+        this.startDate = period.start
+        this.endDate = period.end
+        this.updateDateRangeFromInputs()
         this.meterActivityLoading = true
         try {
             await Promise.all([
@@ -402,6 +480,38 @@ export default {
             const start = new Date(d.getFullYear(), d.getMonth(), 1);
             const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
             return { start, end };
+        },
+        dateInputMin() {
+            const year = new Date().getFullYear() - 5;
+            return `${year}-01-01`;
+        },
+        dateInputMax() {
+            return `${new Date().getFullYear()}-12-31`;
+        },
+        formattedDateRange() {
+            if (!this.startDate || !this.endDate) {
+                return 'No date range selected';
+            }
+            const parseLocal = (value) => {
+                const [year, month, day] = String(value).split('-').map(Number);
+                return new Date(year, (month || 1) - 1, day || 1);
+            };
+            const start = parseLocal(this.startDate);
+            const end = parseLocal(this.endDate);
+
+            if (start.toDateString() === end.toDateString()) {
+                return start.toLocaleDateString('en-ZA', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            }
+
+            if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+                return `${start.getDate()} - ${end.getDate()} ${start.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' })}`;
+            }
+
+            return `${start.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short' })} - ${end.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' })}`;
         },
         kpiMonthLabel() {
             const d = new Date();
@@ -442,19 +552,16 @@ export default {
             });
         },
         waterSpending() {
-            return this.filteredTransactionsForKPI
-                .filter(t => t.utilityType === 'Water')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
+            const vendAmount = this.summaryData?.utilities?.water?.vendamount
+            return parseFloat(vendAmount) || 0
         },
         electricitySpending() {
-            return this.filteredTransactionsForKPI
-                .filter(t => t.utilityType === 'Electricity')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
+            const vendAmount = this.summaryData?.utilities?.electricity?.vendamount
+            return parseFloat(vendAmount) || 0
         },
         gasSpending() {
-            return this.filteredTransactionsForKPI
-                .filter(t => t.utilityType === 'Gas')
-                .reduce((sum, t) => sum + (parseFloat(t.managedTenderAmount) || 0), 0);
+            const vendAmount = this.summaryData?.utilities?.gas?.vendamount
+            return parseFloat(vendAmount) || 0
         },
         totalRefunds() {
             if (this.summaryData && this.summaryData.vendRefund !== undefined) {
@@ -464,13 +571,7 @@ export default {
         },
         klVended() {
             try {
-                if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
-                    return '0.0';
-                }
-                return this.filteredTransactionsForKPI
-                    .filter(t => t && t.utilityType === 'Water')
-                    .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                    .toFixed(1);
+                return (parseFloat(this.summaryData?.utilities?.water?.units) || 0).toFixed(1)
             } catch (error) {
                 console.error('Error in klVended:', error);
                 return '0.0';
@@ -478,13 +579,7 @@ export default {
         },
         electricityVended() {
             try {
-                if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
-                    return '0.0';
-                }
-                return this.filteredTransactionsForKPI
-                    .filter(t => t && t.utilityType === 'Electricity')
-                    .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                    .toFixed(1);
+                return (parseFloat(this.summaryData?.utilities?.electricity?.units) || 0).toFixed(2)
             } catch (error) {
                 console.error('Error in electricityVended:', error);
                 return '0.0';
@@ -492,13 +587,7 @@ export default {
         },
         gasVended() {
             try {
-                if (!this.filteredTransactionsForKPI || !Array.isArray(this.filteredTransactionsForKPI)) {
-                    return '0.0';
-                }
-                return this.filteredTransactionsForKPI
-                    .filter(t => t && t.utilityType === 'Gas')
-                    .reduce((sum, t) => sum + (parseFloat(t.totalUnitsIssued) || 0), 0)
-                    .toFixed(1);
+                return (parseFloat(this.summaryData?.utilities?.gas?.units) || 0).toFixed(1)
             } catch (error) {
                 console.error('Error in gasVended:', error);
                 return '0.0';

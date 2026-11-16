@@ -104,6 +104,21 @@
                         <span class="text-xs text-blue-200">Reports & Analytics</span>
                     </div>
                 </NuxtLink>
+
+                <!-- Invoices -->
+                <NuxtLink 
+                    class="menu-item group flex items-center py-3 rounded-xl text-white hover:bg-white/10 hover:shadow-lg font-medium transition-all duration-200" 
+                    :class="(sidebarExpanded || (isHovered && !isPinned)) ? 'justify-start px-4' : 'justify-center px-2'"
+                    @click="navigateTo(`/my/${$route.params.customer_id}/invoices`)"
+                >
+                    <div class="flex items-center justify-center w-8 h-8 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                        <Icon name="lucide:file-text" class="h-5 w-5"/>
+                    </div>
+                    <div v-if="(sidebarExpanded || (isHovered && !isPinned))" class="flex flex-col ml-3">
+                        <span class="text-sm font-medium">Invoices</span>
+                        <span class="text-xs text-blue-200">VAT Invoices</span>
+                    </div>
+                </NuxtLink>
                 
                 <!-- Admin Navigation - Only show for admin users -->
                 <div 

@@ -30,6 +30,10 @@
                         <Icon name="lucide:layers" class="mr-2 h-5 w-5" />
                         <p class="">Payment Batch</p>
                     </NuxtLink>
+                    <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white hover:bg-blue-600 font-medium" @click="navigateTo('/admin/account/invoices')">
+                        <Icon name="lucide:file-text" class="mr-2 h-5 w-5" />
+                        <p class="">Invoices</p>
+                    </NuxtLink>
                 </nav>
                 <nav v-if="mpesaUrl">
                     <NuxtLink class="menu-item flex items-center px-3 py-2 rounded-md text-white font-medium" >
