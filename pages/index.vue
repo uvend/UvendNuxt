@@ -16,7 +16,7 @@
                 <div class="">
                     <MySkeletenCardList v-if="isLoading" :columns="1"/>
                     <div v-else class="customer-container hide-scrollbar">
-                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in customers" :customer="customer" @click="navigateTo(`/my/${customer.uniqueidentification}/dashboard`)"/> 
+                        <MyCustomerCard class="my-2 cursor-pointer" v-for="customer in customers" :customer="customer" @click="navigateTo(`/my/${customer.id}/dashboard`)"/> 
                     </div>
                 </div>
             </div>
@@ -45,8 +45,7 @@ export default {
                     limit: 100,
                     search: this.search
                 })
-                this.customers = result.data
-                console.log(this.customers)
+                this.customers = result.items
             } catch (error) {
                 console.error('Error fetching customers:', error)
             } finally {

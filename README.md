@@ -18,15 +18,15 @@ Services migration inventory (inline `useAuthFetch` / backends / gaps vs api-ser
 
 **Confirm with Jared** which tag production pulls (`:latest` vs `:main`) and the DEV/production URLs before changing live compose.
 
-## Setup
+## Quick start
 
 ```bash
 pnpm install
-cp .env.example .env   # if present; fill DEV values out of band
+cp .env.example .env   # then fill DEV values (from Jared, out of band)
 pnpm dev
 ```
 
-See [docs/dev-setup.md](docs/dev-setup.md) when that runbook is on your branch.
+Full local runbook (required keys, pages tree, smoke pages, auth caveats, Docker notes): **[docs/dev-setup.md](docs/dev-setup.md)**.
 
 ## Scripts
 
@@ -36,6 +36,12 @@ See [docs/dev-setup.md](docs/dev-setup.md) when that runbook is on your branch.
 | `pnpm run dev:host` | Dev server bound for LAN access |
 | `pnpm build` | Production build |
 | `pnpm preview` | Preview production build |
+
+## Environment
+
+- Runtime keys are listed in `nuxt.config.ts` (`RUNTIME_KEYS`) and documented in `.env.example`.
+- Copy `.env.example` → `.env`. **Do not commit `.env`.**
+- Leave `APP_ENV` empty for the default `pages/` tree (admin + `my/…`). Do **not** set `APP_ENV=wallet` for normal DEV setup — that switches to the wallet-only pages root and is outside this runbook.
 
 ## Docker
 
@@ -47,3 +53,5 @@ Local example (published image + `env_file`):
 # use a local copy of docker-compose.example.yml + your .env
 docker compose up -d
 ```
+
+Use a local copy with your `.env`; do not commit credentials.
