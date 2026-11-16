@@ -76,7 +76,7 @@ Out of scope for statement/AdminSystem services merge. Calls use `useWalletAuthF
 
 ## 2. Remaining inline call sites on `main` (file list)
 
-Files under `pages/`, `components/`, `composables/` with real `useAuthFetch` / `$fetch` / `fetch` to backends (**excluding** pure wallet `useWalletAuthFetch` sites). ~17 files:
+Files under `pages/`, `components/`, `composables/` with real `useAuthFetch` / `$fetch` / `fetch` to backends (**excluding** pure wallet `useWalletAuthFetch` sites). ~19 files:
 
 ### Statement-api / AdminSystem / Vend / Customer (services-merge targets)
 
