@@ -46,7 +46,6 @@ export default {
                     search: this.search
                 })
                 this.customers = result.items
-                console.log(this.customers)
             } catch (error) {
                 console.error('Error fetching customers:', error)
             } finally {
