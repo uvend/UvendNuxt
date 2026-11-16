@@ -121,6 +121,7 @@ async function generateInvoice() {
     try {
         // Build query explicitly so CustomerVatNumber is always present
         // (same shape as admin + the documented /invoices URL).
+        // TODO(MYV-79): move this call into services/statement (keep inline until then).
         const params = new URLSearchParams({
             CustomerID: String(route.params.customer_id).trim(),
             StartDate: startDate.value,

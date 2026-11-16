@@ -152,6 +152,7 @@ async function generateInvoice() {
 
     isGenerating.value = true
     try {
+        // TODO(MYV-79): move this call into services/statement (keep inline until then).
         const params = new URLSearchParams({
             CustomerID: customerId.value.trim(),
             StartDate: startDate.value,
