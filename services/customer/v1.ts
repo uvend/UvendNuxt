@@ -2,7 +2,10 @@ import { getAdminAuth, getApiUrl, getCustomerApi } from '../config'
 import { authFetch, plainFetch } from '../http'
 
 function customerApiBase(): string {
-  let baseUrl = getCustomerApi() || 'https://customer-api.uatvend.co.za'
+  let baseUrl = getCustomerApi()
+  if (!baseUrl) {
+    throw new Error('CUSTOMER_API is not configured')
+  }
 
   // If the URL contains two domains concatenated, extract the first one
   if (baseUrl.includes('https://') && baseUrl.indexOf('https://', 8) !== -1) {
@@ -44,7 +47,7 @@ export async function getCustomerMeterInstallationList(customerUnique: string | 
 }
 
 export async function getMeterTenant(meterNumber: string) {
-  return plainFetch(`${getCustomerApi()}/meter/${encodeURIComponent(meterNumber)}/tenant`, {
+  return plainFetch(`${customerApiBase()}meter/${encodeURIComponent(meterNumber)}/tenant`, {
     method: 'GET',
   })
 }
@@ -53,7 +56,7 @@ export async function updateMeterTenant(
   meterNumber: string,
   body: { firstname?: string; emailaddress?: string }
 ) {
-  return plainFetch(`${getCustomerApi()}/meter/${encodeURIComponent(meterNumber)}/tenant`, {
+  return plainFetch(`${customerApiBase()}meter/${encodeURIComponent(meterNumber)}/tenant`, {
     method: 'PATCH',
     body,
   })
