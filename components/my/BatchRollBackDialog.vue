@@ -24,6 +24,8 @@
 </Dialog>
 </template>
 <script>
+import { batchService } from '~/services/batch'
+
 export default{
     props:{
         batch: Array,
@@ -50,13 +52,10 @@ export default{
                     uniqueIdentifications.push(payment.periodTotals.uniqueIdentification)
                 })
                 //console.log(batch_id, uniqueIdentifications)
-                const result = await useAuthFetch(`${API_URL}/AdminSystem/TransactionBatchPayment/RollBackSubmittedPaymentBatch`,{
-                    method: "POST",
-                    body:{
-                        paymentBatchID: batch_id,
-                        uniqueIdentifications: uniqueIdentifications,
-                        comment: this.comment
-                    }
+                const result = await batchService.rollbackSubmittedPaymentBatch({
+                    paymentBatchID: batch_id,
+                    uniqueIdentifications: uniqueIdentifications,
+                    comment: this.comment
                 })
                 console.log(result)
                 if(this.all){

@@ -127,6 +127,8 @@
 </div>
 </template>
 <script>
+import { authService } from '~/services/auth'
+
 definePageMeta({
     layout: 'noauth'
 })
@@ -144,34 +146,33 @@ export default{
                 return;
             }
             try{
-                const credentials = btoa(`${this.username}:${this.password}`);
-                const result = await $fetch(`${VEND_URL}/user/VendUserFunctions/ValidateUser`,{
-                    method: "GET",
-                    headers: {
-                        "Authorization" : `Basic ${credentials}`,
-                        "Content-Type": "application/json",
-                    }
-                })
-
-                console.log(result)
+                const { result, credentials } = await authService.validateUser(this.username, this.password)
 
                 localStorage.setItem('user',btoa(result))
-                localStorage.setItem('token',credentials)
+                localStorage.setItem('token',result.token)
 
-                const userType = result.userInfo.userType;
+                const userType = result.actor;
 
                 if(userType === 'Customer'){
-                    localStorage.setItem('customer',result.userInfo.userParent.uniqueIdentification);
-                    return navigateTo(`/my/${result.userInfo.userParent.uniqueIdentification}/dashboard`)
+                    const customerId = result?.userInfo?.userParent?.uniqueIdentification
+                    if (!customerId) {
+                        this.$toast({
+                            title: 'Customer login unavailable',
+                            description: 'Login response is missing customer identity. Customer portal login is not supported on this branch until the new auth flow lands.',
+                            variant: "destructive"
+                        });
+                        return;
+                    }
+                    localStorage.setItem('customer', customerId);
+                    return navigateTo(`/my/${customerId}/dashboard`)
                 }
                 
-                if(userType == "Administration"){
+                if(userType == "admin"){
                     localStorage.setItem('customer','admin');
                     return navigateTo('');
                 }
 
             }catch(e){
-                console.log(e)
                 this.$toast({
                     title: 'Uh oh! Something went wrong.',
                     description: 'There was a problem with your request.',
